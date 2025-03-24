@@ -60,15 +60,28 @@ Longhorn Studies provides a centralized, student-friendly platform that helps UT
 ## Getting Started 
 
 ### Prerequisites
-- TBD
+- Node.js (LTS version)
+- pnpm package manager
+- Expo CLI (pnpm add -g expo-cli)
+- Supabase account and project set up
 
 ### Installation steps
 ```
+git clone https://github.com/your-repo/longhorn-studies.git
+cd longhorn-studies
+pnpm install
+pnpm dev
 
 ```
 
 ### Configuration requirements
-- TBD
+- Environment Variables: Create a .env file at the root and include:
+```
+SUPABASE_URL=<your-supabase-url>
+SUPABASE_ANON_KEY=<your-supabase-anon-key>
+GOOGLE_MAPS_API_KEY=<your-google-maps-api-key>
+```
+- Ensure Supabase authentication is enabled.
 
 ## Architecture
 - Platform/Toolchain: Expo
@@ -85,7 +98,10 @@ Longhorn Studies provides a centralized, student-friendly platform that helps UT
 - Forming/joining study groups
 
 ### Design principles
-- TBD
+- User-Centric: Prioritize ease of use for students
+- Scalability: Ensure the backend can handle increasing user activity
+- Performance-Optimized: Minimize load times and API calls
+- Security-First: Protect user data and authentication processes
 
 ## Development Workflow
 ### Branch naming conventions + Conventional Commits
@@ -135,16 +151,30 @@ We welcome all to contribute! Please carefully read our [Contributing Guide](CON
 - ``pnpm format ``     # Format code using Prettier
 
 ### Development commands
-- TBD
+- pnpm dev      # Start the development server
+- pnpm start    # Run Expo in interactive mode
 ### Building commands
-- TBD
+- pnpm build
 ### Testing commands
-- TBD
+- pnpm test
 ### Linting & formatting commands
-- TBD
+- pnpm lint     # Lint the codebase
+- pnpm format   # Format the code using Prettier
 
 ## Project Structure
-- TBD
+```
+/longhorn-studies
+│── /src
+│   ├── /components  # Reusable UI components
+│   ├── /screens     # App screens
+│   ├── /hooks       # Custom hooks
+│   ├── /services    # API and database interactions
+│── /assets          # Images, icons, and static files
+│── app.json         # Expo configuration
+│── package.json     # Dependencies and scripts
+│── .env.example     # Example environment variables
+│── README.md        # Project documentation
+```
 ### Directory organization
 - TBD
 ### Key files and their purposes
