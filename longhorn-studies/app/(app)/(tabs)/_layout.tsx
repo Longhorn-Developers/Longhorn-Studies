@@ -4,13 +4,13 @@ import { Text } from 'react-native';
 import { useAuth } from '~/store/AuthProvider';
 
 export default function AppLayout() {
-  const { session, loading } = useAuth();
+  const { user, loading } = useAuth();
 
   if (loading) {
     return <Text>Loading...</Text>;
   }
 
-  if (!session) {
+  if (!user) {
     return <Redirect href="/(app)" />;
   }
 

@@ -7,23 +7,10 @@ type AuthContextType = {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signIn: (
-    email: string,
-    password: string
-  ) => Promise<{
-    error: Error | null;
-  }>;
-  signUp: (
-    email: string,
-    password: string
-  ) => Promise<{
-    error: Error | null;
-    data: any;
-  }>;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
-  resetPassword: (email: string) => Promise<{
-    error: Error | null;
-  }>;
+  resetPassword: (email: string) => Promise<void>;
 };
 
 // Create the context with a default value
@@ -61,29 +48,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Sign in with email and password
   const signIn = async (email: string, password: string) => {
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-      return { error: error || null };
-    } catch (error) {
-      return { error: error as Error };
+    if (error) {
+      throw error;
     }
   };
 
   // Sign up with email and password
   const signUp = async (email: string, password: string) => {
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
 
-      return { error: error || null, data };
-    } catch (error) {
-      return { error: error as Error, data: null };
+    if (error) {
+      throw error;
     }
   };
 
@@ -94,16 +77,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Reset password
   const resetPassword = async (email: string) => {
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
 
-      if (error) {
-        throw error;
-      }
-
-      return { error };
-    } catch (error) {
-      return { error: error as Error };
+    if (error) {
+      throw error;
     }
   };
 
