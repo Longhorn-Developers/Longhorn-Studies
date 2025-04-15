@@ -1,5 +1,5 @@
-import { Text } from 'react-native';
 import { Redirect, Stack } from 'expo-router';
+import { Text } from 'react-native';
 
 import { useAuth } from '~/store/AuthProvider';
 

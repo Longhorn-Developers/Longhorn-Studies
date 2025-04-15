@@ -45,10 +45,9 @@ export default function Login() {
     try {
       await signIn(data.email, data.password);
       // If we get here, login was successful
-      router.replace('/(app)/(root)');
+      // router.replace('/(app)/(root)');
     } catch (error) {
       // Handle login error
-      console.error(error);
       setLoginError(error instanceof Error ? error.message : 'Login failed');
     } finally {
       setIsLoading(false);
@@ -58,64 +57,69 @@ export default function Login() {
   return (
     <>
       <Container>
-        <View className="w-full max-w-md px-4 py-8">
-          {loginError && (
-            <View className="mb-4 rounded border border-red-400 bg-red-100 p-3">
-              <Text className="text-red-700">{loginError}</Text>
-            </View>
-          )}
+        <View className="h-full justify-between">
+          <View className="gap-3">
+            <Text className="mb-6 text-center text-2xl font-bold">Login</Text>
 
-          <View className="h-full justify-around">
-            <View className="gap-3">
-              <Text className="mb-6 text-center text-2xl font-bold">Log In</Text>
-              <Controller
-                control={control}
-                name="email"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <View>
-                    <TextInput
-                      className="rounded-md border border-gray-300 bg-white p-3"
-                      onBlur={onBlur}
-                      onChangeText={onChange}
-                      value={value}
-                      placeholder="Enter your email"
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      autoComplete="email"
-                    />
-                    {errors.email && (
-                      <Text className="mt-1 text-red-500">{errors.email.message}</Text>
-                    )}
-                  </View>
-                )}
-              />
+            {/* Email Input */}
+            <Controller
+              control={control}
+              name="email"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <View>
+                  <TextInput
+                    className="rounded-full border border-gray-300 bg-white p-3"
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                    placeholder="Email"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoComplete="email"
+                  />
+                  {errors.email && (
+                    <Text className="mt-1 text-red-500">{errors.email.message}</Text>
+                  )}
+                </View>
+              )}
+            />
 
-              <Controller
-                control={control}
-                name="password"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <View>
-                    <TextInput
-                      className="rounded-md border border-gray-300 bg-white p-3"
-                      onBlur={onBlur}
-                      onChangeText={onChange}
-                      value={value}
-                      placeholder="Enter your password"
-                      secureTextEntry
-                      autoComplete="password"
-                    />
-                    {errors.password && (
-                      <Text className="mt-1 text-red-500">{errors.password.message}</Text>
-                    )}
-                  </View>
-                )}
-              />
-            </View>
+            {/* Password Input */}
+            <Controller
+              control={control}
+              name="password"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <View>
+                  <TextInput
+                    className="rounded-full border border-gray-300 bg-white p-3"
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                    placeholder="Password"
+                    secureTextEntry
+                    autoComplete="password"
+                  />
+                  {errors.password && (
+                    <Text className="mt-1 text-red-500">{errors.password.message}</Text>
+                  )}
+                </View>
+              )}
+            />
 
-            <Button title="Log In" onPress={handleSubmit(onSubmit)} disabled={isLoading}>
-              {isLoading && <ActivityIndicator color="white" />}
-            </Button>
+            {/* Login Error Box onSubmit */}
+            {loginError && (
+              <View className="mb-4 rounded border border-red-400 bg-red-100 p-3">
+                <Text className="text-red-700">{loginError}</Text>
+              </View>
+            )}
           </View>
+
+          <Button
+            icon={isLoading && <ActivityIndicator />}
+            title="Log In"
+            onPress={handleSubmit(onSubmit)}
+            disabled={isLoading}
+          />
         </View>
       </Container>
     </>
