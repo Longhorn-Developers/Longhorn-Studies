@@ -45,7 +45,7 @@ export default function Login() {
     try {
       await signIn(data.email, data.password);
       // If we get here, login was successful
-      // router.replace('/(app)/(root)');
+      router.replace('/(app)/(root)');
     } catch (error) {
       // Handle login error
       setLoginError(error instanceof Error ? error.message : 'Login failed');
@@ -55,73 +55,69 @@ export default function Login() {
   };
 
   return (
-    <>
-      <Container>
-        <View className="h-full justify-between">
-          <View className="gap-3">
-            <Text className="mb-6 text-center text-2xl font-bold">Login</Text>
+    <Container>
+      <View className="h-full justify-between">
+        <View className="gap-3">
+          <Text className="mb-6 text-center text-2xl font-bold">Login</Text>
 
-            {/* Email Input */}
-            <Controller
-              control={control}
-              name="email"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <View>
-                  <TextInput
-                    className="rounded-full border border-gray-300 bg-white p-3"
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                    placeholder="Email"
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    autoComplete="email"
-                  />
-                  {errors.email && (
-                    <Text className="mt-1 text-red-500">{errors.email.message}</Text>
-                  )}
-                </View>
-              )}
-            />
-
-            {/* Password Input */}
-            <Controller
-              control={control}
-              name="password"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <View>
-                  <TextInput
-                    className="rounded-full border border-gray-300 bg-white p-3"
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                    placeholder="Password"
-                    secureTextEntry
-                    autoComplete="password"
-                  />
-                  {errors.password && (
-                    <Text className="mt-1 text-red-500">{errors.password.message}</Text>
-                  )}
-                </View>
-              )}
-            />
-
-            {/* Login Error Box onSubmit */}
-            {loginError && (
-              <View className="mb-4 rounded border border-red-400 bg-red-100 p-3">
-                <Text className="text-red-700">{loginError}</Text>
+          {/* Email Input */}
+          <Controller
+            control={control}
+            name="email"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <View>
+                <TextInput
+                  className="rounded-full border border-gray-300 bg-white p-3"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  placeholder="Email"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoComplete="email"
+                />
+                {errors.email && <Text className="mt-1 text-red-500">{errors.email.message}</Text>}
               </View>
             )}
-          </View>
-
-          <Button
-            icon={isLoading && <ActivityIndicator />}
-            title="Log In"
-            onPress={handleSubmit(onSubmit)}
-            disabled={isLoading}
           />
+
+          {/* Password Input */}
+          <Controller
+            control={control}
+            name="password"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <View>
+                <TextInput
+                  className="rounded-full border border-gray-300 bg-white p-3"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  placeholder="Password"
+                  secureTextEntry
+                  autoComplete="password"
+                />
+                {errors.password && (
+                  <Text className="mt-1 text-red-500">{errors.password.message}</Text>
+                )}
+              </View>
+            )}
+          />
+
+          {/* Login Error Box onSubmit */}
+          {loginError && (
+            <View className="mb-4 rounded border border-red-400 bg-red-100 p-3">
+              <Text className="text-red-700">{loginError}</Text>
+            </View>
+          )}
         </View>
-      </Container>
-    </>
+
+        <Button
+          icon={isLoading && <ActivityIndicator />}
+          title="Log In"
+          onPress={handleSubmit(onSubmit)}
+          disabled={isLoading}
+        />
+      </View>
+    </Container>
   );
 }
