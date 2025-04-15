@@ -45,7 +45,7 @@ export default function Login() {
     try {
       await signIn(data.email, data.password);
       // If we get here, login was successful
-      router.replace('/(app)/(root)');
+      router.replace('/home');
     } catch (error) {
       // Handle login error
       setLoginError(error instanceof Error ? error.message : 'Login failed');
@@ -58,8 +58,6 @@ export default function Login() {
     <Container>
       <View className="h-full justify-between">
         <View className="gap-3">
-          <Text className="mb-6 text-center text-2xl font-bold">Login</Text>
-
           {/* Email Input */}
           <Controller
             control={control}

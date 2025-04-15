@@ -5,8 +5,9 @@ import { Stack } from 'expo-router';
 export default function Layout() {
   return (
     <Stack>
-      <Stack.Screen name="onboarding" options={{ title: 'Onboarding', headerShown: false }} />
-      <Stack.Screen name="login" options={{ title: 'Login', presentation: 'modal' }} />
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="login/index" options={{ presentation: 'modal', headerTitle: 'Login' }} />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
     </Stack>
   );
 }

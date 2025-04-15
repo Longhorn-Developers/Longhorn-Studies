@@ -18,6 +18,7 @@
         }
       ]
     ],
+    "newArchEnabled": true,
     "experiments": {
       "typedRoutes": true,
       "tsconfigPaths": true
