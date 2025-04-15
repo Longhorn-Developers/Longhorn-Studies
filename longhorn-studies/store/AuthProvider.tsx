@@ -67,11 +67,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         password,
       });
 
-      if (error) {
-        throw error;
-      }
+      return { error: error || null };
     } catch (error) {
-      throw error;
+      return { error: error as Error };
     }
   };
 
@@ -83,13 +81,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         password,
       });
 
-      if (error) {
-        throw error;
-      }
-
-      return { data };
+      return { error: error || null, data };
     } catch (error) {
-      throw error;
+      return { error: error as Error, data: null };
     }
   };
 
