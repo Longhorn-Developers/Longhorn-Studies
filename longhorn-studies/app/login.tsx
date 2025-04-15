@@ -1,14 +1,12 @@
-import { Stack } from 'expo-router';
+import LoginForm from './components/Form';
 
 import { Container } from '~/components/Container';
-import { ScreenContent } from '~/components/ScreenContent';
 
-export default function Details() {
+export default function Login() {
   return (
     <>
-      <Stack.Screen options={{ title: 'Login' }} />
       <Container>
-        <ScreenContent title="Login" />
+        <LoginForm onSubmit={async () => console.log('asdasdasd')} />
       </Container>
     </>
   );
