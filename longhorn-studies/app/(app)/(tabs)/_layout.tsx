@@ -15,5 +15,12 @@ export default function AppLayout() {
   }
 
   // This layout can be deferred because it's not the root layout.
-  return <Tabs screenOptions={{ headerShown: false }} />;
+  return (
+    <Tabs screenOptions={{ headerShown: false }}>
+      <Tabs.Screen name="home/index" options={{ title: 'Home' }} />
+      <Tabs.Screen name="groups/index" options={{ title: 'Groups' }} />
+      <Tabs.Screen name="map/index" options={{ title: 'Map' }} />
+      <Tabs.Screen name="profile/index" options={{ title: 'Profile' }} />
+    </Tabs>
+  );
 }
