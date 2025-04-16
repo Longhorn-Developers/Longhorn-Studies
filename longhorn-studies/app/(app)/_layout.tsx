@@ -8,6 +8,10 @@ export default function Layout() {
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="login/index" options={{ presentation: 'modal', headerTitle: 'Login' }} />
+      <Stack.Screen
+        name="signup/index"
+        options={{ presentation: 'modal', headerTitle: 'Sign Up' }}
+      />
     </Stack>
   );
 }
