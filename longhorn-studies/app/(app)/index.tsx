@@ -1,11 +1,15 @@
-import { Link } from 'expo-router';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import { Link, router } from 'expo-router';
 import { View } from 'react-native';
 
 import { Button } from '~/components/Button';
 import { Container } from '~/components/Container';
 import { ScreenContent } from '~/components/ScreenContent';
+import { useAuth } from '~/store/AuthProvider';
 
 export default function Onboarding() {
+  const { signInWithGoogle } = useAuth();
+
   return (
     <Container>
       <ScreenContent title="Onboarding" />
@@ -13,9 +17,20 @@ export default function Onboarding() {
         <Link href={{ pathname: '/signup' }} asChild>
           <Button title="Sign Up" />
         </Link>
-        <Link href={{ pathname: '/login' }} asChild>
-          <Button variant="secondary" title="Sign In with Google" />
-        </Link>
+        <Button
+          icon={<AntDesign name="google" size={24} color="#6366f1" />}
+          variant="secondary"
+          title="Sign In with Google"
+          onPress={async () => {
+            try {
+              await signInWithGoogle();
+              // If we get here, sign up was successful
+              router.replace('/home');
+            } catch (error) {
+              console.error(error);
+            }
+          }}
+        />
         <Link href={{ pathname: '/login' }} asChild>
           <Button variant="link" title="Log In" />
         </Link>
