@@ -121,19 +121,41 @@ create policy "Spot Owner" on public.spots
 -- Media: follow its spot
 create policy "Media Owner" on public.media
   using  (exists (select 1
-                  from spots p
-                  where p.id = spot_id and p.user_id = (select auth.uid())))
+                  from spots s
+                  where s.id = spot_id and s.user_id = (select auth.uid())))
   with check (exists (select 1
-                      from spots p
-                      where p.id = spot_id and p.user_id = (select auth.uid())));
+                      from spots s
+                      where s.id = spot_id and s.user_id = (select auth.uid())));
 
 -- Tags: anyone may read; creator may update; you may also lock system tags
 create policy "Tag Read" on public.tags
-  for select using (true);
+  for select 
+  to authenticated
+  using (true);
 
-create policy "Tag Creator Write" on public.tags
-  for all using  (created_by = (select auth.uid()))
+create policy "Tag Creator Insert" on public.tags
+  for insert
+  to authenticated 
   with check (created_by = (select auth.uid()) and not is_system);
+
+create policy "Tag Creator Update" on public.tags
+  for update
+  to authenticated 
+  using (created_by = (select auth.uid()) and not is_system)
+  with check (created_by = (select auth.uid()) and not is_system);
+
+create policy "Tag Creator Delete" on public.tags
+  for delete
+  to authenticated 
+  using (created_by = (select auth.uid()) and not is_system);-- Spot tag link: follow its spot
+
+create policy "Spot Tag Owner" on public.spot_tags
+  using  (exists (select 1
+                  from spots s
+                  where s.id = spot_id and s.user_id = (select auth.uid())))
+  with check (exists (select 1
+                      from spots s
+                      where s.id = spot_id and s.user_id = (select auth.uid())));
 
 -- ============================================================================
 -- Indexes
@@ -141,16 +163,21 @@ create policy "Tag Creator Write" on public.tags
 create index on public.tags          (slug);
 create index on public.spot_tags     (tag_id);
 create index on public.media         (spot_id, position);
+create index on public.media         (spot_id);
+create index on public.spot_tags     (spot_id);
+create index on public.spots         (user_id);
+create index on public.tags          (created_by);
 
 -- ============================================================================
 -- Helper function Slugify
 -- ============================================================================
 -- One‑time setup
-create extension if not exists unaccent;     -- strips accents å, ü, etc.
+create extension if not exists unaccent with schema extensions;     -- strips accents å, ü, etc.
 
 create or replace function public.slugify(txt text)
 returns text
 language sql
+set search_path = ''
 immutable
 as $$
     -- 1. unaccent → déjà‑vu  → deja vu
@@ -159,7 +186,7 @@ as $$
     -- 4. collapse whitespace → deja-vu
     select regexp_replace(
              regexp_replace(
-               lower(unaccent($1)),        -- 1 & 2
+               lower(extensions.unaccent($1)),        -- 1 & 2
                '[^a-z0-9\s-]', '', 'g'),   -- 3
              '\s+', '-', 'g')              -- 4
 $$;
@@ -167,6 +194,7 @@ $$;
 create or replace function public.set_tag_slug()
 returns trigger
 language plpgsql
+set search_path = ''
 as $$
 begin
   new.slug := public.slugify(new.label);
@@ -183,6 +211,7 @@ execute procedure public.set_tag_slug();
 create or replace function public.upsert_tags(label_list text[])
 returns setof tags
 language plpgsql
+set search_path = ''
 as $$
 begin
   return query
