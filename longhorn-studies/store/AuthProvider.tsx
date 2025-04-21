@@ -5,7 +5,7 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '../utils/supabase';
 
 GoogleSignin.configure({
-  iosClientId: '117866795198-nn8qmvqdg6fdhkd6lulnu005t0ct85o9.apps.googleusercontent.com',
+  iosClientId: process.env.EXPO_PUBLIC_GOOGLE_OAUTH_IOS_CLIENT_ID,
 });
 
 type AuthContextType = {
