@@ -1,19 +1,124 @@
-import { View } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
+import { useEffect, useState } from 'react';
+import { Text, View, ActivityIndicator, Pressable } from 'react-native';
 
-import { Button } from '~/components/Button';
-import { useAuth } from '~/store/AuthProvider';
+import { Container } from '~/components/Container';
+import { PublicSpotsRowSchema, PublicTagsRowSchema } from '~/types/schemas_infer';
+import { supabase } from '~/utils/supabase';
+
+type SpotWithTags = PublicSpotsRowSchema & {
+  tags: PublicTagsRowSchema[];
+};
+
+const SpotCard = ({ spot }: { spot: SpotWithTags }) => {
+  return (
+    <Pressable className="mb-4 overflow-hidden rounded-xl bg-white shadow-sm">
+      {/* {spot.image_url ? (
+        <Image source={{ uri: spot.image_url }} className="h-40 w-full" contentFit="cover" />
+      ) : (
+        <View className="h-40 w-full items-center justify-center bg-gray-200">
+          <Text className="text-gray-500">No Image Available</Text>
+        </View>
+      )} */}
+
+      <View className="p-4">
+        <Text className="text-lg font-bold text-gray-900">{spot.title}</Text>
+
+        {spot.body && (
+          <Text className="mt-1 text-gray-600" numberOfLines={2}>
+            {spot.body}
+          </Text>
+        )}
+
+        {spot.tags && spot.tags.length > 0 && (
+          <View className="mt-3 flex-row flex-wrap gap-2">
+            {spot.tags.map((tag) => (
+              <View key={tag.id} className="rounded-full bg-amber-100 px-3 py-1">
+                <Text className="text-xs font-medium text-amber-800">{tag.label}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+      </View>
+    </Pressable>
+  );
+};
 
 export default function Home() {
-  const { signOut } = useAuth();
+  const [spots, setSpots] = useState<SpotWithTags[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchSpots() {
+      setLoading(true);
+      try {
+        // Fetch spots with their tags
+        const { data, error } = await supabase
+          .from('spots')
+          .select(
+            `
+            *,
+            tags:spot_tags(
+              tag:tags(*)
+            )
+          `
+          )
+          .order('created_at', { ascending: false })
+          .limit(20);
+
+        if (error) {
+          console.error('Error fetching spots:', error);
+          return;
+        }
+
+        // Transform the data to match our SpotWithTags type
+        const spotsWithTags = data.map((spot) => {
+          return {
+            ...spot,
+            tags: spot.tags ? spot.tags.map((st: any) => st.tag).filter(Boolean) : [],
+          };
+        });
+
+        setSpots(spotsWithTags);
+      } catch (error) {
+        console.error('Error in fetchSpots:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchSpots();
+  }, []);
+
+  if (loading) {
+    return (
+      <Container>
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#d97706" />
+        </View>
+      </Container>
+    );
+  }
+
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Button
-        title="Sign Out"
-        onPress={() => {
-          // The `app/(app)/_layout.tsx` will redirect to the sign-in screen.
-          signOut();
-        }}
-      />
-    </View>
+    <Container>
+      <View className="flex-1 px-4 pt-4">
+        <Text className="mb-4 text-2xl font-bold text-gray-800">Study Spots</Text>
+
+        {spots.length === 0 ? (
+          <View className="flex-1 items-center justify-center">
+            <Text className="text-gray-500">No study spots found</Text>
+          </View>
+        ) : (
+          <FlashList
+            data={spots}
+            renderItem={({ item }: any) => <SpotCard spot={item} />}
+            estimatedItemSize={50}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 20 }}
+          />
+        )}
+      </View>
+    </Container>
   );
 }
