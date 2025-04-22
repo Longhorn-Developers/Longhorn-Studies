@@ -1,4 +1,4 @@
-import AntDesign from '@expo/vector-icons/AntDesign';
+import { AntDesign, Entypo, MaterialIcons } from '@expo/vector-icons';
 import { Link, Tabs } from 'expo-router';
 
 import { Button } from '~/components/Button';
@@ -13,18 +13,33 @@ export default function AppLayout() {
           title: 'Home',
           headerRight: () => (
             <Link href="/create-spot" asChild>
-              <Button
-                size="small"
-                icon={<AntDesign name="plus" color="white" />}
-                title="New Spot"
-              />
+              <Button size="small" icon={<Entypo name="plus" color="white" />} title="New Spot" />
             </Link>
           ),
+          tabBarIcon: ({ color }) => <Entypo name="home" size={24} color={color} />,
         }}
       />
-      <Tabs.Screen name="groups/index" options={{ title: 'Groups' }} />
-      <Tabs.Screen name="map/index" options={{ title: 'Map' }} />
-      <Tabs.Screen name="profile/index" options={{ title: 'Profile' }} />
+      <Tabs.Screen
+        name="groups/index"
+        options={{
+          title: 'Groups',
+          tabBarIcon: ({ color }) => <MaterialIcons name="group" size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="map/index"
+        options={{
+          title: 'Map',
+          tabBarIcon: ({ color }) => <Entypo name="map" size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="profile/index"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color }) => <AntDesign name="user" size={24} color={color} />,
+        }}
+      />
     </Tabs>
   );
 }
