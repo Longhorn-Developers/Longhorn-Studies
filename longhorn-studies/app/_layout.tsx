@@ -1,11 +1,12 @@
 import { Slot } from 'expo-router';
+import { StatusBar } from 'react-native';
 
 import { AuthProvider } from '~/store/AuthProvider';
-import '../global.css';
 
 export default function Layout() {
   return (
     <AuthProvider>
+      <StatusBar />
       <Slot />
     </AuthProvider>
   );

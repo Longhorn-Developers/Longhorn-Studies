@@ -25,7 +25,7 @@ export default function Onboarding() {
             try {
               await signInWithGoogle();
               // If we get here, sign up was successful
-              router.replace('/home');
+              router.replace('/(app)/(protected)/(tabs)');
             } catch (error) {
               console.error(error);
             }
