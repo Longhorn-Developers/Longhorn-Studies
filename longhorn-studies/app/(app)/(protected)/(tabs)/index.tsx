@@ -12,16 +12,12 @@ type SpotWithTags = PublicSpotsRowSchema & {
 
 const SpotCard = ({ spot }: { spot: SpotWithTags }) => {
   return (
-    <Pressable className="mb-4 overflow-hidden rounded-xl bg-white shadow-sm">
-      {/* {spot.image_url ? (
-        <Image source={{ uri: spot.image_url }} className="h-40 w-full" contentFit="cover" />
-      ) : (
-        <View className="h-40 w-full items-center justify-center bg-gray-200">
-          <Text className="text-gray-500">No Image Available</Text>
-        </View>
-      )} */}
+    <Pressable className="my-2 flex-row items-center gap-4 rounded-xl border border-gray-200 px-5 py-3">
+      <View>
+        <View className="h-20 w-20 items-center justify-center rounded-xl bg-gray-200" />
+      </View>
 
-      <View className="p-4">
+      <View>
         <Text className="text-lg font-bold text-gray-900">{spot.title}</Text>
 
         {spot.body && (
@@ -102,7 +98,7 @@ export default function Home() {
 
   return (
     <Container>
-      <View className="flex-1 px-4 pt-4">
+      <View className="flex-1">
         <Text className="mb-4 text-2xl font-bold text-gray-800">Study Spots</Text>
 
         {spots.length === 0 ? (
