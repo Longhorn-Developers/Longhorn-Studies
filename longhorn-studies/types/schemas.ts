@@ -81,7 +81,7 @@ export const publicProfilesRowSchemaSchema = z.object({
 export const publicProfilesInsertSchemaSchema = z.object({
   avatar_url: z.string().optional().nullable(),
   full_name: z.string().optional().nullable(),
-  id: z.string(),
+  id: z.string().optional(),
   updated_at: z.string().optional().nullable(),
   username: z.string().optional().nullable(),
 });
@@ -141,7 +141,7 @@ export const publicSpotsInsertSchemaSchema = z.object({
   id: z.string().optional(),
   title: z.string(),
   updated_at: z.string().optional().nullable(),
-  user_id: z.string(),
+  user_id: z.string().optional(),
 });
 
 export const publicSpotsUpdateSchemaSchema = z.object({

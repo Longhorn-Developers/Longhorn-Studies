@@ -80,7 +80,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           full_name?: string | null
-          id: string
+          id?: string
           updated_at?: string | null
           username?: string | null
         }
@@ -138,7 +138,7 @@ export type Database = {
           id?: string
           title: string
           updated_at?: string | null
-          user_id: string
+          user_id?: string
         }
         Update: {
           body?: string | null

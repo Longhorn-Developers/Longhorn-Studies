@@ -3,7 +3,7 @@
 -- ============================================================================
 -- Create a table for public profiles
 create table public.profiles (
-  id uuid references auth.users on delete cascade not null primary key,
+  id uuid references auth.users on delete cascade not null primary key default auth.uid(),
   updated_at timestamp with time zone,
   username text unique,
   full_name text,
@@ -59,7 +59,7 @@ create policy "Anyone can upload an avatar." on storage.objects
 -- ============================================================================
 create table public.spots (
   id            uuid primary key default gen_random_uuid(),
-  user_id       uuid not null  references auth.users(id) on delete cascade,
+  user_id       uuid not null  references auth.users(id) on delete cascade default auth.uid(),
   title         text not null,
   body          text,
   created_at    timestamptz default now(),
@@ -71,7 +71,7 @@ create table public.tags (
   id            bigint generated always as identity primary key,
   label         text     not null check (length(label) <= 40),
   slug          text     not null unique,            -- lower(label)‑spaces→dashes
-  created_by    uuid     references auth.users(id),
+  created_by    uuid     references auth.users(id) default auth.uid(),
   is_system     boolean  default false               -- “official” tags you seed
 );
 
