@@ -1,43 +1,44 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { router } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
-import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { Container } from '~/components/Container';
 import { publicSpotsInsertSchemaSchema } from '~/types/schemas';
 import { PublicSpotsInsertSchema } from '~/types/schemas_infer';
+import { supabase } from '~/utils/supabase';
 
 const CreateSpot = () => {
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<PublicSpotsInsertSchema>({
     resolver: zodResolver(publicSpotsInsertSchemaSchema),
-    defaultValues: {
-      title: '',
-      body: '',
-      user_id: '', // This would typically come from auth context
-    },
   });
 
-  const onSubmit = (data: PublicSpotsInsertSchema) => {
-    console.log('Form submitted:', data);
-    // Here you would typically call your API to create the spot
+  const onSubmit = async (spot_data: PublicSpotsInsertSchema) => {
+    const { data, error } = await supabase.from('spots').insert(spot_data).select();
+
+    if (error) {
+      Alert.alert('Error', 'Failed to insert data. Please try again.');
+      console.error('Error inserting data:', error);
+    } else {
+      console.log('Spot Submitted Sucessfully:\n', JSON.stringify(data, null, 2));
+      router.back();
+    }
   };
 
   return (
     <Container>
       <ScrollView className="flex-1 px-4">
         <View className="mb-6 mt-4 flex-row items-center">
-          <TouchableOpacity
-            className="rounded-full bg-amber-50 p-2"
-            onPress={() => console.log('Go back')}>
-            {/* <ArrowLeft size={24} color="#B45309" /> */}
-          </TouchableOpacity>
-          <Text className="ml-4 text-2xl font-bold text-gray-800">Add New Study Spot</Text>
+          <Text className="text-2xl font-bold text-gray-800">Add New Study Spot</Text>
         </View>
 
+        {/* Create Spot Form */}
         <View className="mb-6">
+          {/* Spot Name */}
           <Text className="mb-2 text-sm font-medium text-gray-700">Spot Name *</Text>
           <Controller
             control={control}
@@ -55,6 +56,7 @@ const CreateSpot = () => {
           {errors.title && <Text className="mt-1 text-red-500">{errors.title.message}</Text>}
         </View>
 
+        {/* Spot Body Description */}
         <View className="mb-6">
           <Text className="mb-2 text-sm font-medium text-gray-700">Description</Text>
           <Controller
@@ -74,8 +76,9 @@ const CreateSpot = () => {
           />
         </View>
 
+        {/* Spot Tags */}
         <View className="mb-6">
-          <Text className="mb-3 text-lg font-semibold text-gray-800">Spot Features</Text>
+          <Text className="mb-3 text-lg font-semibold text-gray-800">Spot Tags</Text>
 
           <View className="mb-4 flex-row flex-wrap gap-2">
             <TouchableOpacity className="rounded-full bg-amber-600 px-4 py-2">
@@ -99,6 +102,7 @@ const CreateSpot = () => {
           </View>
         </View>
 
+        {/* Spot Location */}
         <View className="mb-6">
           <Text className="mb-3 text-lg font-semibold text-gray-800">Location</Text>
           <View className="flex h-40 items-center justify-center rounded-xl bg-gray-200">
@@ -106,11 +110,13 @@ const CreateSpot = () => {
           </View>
         </View>
 
-        <TouchableOpacity className="mb-8 flex-row items-center justify-center rounded-xl bg-amber-600 p-4">
+        {/* Submit Button */}
+        <TouchableOpacity
+          className="mb-8 flex-row items-center justify-center rounded-xl bg-amber-600 p-4"
+          onPress={handleSubmit(onSubmit)}
+          disabled={isSubmitting}>
           {/* <Check size={20} color="white" className="mr-2" /> */}
-          <Text className="text-lg font-bold text-white" onPress={handleSubmit(onSubmit)}>
-            Save Spot
-          </Text>
+          <Text className="text-lg font-bold text-white">Save Spot</Text>
         </TouchableOpacity>
       </ScrollView>
     </Container>
