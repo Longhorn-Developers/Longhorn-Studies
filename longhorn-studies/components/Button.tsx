@@ -18,8 +18,8 @@ export const Button = forwardRef<View, ButtonProps>(
     ref
   ) => {
     const variantStyles = {
-      primary: 'bg-indigo-500',
-      secondary: 'bg-transparent border-2 border-indigo-500',
+      primary: 'bg-amber-600',
+      secondary: 'bg-transparent border-2 border-amber-600',
       danger: 'bg-red-500',
       success: 'bg-green-500',
       link: 'bg-transparent border-0',
@@ -33,10 +33,10 @@ export const Button = forwardRef<View, ButtonProps>(
 
     const textVariantStyles = {
       primary: 'text-white',
-      secondary: 'text-indigo-500',
+      secondary: 'text-amber-600',
       danger: 'text-white',
       success: 'text-white',
-      link: 'text-indigo-500',
+      link: 'text-amber-600',
     };
 
     const textSizeStyles = {
