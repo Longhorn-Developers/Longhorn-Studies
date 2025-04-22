@@ -29,8 +29,8 @@ const SpotCard = ({ spot }: { spot: SpotWithTags }) => {
         {spot.tags && spot.tags.length > 0 && (
           <View className="mt-3 flex-row flex-wrap gap-2">
             {spot.tags.map((tag) => (
-              <View key={tag.id} className="rounded-full bg-amber-100 px-3 py-1">
-                <Text className="text-xs font-medium text-amber-800">{tag.label}</Text>
+              <View key={tag.id} className="rounded-full bg-amber-600 px-3 py-1">
+                <Text className="text-xs font-medium text-white">{tag.label}</Text>
               </View>
             ))}
           </View>
@@ -44,45 +44,46 @@ export default function Home() {
   const [spots, setSpots] = useState<SpotWithTags[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchSpots() {
-      setLoading(true);
-      try {
-        // Fetch spots with their tags
-        const { data, error } = await supabase
-          .from('spots')
-          .select(
-            `
-            *,
-            tags:spot_tags(
-              tag:tags(*)
-            )
+  async function fetchSpots() {
+    setLoading(true);
+    try {
+      // Fetch spots with their tags
+      const { data, error } = await supabase
+        .from('spots')
+        .select(
           `
+          *,
+          tags:spot_tags(
+            tag:tags(*)
           )
-          .order('created_at', { ascending: false })
-          .limit(20);
+        `
+        )
+        .order('created_at', { ascending: false })
+        .limit(20);
 
-        if (error) {
-          console.error('Error fetching spots:', error);
-          return;
-        }
-
-        // Transform the data to match our SpotWithTags type
-        const spotsWithTags = data.map((spot) => {
-          return {
-            ...spot,
-            tags: spot.tags ? spot.tags.map((st: any) => st.tag).filter(Boolean) : [],
-          };
-        });
-
-        setSpots(spotsWithTags);
-      } catch (error) {
-        console.error('Error in fetchSpots:', error);
-      } finally {
-        setLoading(false);
+      if (error) {
+        console.error('Error fetching spots:', error);
+        return;
       }
-    }
 
+      // Transform the data to match our SpotWithTags type
+      const spotsWithTags = data.map((spot) => {
+        return {
+          ...spot,
+          tags: spot.tags ? spot.tags.map((st: any) => st.tag).filter(Boolean) : [],
+        };
+      });
+
+      setSpots(spotsWithTags);
+    } catch (error) {
+      console.error('Error in fetchSpots:', error);
+    } finally {
+      setLoading(false);
+      return false;
+    }
+  }
+
+  useEffect(() => {
     fetchSpots();
   }, []);
 
@@ -112,6 +113,10 @@ export default function Home() {
             estimatedItemSize={50}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 20 }}
+            onRefresh={() => {
+              fetchSpots();
+            }}
+            refreshing={loading}
           />
         )}
       </View>
