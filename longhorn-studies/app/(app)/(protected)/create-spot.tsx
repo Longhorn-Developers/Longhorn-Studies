@@ -1,14 +1,28 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
+import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  ActivityIndicator,
+} from 'react-native';
 
 import { Container } from '~/components/Container';
+import TagSelector from '~/components/TagSelector';
+import { useTagStore } from '~/store/TagStore';
 import { publicSpotsInsertSchemaSchema } from '~/types/schemas';
-import { PublicSpotsInsertSchema } from '~/types/schemas_infer';
+import { PublicSpotsInsertSchema, PublicTagsRowSchema } from '~/types/schemas_infer';
 import { supabase } from '~/utils/supabase';
 
 const CreateSpot = () => {
+  const [commonTags, setCommonTags] = useState<PublicTagsRowSchema[]>([]);
+  const { selectedTags, resetTags } = useTagStore();
+
   const {
     control,
     handleSubmit,
@@ -17,15 +31,68 @@ const CreateSpot = () => {
     resolver: zodResolver(publicSpotsInsertSchemaSchema),
   });
 
-  const onSubmit = async (spot_data: PublicSpotsInsertSchema) => {
-    const { data, error } = await supabase.from('spots').insert(spot_data).select();
+  // Fetch common tags on component mount
+  useEffect(() => {
+    const fetchCommonTags = async () => {
+      const { data, error } = await supabase
+        .from('tags')
+        .select()
+        .order('id', { ascending: true })
+        .limit(10);
 
-    if (error) {
-      Alert.alert('Error', 'Failed to insert data. Please try again.');
-      console.error('Error inserting data:', error);
-    } else {
-      console.log('Spot Submitted Sucessfully:\n', JSON.stringify(data, null, 2));
+      if (!error && data) {
+        setCommonTags(data);
+      }
+    };
+
+    fetchCommonTags();
+
+    // Reset tags when component unmounts
+    return () => resetTags();
+  }, []);
+
+  const onSubmit = async (spot_data: PublicSpotsInsertSchema) => {
+    try {
+      // 1) Insert the spot
+      const { data: spot, error: spotError } = await supabase
+        .from('spots')
+        .insert(spot_data)
+        .select()
+        .single();
+
+      if (spotError) {
+        Alert.alert('Error', 'Failed to insert data. Please try again.');
+        console.error('Error inserting data:', spotError);
+        return;
+      }
+
+      if (selectedTags.length > 0) {
+        // 2) Upsert tags the user selected/created
+        const userLabels = selectedTags.map((tag) => tag.label);
+        const { data: tags, error: tagsError } = await supabase.rpc('upsert_tags', {
+          label_list: userLabels,
+        });
+
+        if (tagsError) {
+          console.error('Error upserting tags:', tagsError);
+          // We can still continue since the spot was created
+        } else if (tags) {
+          // 3) Bridge spot <-> tags
+          const { error: linkError } = await supabase
+            .from('spot_tags')
+            .insert(tags.map((t) => ({ spot_id: spot.id, tag_id: t.id })));
+
+          if (linkError) {
+            console.error('Error linking tags to spot:', linkError);
+          }
+        }
+      }
+
+      console.log('Spot Submitted Successfully');
       router.back();
+    } catch (error) {
+      Alert.alert('Error', 'Failed to save spot. Please try again.');
+      console.error('Error saving spot:', error);
     }
   };
 
@@ -79,27 +146,7 @@ const CreateSpot = () => {
         {/* Spot Tags */}
         <View className="mb-6">
           <Text className="mb-3 text-lg font-semibold text-gray-800">Spot Tags</Text>
-
-          <View className="mb-4 flex-row flex-wrap gap-2">
-            <TouchableOpacity className="rounded-full bg-amber-600 px-4 py-2">
-              <Text className="font-medium text-white">Quiet</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="rounded-full bg-gray-200 px-4 py-2">
-              <Text className="font-medium text-gray-800">Coffee</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="rounded-full bg-gray-200 px-4 py-2">
-              <Text className="font-medium text-gray-800">Outlets</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="rounded-full bg-gray-200 px-4 py-2">
-              <Text className="font-medium text-gray-800">Group-friendly</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="rounded-full bg-gray-200 px-4 py-2">
-              <Text className="font-medium text-gray-800">24/7</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="rounded-full bg-gray-200 px-4 py-2">
-              <Text className="font-medium text-gray-800">Outdoor</Text>
-            </TouchableOpacity>
-          </View>
+          <TagSelector commonTags={commonTags} />
         </View>
 
         {/* Spot Location */}
@@ -115,8 +162,11 @@ const CreateSpot = () => {
           className="mb-8 flex-row items-center justify-center rounded-xl bg-amber-600 p-4"
           onPress={handleSubmit(onSubmit)}
           disabled={isSubmitting}>
-          {/* <Check size={20} color="white" className="mr-2" /> */}
-          <Text className="text-lg font-bold text-white">Save Spot</Text>
+          {isSubmitting ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            <Text className="text-lg font-bold text-white">Save Spot</Text>
+          )}
         </TouchableOpacity>
       </ScrollView>
     </Container>

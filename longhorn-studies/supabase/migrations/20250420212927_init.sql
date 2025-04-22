@@ -215,7 +215,7 @@ set search_path = ''
 as $$
 begin
   return query
-  insert into tags (label, slug)
+  insert into public.tags (label, slug)
   select lbl, public.slugify(lbl)
   from unnest(label_list) as lbl
   on conflict (slug) do update
