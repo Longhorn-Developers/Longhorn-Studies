@@ -4,6 +4,7 @@
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start --dev-client",
+    "web": "expo start --web",
     "ios": "expo run:ios",
     "android": "expo run:android",
     "build:dev": "eas build --profile development",
@@ -12,7 +13,7 @@
     "prebuild": "expo prebuild",
     "lint": "eslint \"**/*.{js,jsx,ts,tsx}\" && prettier -c \"**/*.{js,jsx,ts,tsx,json}\"",
     "format": "eslint \"**/*.{js,jsx,ts,tsx}\" --fix && prettier \"**/*.{js,jsx,ts,tsx,json}\" --write",
-    "web": "expo start --web"
+    "gen:types": "supabase gen types typescript --local > types/database.ts && supazod -i types/database.ts -o types/schemas.ts -t types/schemas.d.ts"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
@@ -53,6 +54,7 @@
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.5.14",
     "supabase": "^2.20.12",
+    "supazod": "^1.2.3",
     "tailwindcss": "^3.4.17",
     "typescript": "~5.3.3"
   },
