@@ -12,6 +12,10 @@ export default function Layout() {
         name="signup/index"
         options={{ presentation: 'modal', headerTitle: 'Sign Up' }}
       />
+      <Stack.Screen
+        name="create-spot/index"
+        options={{ presentation: 'modal', headerTitle: 'Create Spot' }}
+      />
     </Stack>
   );
 }
