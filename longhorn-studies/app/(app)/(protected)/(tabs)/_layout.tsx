@@ -6,7 +6,7 @@ import { Button } from '~/components/Button';
 export default function AppLayout() {
   // This layout can be deferred because it's not the root layout.
   return (
-    <Tabs>
+    <Tabs screenOptions={{ tabBarActiveTintColor: '#d97706' }}>
       <Tabs.Screen
         name="index"
         options={{
