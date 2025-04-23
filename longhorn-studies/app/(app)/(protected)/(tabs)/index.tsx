@@ -79,7 +79,6 @@ export default function Home() {
       console.error('Error in fetchSpots:', error);
     } finally {
       setLoading(false);
-      return false;
     }
   }
 
@@ -100,7 +99,7 @@ export default function Home() {
   return (
     <Container>
       <View className="flex-1">
-        <Text className="mb-4 text-2xl font-bold text-gray-800">Study Spots</Text>
+        <Text className="text-2xl font-bold text-gray-800">Study Spots</Text>
 
         {spots.length === 0 ? (
           <View className="flex-1 items-center justify-center">

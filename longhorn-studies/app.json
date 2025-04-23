@@ -2,6 +2,7 @@
   "expo": {
     "name": "longhorn-studies",
     "slug": "longhorn-studies",
+    "owner": "longhorn-developers",
     "version": "1.0.0",
     "scheme": "longhorn-studies",
     "web": {
