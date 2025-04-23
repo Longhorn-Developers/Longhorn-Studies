@@ -1,6 +1,8 @@
 import { FlashList } from '@shopify/flash-list';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState } from 'react';
-import { Text, View, ActivityIndicator, Pressable } from 'react-native';
+import { Text, View, Pressable } from 'react-native';
+import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
 
 import { Container } from '~/components/Container';
 import { PublicSpotsRowSchema, PublicTagsRowSchema } from '~/types/schemas_infer';
@@ -85,39 +87,34 @@ export default function Home() {
   useEffect(() => {
     fetchSpots();
   }, []);
-
-  if (loading) {
-    return (
-      <Container>
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#d97706" />
-        </View>
-      </Container>
-    );
-  }
-
   return (
     <Container>
       <View className="flex-1">
         <Text className="text-2xl font-bold text-gray-800">Study Spots</Text>
 
-        {spots.length === 0 ? (
-          <View className="flex-1 items-center justify-center">
-            <Text className="text-gray-500">No study spots found</Text>
-          </View>
-        ) : (
-          <FlashList
-            data={spots}
-            renderItem={({ item }: any) => <SpotCard spot={item} />}
-            estimatedItemSize={50}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 20 }}
-            onRefresh={() => {
-              fetchSpots();
-            }}
-            refreshing={loading}
-          />
-        )}
+        <ShimmerPlaceHolder
+          LinearGradient={LinearGradient}
+          visible={!loading}
+          shimmerStyle={{ borderRadius: 10 }}
+          contentStyle={{ width: '100%', height: '100%' }}>
+          {spots.length === 0 || loading ? (
+            <View className="flex-1 items-center justify-center">
+              <Text className="text-gray-500">No study spots found</Text>
+            </View>
+          ) : (
+            <FlashList
+              data={spots}
+              renderItem={({ item }: any) => <SpotCard spot={item} />}
+              estimatedItemSize={50}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 20 }}
+              onRefresh={() => {
+                fetchSpots();
+              }}
+              refreshing={loading}
+            />
+          )}
+        </ShimmerPlaceHolder>
       </View>
     </Container>
   );
