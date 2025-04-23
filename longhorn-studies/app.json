@@ -41,14 +41,14 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.astrol.longhornstudies"
+      "bundleIdentifier": "com.longhorndevelopers.longhornstudies"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.astrol.longhornstudies"
+      "package": "com.longhorndevelopers.longhornstudies"
     },
     "extra": {
       "router": {
