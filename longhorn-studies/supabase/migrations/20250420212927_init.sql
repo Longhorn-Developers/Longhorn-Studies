@@ -83,13 +83,10 @@ create table public.spot_tags (
 );
 
 -- --------------  media  --------------------------------------------
-create type public.media_kind as enum ('image','video');
-
 create table public.media (
   id          uuid primary key default gen_random_uuid(),
   spot_id     uuid      references spots(id) on delete cascade,
   storage_key text      not null,      -- e.g. 'public/spot-media/abc123.webp'
-  kind        public.media_kind not null,
   position    int       default 1,     -- for manual ordering in galleries
   created_at  timestamptz default now()
 );

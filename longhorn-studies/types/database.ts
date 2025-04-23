@@ -38,7 +38,6 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
-          kind: Database["public"]["Enums"]["media_kind"]
           position: number | null
           spot_id: string | null
           storage_key: string
@@ -46,7 +45,6 @@ export type Database = {
         Insert: {
           created_at?: string | null
           id?: string
-          kind: Database["public"]["Enums"]["media_kind"]
           position?: number | null
           spot_id?: string | null
           storage_key: string
@@ -54,7 +52,6 @@ export type Database = {
         Update: {
           created_at?: string | null
           id?: string
-          kind?: Database["public"]["Enums"]["media_kind"]
           position?: number | null
           spot_id?: string | null
           storage_key?: string
@@ -195,7 +192,7 @@ export type Database = {
       }
     }
     Enums: {
-      media_kind: "image" | "video"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -313,9 +310,7 @@ export const Constants = {
     Enums: {},
   },
   public: {
-    Enums: {
-      media_kind: ["image", "video"],
-    },
+    Enums: {},
   },
 } as const
 

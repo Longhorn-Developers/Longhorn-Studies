@@ -7,11 +7,6 @@
 import { z } from "zod";
 import { type Json } from "./database";
 
-export const publicMediaKindSchema = z.union([
-  z.literal("image"),
-  z.literal("video"),
-]);
-
 export const jsonSchema: z.ZodSchema<Json> = z.lazy(() =>
   z
     .union([
@@ -36,7 +31,6 @@ export const graphqlPublicGraphqlReturnsSchemaSchema = jsonSchema;
 export const publicMediaRowSchemaSchema = z.object({
   created_at: z.string().nullable(),
   id: z.string(),
-  kind: publicMediaKindSchema,
   position: z.number().nullable(),
   spot_id: z.string().nullable(),
   storage_key: z.string(),
@@ -45,7 +39,6 @@ export const publicMediaRowSchemaSchema = z.object({
 export const publicMediaInsertSchemaSchema = z.object({
   created_at: z.string().optional().nullable(),
   id: z.string().optional(),
-  kind: publicMediaKindSchema,
   position: z.number().optional().nullable(),
   spot_id: z.string().optional().nullable(),
   storage_key: z.string(),
@@ -54,7 +47,6 @@ export const publicMediaInsertSchemaSchema = z.object({
 export const publicMediaUpdateSchemaSchema = z.object({
   created_at: z.string().optional().nullable(),
   id: z.string().optional(),
-  kind: publicMediaKindSchema.optional(),
   position: z.number().optional().nullable(),
   spot_id: z.string().optional().nullable(),
   storage_key: z.string().optional(),

@@ -1,4 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import * as FileSystem from 'expo-file-system';
+import { ImagePickerAsset } from 'expo-image-picker';
 import { router } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
@@ -22,7 +24,7 @@ import { supabase } from '~/utils/supabase';
 
 const CreateSpot = () => {
   const [commonTags, setCommonTags] = useState<PublicTagsRowSchema[]>([]);
-  const [images, setImages] = useState<any[]>([]);
+  const [images, setImages] = useState<ImagePickerAsset[]>([]);
   const { selectedTags, resetTags } = useTagStore();
 
   const {
@@ -53,31 +55,36 @@ const CreateSpot = () => {
     return () => resetTags();
   }, []);
 
-  const handleImagesChange = (newImages: any[]) => {
+  const handleImagesChange = (newImages: ImagePickerAsset[]) => {
     setImages(newImages);
   };
 
-  const uploadImagesToSupabase = async () => {
+  const uploadImagesToSupabase = async (spot_data_id: string) => {
     if (images.length <= 0) return null;
 
     try {
       // Upload the first image as the main spot image (you can modify this to handle multiple images)
-      // const mainImage = images[0];
-      // const fileName = `spot-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-      // const filePath = `spots/${fileName}`;
-      // const { data: fileData, error: uploadError } = await supabase.storage
-      //   .from('study-spots')
-      //   .upload(filePath, mainImage.file);
-      // if (uploadError) {
-      //   console.error('Error uploading image:', uploadError);
-      //   return null;
-      // }
-      // // Get the public URL
-      // const { data: publicUrl } = supabase.storage
-      //   .from('study-spots')
-      //   .getPublicUrl(filePath);
-      // return publicUrl.publicUrl;
-      console.log('Uploading images to Supabase...', JSON.stringify(images, null, 2));
+      // Upload each image with its position index
+      images.forEach(async (image, index) => {
+        const file_path = `spots/${spot_data_id}/${new Date().getTime()}-${image.fileName}`;
+        const base64 = await FileSystem.readAsStringAsync(image.uri, {
+          encoding: 'base64',
+        });
+
+        const { error } = await supabase.storage
+          .from('media')
+          .upload(file_path, base64, { contentType: image.mimeType });
+
+        if (error) {
+          throw new Error(`Error uploading image: ${error}`);
+        }
+
+        await supabase.from('media').insert({
+          spot_id: spot_data_id,
+          storage_key: file_path,
+          position: index,
+        });
+      });
     } catch (error) {
       console.error('Error in image upload process:', error);
       return null;
@@ -86,10 +93,7 @@ const CreateSpot = () => {
 
   const onSubmit = async (spot_data: PublicSpotsInsertSchema) => {
     try {
-      // 1) Upload images if any
-      await uploadImagesToSupabase();
-
-      // 2) Insert the spot
+      // Insert the spot
       const { data: spot, error: spotError } = await supabase
         .from('spots')
         .insert(spot_data)
@@ -102,8 +106,9 @@ const CreateSpot = () => {
         return;
       }
 
+      // Spot tag handling
       if (selectedTags.length > 0) {
-        // 3) Upsert tags the user selected/created
+        // Upsert tags the user selected/created
         const userLabels = selectedTags.map((tag) => tag.label);
         const { data: tags, error: tagsError } = await supabase.rpc('upsert_tags', {
           label_list: userLabels,
@@ -113,7 +118,7 @@ const CreateSpot = () => {
           console.error('Error upserting tags:', tagsError);
           // We can still continue since the spot was created
         } else if (tags) {
-          // 4) Bridge spot <-> tags
+          // Bridge spot <-> tags
           const { error: linkError } = await supabase
             .from('spot_tags')
             .insert(tags.map((t) => ({ spot_id: spot.id, tag_id: t.id })));
@@ -123,6 +128,9 @@ const CreateSpot = () => {
           }
         }
       }
+
+      // Upload spot images to Supabase
+      await uploadImagesToSupabase(spot.id);
 
       console.log('Spot Submitted Successfully');
       router.back();

@@ -6,7 +6,6 @@
 
 import { z } from "zod";
 import * as generated from "./schemas";
-export type PublicMediaKind = z.infer<typeof generated.publicMediaKindSchema>;
 export type Json = z.infer<typeof generated.jsonSchema>;
 export type GraphqlPublicGraphqlArgsSchema = z.infer<
   typeof generated.graphqlPublicGraphqlArgsSchemaSchema

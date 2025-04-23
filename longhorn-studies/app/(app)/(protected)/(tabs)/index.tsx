@@ -97,23 +97,17 @@ export default function Home() {
           visible={!loading}
           shimmerStyle={{ borderRadius: 10 }}
           contentStyle={{ width: '100%', height: '100%' }}>
-          {spots.length === 0 || loading ? (
-            <View className="flex-1 items-center justify-center">
-              <Text className="text-gray-500">No study spots found</Text>
-            </View>
-          ) : (
-            <FlashList
-              data={spots}
-              renderItem={({ item }: any) => <SpotCard spot={item} />}
-              estimatedItemSize={50}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 20 }}
-              onRefresh={() => {
-                fetchSpots();
-              }}
-              refreshing={loading}
-            />
-          )}
+          <FlashList
+            data={spots}
+            renderItem={({ item }: any) => <SpotCard spot={item} />}
+            estimatedItemSize={50}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 20 }}
+            onRefresh={() => {
+              fetchSpots();
+            }}
+            refreshing={loading}
+          />
         </ShimmerPlaceHolder>
       </View>
     </Container>
