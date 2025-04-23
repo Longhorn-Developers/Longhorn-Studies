@@ -7,19 +7,13 @@ import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flat
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 
-type ImageItem = {
-  id: string;
-  uri: string;
-  file?: ImagePicker.ImagePickerAsset;
-};
-
 interface ImageUploaderProps {
-  onImagesChange: (images: ImageItem[]) => void;
+  onImagesChange: (images: ImagePicker.ImagePickerAsset[]) => void;
   maxImages?: number;
 }
 
 export default function ImageUploader({ onImagesChange, maxImages = 4 }: ImageUploaderProps) {
-  const [images, setImages] = useState<ImageItem[]>([]);
+  const [images, setImages] = useState<ImagePicker.ImagePickerAsset[]>([]);
   const [uploading, setUploading] = useState(false);
 
   // Request permissions if needed
@@ -47,15 +41,8 @@ export default function ImageUploader({ onImagesChange, maxImages = 4 }: ImageUp
       });
 
       if (!result.canceled && result.assets.length > 0) {
-        // Generate unique IDs for each image and metadata
-        const newImages = result.assets.map((asset) => ({
-          id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
-          uri: asset.uri,
-          file: asset,
-        }));
-
         // Add newly picked image
-        const updatedImages = [...images, ...newImages];
+        const updatedImages = [...images, ...result.assets];
         setImages(updatedImages);
         onImagesChange(updatedImages);
       }
@@ -68,18 +55,18 @@ export default function ImageUploader({ onImagesChange, maxImages = 4 }: ImageUp
   };
 
   const removeImage = (id: string) => {
-    const updatedImages = images.filter((img) => img.id !== id);
+    const updatedImages = images.filter((img) => img.uri !== id);
     setImages(updatedImages);
     onImagesChange(updatedImages);
   };
 
-  const onDragEnd = ({ data }: { data: ImageItem[] }) => {
+  const onDragEnd = ({ data }: { data: ImagePicker.ImagePickerAsset[] }) => {
     setImages(data);
     onImagesChange(data);
   };
 
   // Image item render
-  const renderItem = ({ item, drag, isActive }: RenderItemParams<ImageItem>) => {
+  const renderItem = ({ item, drag, isActive }: RenderItemParams<ImagePicker.ImagePickerAsset>) => {
     return (
       <TouchableOpacity
         onLongPress={drag}
@@ -87,7 +74,7 @@ export default function ImageUploader({ onImagesChange, maxImages = 4 }: ImageUp
         disabled={isActive}>
         <Image source={{ uri: item.uri }} className="h-full w-full" resizeMode="cover" />
         <TouchableOpacity
-          onPress={() => removeImage(item.id)}
+          onPress={() => removeImage(item.uri)}
           className="absolute right-1 top-1 rounded-full bg-gray-800/70 p-1">
           <Ionicons name="close" size={14} color="white" />
         </TouchableOpacity>
@@ -120,7 +107,7 @@ export default function ImageUploader({ onImagesChange, maxImages = 4 }: ImageUp
                 <DraggableFlatList
                   data={images}
                   onDragEnd={onDragEnd}
-                  keyExtractor={(item) => item.id}
+                  keyExtractor={(item) => item.uri}
                   renderItem={renderItem}
                   horizontal
                   contentContainerStyle={{ marginRight: 10 }}
