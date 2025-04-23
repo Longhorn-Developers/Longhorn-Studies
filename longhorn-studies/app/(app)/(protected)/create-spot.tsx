@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 
 import { Container } from '~/components/Container';
+import ImageUploader from '~/components/ImageUploader';
 import TagSelector from '~/components/TagSelector';
 import { useTagStore } from '~/store/TagStore';
 import { publicSpotsInsertSchemaSchema } from '~/types/schemas';
@@ -21,6 +22,7 @@ import { supabase } from '~/utils/supabase';
 
 const CreateSpot = () => {
   const [commonTags, setCommonTags] = useState<PublicTagsRowSchema[]>([]);
+  const [images, setImages] = useState<any[]>([]);
   const { selectedTags, resetTags } = useTagStore();
 
   const {
@@ -51,9 +53,43 @@ const CreateSpot = () => {
     return () => resetTags();
   }, []);
 
+  const handleImagesChange = (newImages: any[]) => {
+    setImages(newImages);
+  };
+
+  const uploadImagesToSupabase = async () => {
+    if (images.length <= 0) return null;
+
+    try {
+      // Upload the first image as the main spot image (you can modify this to handle multiple images)
+      // const mainImage = images[0];
+      // const fileName = `spot-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+      // const filePath = `spots/${fileName}`;
+      // const { data: fileData, error: uploadError } = await supabase.storage
+      //   .from('study-spots')
+      //   .upload(filePath, mainImage.file);
+      // if (uploadError) {
+      //   console.error('Error uploading image:', uploadError);
+      //   return null;
+      // }
+      // // Get the public URL
+      // const { data: publicUrl } = supabase.storage
+      //   .from('study-spots')
+      //   .getPublicUrl(filePath);
+      // return publicUrl.publicUrl;
+      console.log('Uploading images to Supabase...', JSON.stringify(images, null, 2));
+    } catch (error) {
+      console.error('Error in image upload process:', error);
+      return null;
+    }
+  };
+
   const onSubmit = async (spot_data: PublicSpotsInsertSchema) => {
     try {
-      // 1) Insert the spot
+      // 1) Upload images if any
+      await uploadImagesToSupabase();
+
+      // 2) Insert the spot
       const { data: spot, error: spotError } = await supabase
         .from('spots')
         .insert(spot_data)
@@ -67,7 +103,7 @@ const CreateSpot = () => {
       }
 
       if (selectedTags.length > 0) {
-        // 2) Upsert tags the user selected/created
+        // 3) Upsert tags the user selected/created
         const userLabels = selectedTags.map((tag) => tag.label);
         const { data: tags, error: tagsError } = await supabase.rpc('upsert_tags', {
           label_list: userLabels,
@@ -77,7 +113,7 @@ const CreateSpot = () => {
           console.error('Error upserting tags:', tagsError);
           // We can still continue since the spot was created
         } else if (tags) {
-          // 3) Bridge spot <-> tags
+          // 4) Bridge spot <-> tags
           const { error: linkError } = await supabase
             .from('spot_tags')
             .insert(tags.map((t) => ({ spot_id: spot.id, tag_id: t.id })));
@@ -104,7 +140,10 @@ const CreateSpot = () => {
         </View>
 
         {/* Create Spot Form */}
-        <View className="mb-6">
+        <View className="mb-6 gap-3">
+          {/* Upload spot images */}
+          <ImageUploader onImagesChange={handleImagesChange} />
+
           {/* Spot Name */}
           <Text className="mb-2 text-sm font-medium text-gray-700">Spot Name *</Text>
           <Controller
