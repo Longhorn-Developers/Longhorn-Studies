@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+		"esbenp.prettier-vscode",
+		"mgmcdermott.vscode-language-babel",
+		"dbaeumer.vscode-eslint",
+		"expo.vscode-expo-tools",
+		"bradlc.vscode-tailwindcss",
+		"supabase.vscode-supabase-extension",
+		"supabase.postgrestools",
+    "denoland.vscode-deno"
+	],
+}
