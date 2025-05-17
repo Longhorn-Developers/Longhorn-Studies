@@ -5,14 +5,20 @@ import { Text, View, Pressable } from 'react-native';
 import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
 
 import { Container } from '~/components/Container';
-import { PublicSpotsRowSchema, PublicTagsRowSchema } from '~/types/schemas_infer';
+import {
+  PublicMediaRowSchema,
+  PublicSpotsRowSchema,
+  PublicTagsRowSchema,
+} from '~/types/schemas_infer';
 import { supabase } from '~/utils/supabase';
 
-type SpotWithTags = PublicSpotsRowSchema & {
+// Add tags and media to the spot schema
+type Spot = PublicSpotsRowSchema & {
   tags: PublicTagsRowSchema[];
+  media: PublicMediaRowSchema[];
 };
 
-const SpotCard = ({ spot }: { spot: SpotWithTags }) => {
+const SpotCard = ({ spot }: { spot: Spot }) => {
   return (
     <Pressable className="my-2 flex-row items-center gap-4 rounded-xl border border-gray-200 px-5 py-3">
       <View>
@@ -43,13 +49,13 @@ const SpotCard = ({ spot }: { spot: SpotWithTags }) => {
 };
 
 export default function Home() {
-  const [spots, setSpots] = useState<SpotWithTags[]>([]);
+  const [spots, setSpots] = useState<Spot[]>([]);
   const [loading, setLoading] = useState(true);
 
   async function fetchSpots() {
     setLoading(true);
     try {
-      // Fetch spots with their tags
+      // Fetch spots with their tags and media
       const { data, error } = await supabase
         .from('spots')
         .select(
@@ -57,7 +63,8 @@ export default function Home() {
           *,
           tags:spot_tags(
             tag:tags(*)
-          )
+          ),
+          media:media(*)
         `
         )
         .order('created_at', { ascending: false })
@@ -68,13 +75,16 @@ export default function Home() {
         return;
       }
 
-      // Transform the data to match our SpotWithTags type
+      // Transform the data to match our Spot type
       const spotsWithTags = data.map((spot) => {
         return {
           ...spot,
           tags: spot.tags ? spot.tags.map((st: any) => st.tag).filter(Boolean) : [],
+          media: spot.media ? spot.media.filter(Boolean) : [],
         };
       });
+
+      console.log('Fetched spots:', JSON.stringify(spotsWithTags, null, 2));
 
       setSpots(spotsWithTags);
     } catch (error) {
