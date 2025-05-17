@@ -126,6 +126,8 @@ const CreateSpot = () => {
           if (linkError) {
             console.error('Error linking tags to spot:', linkError);
           }
+        } else {
+          console.error('No tags returned from upsert unexpectedly');
         }
       }
 

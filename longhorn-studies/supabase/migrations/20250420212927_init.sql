@@ -71,7 +71,6 @@ create table public.tags (
   id            bigint generated always as identity primary key,
   label         text     not null check (length(label) <= 40),
   slug          text     not null unique,            -- lower(label)‑spaces→dashes
-  created_by    uuid     references auth.users(id) default auth.uid(),
   is_system     boolean  default false               -- “official” tags you seed
 );
 
@@ -124,27 +123,16 @@ create policy "Media Owner" on public.media
                       from spots s
                       where s.id = spot_id and s.user_id = (select auth.uid())));
 
--- Tags: anyone may read; creator may update; you may also lock system tags
+-- Tags: anyone may read; anyone can insert non_system tags
 create policy "Tag Read" on public.tags
   for select 
   to authenticated
   using (true);
 
-create policy "Tag Creator Insert" on public.tags
+create policy "Tag Insert" on public.tags
   for insert
   to authenticated 
-  with check (created_by = (select auth.uid()) and not is_system);
-
-create policy "Tag Creator Update" on public.tags
-  for update
-  to authenticated 
-  using (created_by = (select auth.uid()) and not is_system)
-  with check (created_by = (select auth.uid()) and not is_system);
-
-create policy "Tag Creator Delete" on public.tags
-  for delete
-  to authenticated 
-  using (created_by = (select auth.uid()) and not is_system);-- Spot tag link: follow its spot
+  with check (not is_system);
 
 create policy "Spot Tag Owner" on public.spot_tags
   using  (exists (select 1
@@ -163,7 +151,6 @@ create index on public.media         (spot_id, position);
 create index on public.media         (spot_id);
 create index on public.spot_tags     (spot_id);
 create index on public.spots         (user_id);
-create index on public.tags          (created_by);
 
 -- ============================================================================
 -- Helper function Slugify
@@ -211,12 +198,16 @@ language plpgsql
 set search_path = ''
 as $$
 begin
-  return query
+  -- Insert new tags, ignore existing slug duplicates
   insert into public.tags (label, slug)
   select lbl, public.slugify(lbl)
   from unnest(label_list) as lbl
-  on conflict (slug) do update
-    set label = excluded.label          -- optional: sync label changes
-  returning *;
+  on conflict (slug) do nothing;
+
+  -- Return all tags that match the labels (new and existing duplicates)
+  return query
+  select t.*
+  from public.tags t
+  where t.slug in (select public.slugify(lbl) from unnest(label_list) as lbl);
 end;
 $$;
