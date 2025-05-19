@@ -45,7 +45,7 @@ export default function Login() {
     try {
       await signIn(data.email, data.password);
       // If we get here, login was successful
-      router.replace('/home');
+      router.replace('/(app)/(protected)/(tabs)');
     } catch (error) {
       // Handle login error
       setLoginError(error instanceof Error ? error.message : 'Login failed');
