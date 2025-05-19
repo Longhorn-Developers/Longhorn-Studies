@@ -1,7 +1,5 @@
 import { AntDesign, Entypo, MaterialIcons } from '@expo/vector-icons';
-import { Link, Tabs } from 'expo-router';
-
-import { Button } from '~/components/Button';
+import { Tabs } from 'expo-router';
 
 export default function AppLayout() {
   // This layout can be deferred because it's not the root layout.
@@ -11,11 +9,6 @@ export default function AppLayout() {
         name="index"
         options={{
           title: 'Home',
-          headerRight: () => (
-            <Link href="/create-spot" asChild>
-              <Button size="small" icon={<Entypo name="plus" color="white" />} title="New Spot" />
-            </Link>
-          ),
           tabBarIcon: ({ color }) => <Entypo name="home" size={24} color={color} />,
         }}
       />
