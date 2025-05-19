@@ -23,6 +23,7 @@ export default function AppLayout() {
         name="map/index"
         options={{
           title: 'Map',
+          headerShown: false,
           tabBarIcon: ({ color }) => <Entypo name="map" size={24} color={color} />,
         }}
       />

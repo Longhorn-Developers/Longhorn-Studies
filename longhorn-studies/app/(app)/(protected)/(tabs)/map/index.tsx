@@ -1,19 +1,13 @@
-import { View } from 'react-native';
-
-import { Button } from '~/components/Button';
-import { useAuth } from '~/store/AuthProvider';
+import { AppleMaps, GoogleMaps } from 'expo-maps';
+import { Platform } from 'react-native';
 
 export default function Home() {
-  const { signOut } = useAuth();
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Button
-        title="Sign Out"
-        onPress={() => {
-          // The `app/(app)/_layout.tsx` will redirect to the sign-in screen.
-          signOut();
-        }}
-      />
-    </View>
+  return Platform.OS === 'ios' ? (
+    <AppleMaps.View
+      style={{ flex: 1 }}
+      cameraPosition={{ coordinates: { latitude: 30.285, longitude: -97.739 }, zoom: 14.5 }}
+    />
+  ) : (
+    <GoogleMaps.View style={{ flex: 1 }} />
   );
 }
