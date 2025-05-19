@@ -35,7 +35,7 @@ export default function ImageUploader({ onImagesChange, maxImages = 4 }: ImageUp
       setUploading(true);
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: 'images',
-        quality: 0.8,
+        quality: 0,
         allowsMultipleSelection: true,
         selectionLimit: maxImages - images.length,
       });

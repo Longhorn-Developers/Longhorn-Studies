@@ -1,7 +1,7 @@
 import { FlashList } from '@shopify/flash-list';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState } from 'react';
-import { Text, View, Pressable } from 'react-native';
+import { Text, View, Pressable, Image } from 'react-native';
 import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
 
 import { Container } from '~/components/Container';
@@ -19,10 +19,57 @@ type Spot = PublicSpotsRowSchema & {
 };
 
 const SpotCard = ({ spot }: { spot: Spot }) => {
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const hasMedia = spot.media && spot.media.length > 0;
+
+  // Check if the spot has media and if so, fetch the first image
+  useEffect(() => {
+    const fetchImage = async () => {
+      supabase.storage
+        .from('media')
+        .download(spot.media[0].storage_key)
+        .then(({ data }) => {
+          const fr = new FileReader();
+          fr.readAsText(data!);
+          fr.onload = () => {
+            const result = `data:${data?.type};base64,${fr.result as string}`;
+            setImageBase64(result);
+            setIsLoading(false);
+          };
+          fr.onerror = (error) => {
+            console.error('Error reading file:', error);
+          };
+        });
+    };
+    if (hasMedia) {
+      fetchImage();
+    }
+  }, [hasMedia]);
+
   return (
     <Pressable className="my-2 flex-row items-center gap-4 rounded-xl border border-gray-200 px-5 py-3">
       <View>
-        <View className="h-20 w-20 items-center justify-center rounded-xl bg-gray-200" />
+        {spot.media && spot.media.length > 0 ? (
+          <View>
+            {/* Using useState and useEffect to load base64 image */}
+            {isLoading || !imageBase64 ? (
+              <ShimmerPlaceHolder
+                LinearGradient={LinearGradient}
+                style={{ height: 80, width: 80, borderRadius: 12 }}
+              />
+            ) : (
+              <Image
+                style={{ height: 80, width: 80 }}
+                source={{ uri: imageBase64 }}
+                className="rounded-xl"
+              />
+            )}
+          </View>
+        ) : (
+          <View className="h-20 w-20 items-center justify-center rounded-xl bg-gray-200" />
+        )}
       </View>
 
       <View>
@@ -83,8 +130,6 @@ export default function Home() {
           media: spot.media ? spot.media.filter(Boolean) : [],
         };
       });
-
-      console.log('Fetched spots:', JSON.stringify(spotsWithTags, null, 2));
 
       setSpots(spotsWithTags);
     } catch (error) {
