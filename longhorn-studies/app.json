@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "longhorn-studies",
+    "name": "Longhorn Studies",
     "slug": "longhorn-studies",
     "owner": "longhorn-developers",
     "version": "1.0.0",
@@ -23,7 +23,15 @@
         {
           "iosUrlScheme": "com.googleusercontent.apps.117866795198-nn8qmvqdg6fdhkd6lulnu005t0ct85o9"
         }
-      ]
+      ],
+      [
+        "expo-maps",
+        {
+          "requestLocationPermission": "true",
+          "locationPermission": "Allow Longhorn Studies to use your location"
+        }
+      ],
+      "expo-web-browser"
     ],
     "newArchEnabled": true,
     "experiments": {
@@ -38,7 +46,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.longhorndevelopers.longhornstudies"
