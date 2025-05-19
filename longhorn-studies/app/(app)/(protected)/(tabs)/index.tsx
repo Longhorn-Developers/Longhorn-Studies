@@ -27,9 +27,11 @@ const SpotCard = ({ spot }: { spot: Spot }) => {
   // Check if the spot has media and if so, fetch the first image
   useEffect(() => {
     const fetchImage = async () => {
+      const mediaItem = spot.media.find((m) => m.position === 0) || spot.media[0];
+
       supabase.storage
         .from('media')
-        .download(spot.media[0].storage_key)
+        .download(mediaItem.storage_key)
         .then(({ data }) => {
           const fr = new FileReader();
           fr.readAsText(data!);
@@ -123,7 +125,7 @@ export default function Home() {
       }
 
       // Transform the data to match our Spot type
-      const spotsWithTags = data.map((spot) => {
+      const spotsJoined = data.map((spot) => {
         return {
           ...spot,
           tags: spot.tags ? spot.tags.map((st: any) => st.tag).filter(Boolean) : [],
@@ -131,7 +133,7 @@ export default function Home() {
         };
       });
 
-      setSpots(spotsWithTags);
+      setSpots(spotsJoined);
     } catch (error) {
       console.error('Error in fetchSpots:', error);
     } finally {
