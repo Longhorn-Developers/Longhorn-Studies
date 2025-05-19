@@ -65,26 +65,28 @@ const CreateSpot = () => {
     try {
       // Upload the first image as the main spot image (you can modify this to handle multiple images)
       // Upload each image with its position index
-      images.forEach(async (image, index) => {
-        const file_path = `spots/${spot_data_id}/${new Date().getTime()}-${image.fileName}`;
-        const base64 = await FileSystem.readAsStringAsync(image.uri, {
-          encoding: 'base64',
-        });
+      await Promise.all(
+        images.map(async (image, index) => {
+          const file_path = `spots/${spot_data_id}/${new Date().getTime()}-${image.fileName}`;
+          const base64 = await FileSystem.readAsStringAsync(image.uri, {
+            encoding: 'base64',
+          });
 
-        const { error } = await supabase.storage
-          .from('media')
-          .upload(file_path, base64, { contentType: image.mimeType });
+          const { error } = await supabase.storage
+            .from('media')
+            .upload(file_path, base64, { contentType: image.mimeType });
 
-        if (error) {
-          throw new Error(`Error uploading image: ${error}`);
-        }
+          if (error) {
+            throw new Error(`Error uploading image: ${error}`);
+          }
 
-        await supabase.from('media').insert({
-          spot_id: spot_data_id,
-          storage_key: file_path,
-          position: index,
-        });
-      });
+          await supabase.from('media').insert({
+            spot_id: spot_data_id,
+            storage_key: file_path,
+            position: index,
+          });
+        })
+      );
     } catch (error) {
       console.error('Error in image upload process:', error);
       return null;
