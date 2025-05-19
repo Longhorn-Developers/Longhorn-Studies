@@ -42,8 +42,8 @@ create trigger on_auth_user_created
   for each row execute procedure public.handle_new_user();
 
 -- Set up Storage!
-insert into storage.buckets (id, name)
-  values ('avatars', 'avatars');
+insert into storage.buckets (id, name, public)
+  values ('avatars', 'avatars', true);
 
 -- Set up access controls for storage.
 -- See https://supabase.com/docs/guides/storage#policy-examples for more details.
@@ -91,8 +91,8 @@ create table public.media (
 );
 
 -- Set up Storage!
-insert into storage.buckets (id, name)
-  values ('media', 'media');
+insert into storage.buckets (id, name, public)
+  values ('media', 'media', true);
 
 -- Set up access controls for storage.
 create policy "Media publicly accessible." on storage.objects
