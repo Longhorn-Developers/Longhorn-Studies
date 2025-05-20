@@ -27,8 +27,7 @@
       [
         "expo-maps",
         {
-          "requestLocationPermission": "true",
-          "locationPermission": "Allow Longhorn Studies to use your location"
+          "requestLocationPermission": "true"
         }
       ],
       "expo-web-browser"
@@ -46,9 +45,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.longhorndevelopers.longhornstudies"

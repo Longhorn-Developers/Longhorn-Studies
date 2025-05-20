@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as FileSystem from 'expo-file-system';
 import { ImagePickerAsset } from 'expo-image-picker';
+import { AppleMaps, GoogleMaps, Coordinates } from 'expo-maps';
 import { router } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
@@ -12,6 +13,8 @@ import {
   TouchableOpacity,
   View,
   ActivityIndicator,
+  Platform,
+  StyleSheet,
 } from 'react-native';
 
 import { Container } from '~/components/Container';
@@ -23,9 +26,10 @@ import { PublicSpotsInsertSchema, PublicTagsRowSchema } from '~/types/schemas_in
 import { supabase } from '~/utils/supabase';
 
 const CreateSpot = () => {
+  const { selectedTags, resetTags } = useTagStore();
   const [commonTags, setCommonTags] = useState<PublicTagsRowSchema[]>([]);
   const [images, setImages] = useState<ImagePickerAsset[]>([]);
-  const { selectedTags, resetTags } = useTagStore();
+  const [selectedLocation, setSelectedLocation] = useState<Coordinates | null>(null);
 
   const {
     control,
@@ -57,6 +61,21 @@ const CreateSpot = () => {
 
   const handleImagesChange = (newImages: ImagePickerAsset[]) => {
     setImages(newImages);
+
+    // Update selected location based on the first image's EXIF data if present
+    if (
+      newImages.length > 0 &&
+      newImages[0].exif &&
+      newImages[0].exif.GPSLatitude &&
+      newImages[0].exif.GPSLongitude
+    ) {
+      setSelectedLocation({
+        latitude: newImages[0].exif.GPSLatitude,
+        longitude: newImages[0].exif.GPSLongitude,
+      });
+    } else if (newImages.length === 0) {
+      setSelectedLocation(null);
+    }
   };
 
   const uploadImagesToSupabase = async (spot_data_id: string) => {
@@ -202,9 +221,29 @@ const CreateSpot = () => {
 
         {/* Spot Location */}
         <View className="mb-6">
-          <Text className="mb-3 text-lg font-semibold text-gray-800">Location</Text>
-          <View className="flex h-40 items-center justify-center rounded-xl bg-gray-200">
-            <Text className="text-gray-500">Map Placeholder</Text>
+          <Text className="text-lg font-semibold text-gray-800">Location</Text>
+          <Text className="mb-2 text-sm font-medium text-gray-400">Press to select a location</Text>
+          <View className="flex h-60 items-center justify-center rounded-xl bg-gray-200">
+            {Platform.OS === 'ios' ? (
+              <AppleMaps.View
+                style={StyleSheet.absoluteFill}
+                cameraPosition={{
+                  coordinates: selectedLocation
+                    ? selectedLocation
+                    : { latitude: 30.285, longitude: -97.739 },
+                  zoom: 15.5,
+                }}
+                markers={selectedLocation ? [{ coordinates: selectedLocation }] : undefined}
+                onMapClick={(event) => {
+                  setSelectedLocation(event as Coordinates);
+                }}
+                uiSettings={{
+                  scaleBarEnabled: true,
+                }}
+              />
+            ) : (
+              <GoogleMaps.View style={{ flex: 1 }} />
+            )}
           </View>
         </View>
 
