@@ -7,3 +7,5 @@ alter table public.spots
 add column location gis.geography(Point, 4326) not null;
 
 create index on public.spots using gist(location);
+
+GRANT USAGE ON SCHEMA gis TO anon, authenticated, service_role;
