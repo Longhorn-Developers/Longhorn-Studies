@@ -117,12 +117,16 @@ const CreateSpot = () => {
       // Insert the spot
       const { data: spot, error: spotError } = await supabase
         .from('spots')
-        .insert(spot_data)
+        .insert({
+          ...spot_data,
+          // Transform location coordinates to POINT type
+          location: `POINT(${spot_data.location.longitude} ${spot_data.location.latitude})`,
+        })
         .select()
         .single();
 
       if (spotError) {
-        Alert.alert('Error', 'Failed to insert data. Please try again.');
+        Alert.alert('Error', 'Failed to save spot. Please try again.');
         console.error('Error inserting data:', spotError);
         return;
       }
