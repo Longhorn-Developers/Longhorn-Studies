@@ -87,15 +87,14 @@ export default function ImageUploader({ onImagesChange, maxImages = 4 }: ImageUp
   };
 
   return (
-    <View className="mb-4">
-      <Text className="mb-2 text-sm font-medium text-gray-700">Upload Images</Text>
+    <View>
       <View className="rounded-xl border border-gray-300 bg-gray-50 p-4">
         {/* Image carousel header */}
         <View className="mb-3">
           <Text className="text-xs text-gray-500">
             {images.length > 0
               ? 'Long press and drag to reorder • Tap × to remove'
-              : 'Add up to 5 images of the study spot'}
+              : `Add up to ${maxImages} images`}
           </Text>
         </View>
 

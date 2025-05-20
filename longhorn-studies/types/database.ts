@@ -125,6 +125,7 @@ export type Database = {
           body: string | null
           created_at: string | null
           id: string
+          location: unknown
           title: string
           updated_at: string | null
           user_id: string
@@ -133,6 +134,7 @@ export type Database = {
           body?: string | null
           created_at?: string | null
           id?: string
+          location: unknown
           title: string
           updated_at?: string | null
           user_id?: string
@@ -141,6 +143,7 @@ export type Database = {
           body?: string | null
           created_at?: string | null
           id?: string
+          location?: unknown
           title?: string
           updated_at?: string | null
           user_id?: string
@@ -149,21 +152,18 @@ export type Database = {
       }
       tags: {
         Row: {
-          created_by: string | null
           id: number
           is_system: boolean | null
           label: string
           slug: string
         }
         Insert: {
-          created_by?: string | null
           id?: never
           is_system?: boolean | null
           label: string
           slug: string
         }
         Update: {
-          created_by?: string | null
           id?: never
           is_system?: boolean | null
           label?: string
@@ -183,7 +183,6 @@ export type Database = {
       upsert_tags: {
         Args: { label_list: string[] }
         Returns: {
-          created_by: string | null
           id: number
           is_system: boolean | null
           label: string

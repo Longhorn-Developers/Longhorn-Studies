@@ -29,12 +29,12 @@ const CreateSpot = () => {
   const { selectedTags, resetTags } = useTagStore();
   const [commonTags, setCommonTags] = useState<PublicTagsRowSchema[]>([]);
   const [images, setImages] = useState<ImagePickerAsset[]>([]);
-  const [selectedLocation, setSelectedLocation] = useState<Coordinates | null>(null);
 
   const {
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
+    setValue,
   } = useForm<PublicSpotsInsertSchema>({
     resolver: zodResolver(publicSpotsInsertSchemaSchema),
   });
@@ -69,12 +69,12 @@ const CreateSpot = () => {
       newImages[0].exif.GPSLatitude &&
       newImages[0].exif.GPSLongitude
     ) {
-      setSelectedLocation({
+      setValue('location', {
         latitude: newImages[0].exif.GPSLatitude,
         longitude: newImages[0].exif.GPSLongitude,
       });
     } else if (newImages.length === 0) {
-      setSelectedLocation(null);
+      // setValue('location', undefined);
     }
   };
 
@@ -165,18 +165,19 @@ const CreateSpot = () => {
 
   return (
     <Container>
+      {/* Create Spot Form */}
       <ScrollView className="flex-1 px-4">
-        <View className="mb-6 mt-4 flex-row items-center">
-          <Text className="text-2xl font-bold text-gray-800">Add New Study Spot</Text>
+        <Text className="mt-4 text-2xl font-bold text-gray-800">Add New Study Spot</Text>
+
+        {/* Upload spot images */}
+        <View className="mt-6">
+          <Text className="mb-1 text-sm font-medium text-gray-700">Upload Images</Text>
+          <ImageUploader onImagesChange={handleImagesChange} />
         </View>
 
-        {/* Create Spot Form */}
-        <View className="mb-6 gap-3">
-          {/* Upload spot images */}
-          <ImageUploader onImagesChange={handleImagesChange} />
-
-          {/* Spot Name */}
-          <Text className="mb-2 text-sm font-medium text-gray-700">Spot Name *</Text>
+        {/* Spot Name */}
+        <View className="mt-6">
+          <Text className="mb-1 text-sm font-medium text-gray-700">Spot Name *</Text>
           <Controller
             control={control}
             name="title"
@@ -194,8 +195,8 @@ const CreateSpot = () => {
         </View>
 
         {/* Spot Body Description */}
-        <View className="mb-6">
-          <Text className="mb-2 text-sm font-medium text-gray-700">Description</Text>
+        <View className="mt-6">
+          <Text className="mb-1 text-sm font-medium text-gray-700">Description</Text>
           <Controller
             control={control}
             name="body"
@@ -214,50 +215,57 @@ const CreateSpot = () => {
         </View>
 
         {/* Spot Tags */}
-        <View className="mb-6">
-          <Text className="mb-3 text-lg font-semibold text-gray-800">Spot Tags</Text>
+        <View className="mt-6">
+          <Text className="mb-1 text-sm text-gray-800">Spot Tags</Text>
           <TagSelector commonTags={commonTags} />
         </View>
 
         {/* Spot Location */}
-        <View className="mb-6">
+        <View>
           <Text className="text-lg font-semibold text-gray-800">Location</Text>
           <Text className="mb-2 text-sm font-medium text-gray-400">Press to select a location</Text>
-          <View className="flex h-60 items-center justify-center rounded-xl bg-gray-200">
-            {Platform.OS === 'ios' ? (
-              <AppleMaps.View
-                style={StyleSheet.absoluteFill}
-                cameraPosition={{
-                  coordinates: selectedLocation
-                    ? selectedLocation
-                    : { latitude: 30.285, longitude: -97.739 },
-                  zoom: 15.5,
-                }}
-                markers={selectedLocation ? [{ coordinates: selectedLocation }] : undefined}
-                onMapClick={(event) => {
-                  setSelectedLocation(event as Coordinates);
-                }}
-                uiSettings={{
-                  scaleBarEnabled: true,
-                }}
-              />
-            ) : (
-              <GoogleMaps.View style={{ flex: 1 }} />
+          <Controller
+            control={control}
+            name="location"
+            render={({ field: { onChange, value } }) => (
+              <View
+                className={`flex h-60 items-center justify-center rounded-xl ${errors.location ? 'border-2 border-red-500' : null}`}>
+                {Platform.OS === 'ios' ? (
+                  <AppleMaps.View
+                    style={[StyleSheet.absoluteFill, { overflow: 'hidden', borderRadius: 16 }]}
+                    cameraPosition={{
+                      // Default coordinates for UT
+                      coordinates: value ? value : { latitude: 30.285, longitude: -97.739 },
+                      zoom: 15.5,
+                    }}
+                    markers={value ? [{ coordinates: value }] : undefined}
+                    onMapClick={(event) => {
+                      const { latitude, longitude } = event as Coordinates;
+                      onChange({ latitude, longitude });
+                    }}
+                  />
+                ) : (
+                  <GoogleMaps.View style={{ flex: 1 }} />
+                )}
+              </View>
             )}
-          </View>
+          />
+          {errors.location && <Text className="mt-1 text-red-500">{errors.location.message}</Text>}
         </View>
 
         {/* Submit Button */}
-        <TouchableOpacity
-          className="mb-8 flex-row items-center justify-center rounded-xl bg-amber-600 p-4"
-          onPress={handleSubmit(onSubmit)}
-          disabled={isSubmitting}>
-          {isSubmitting ? (
-            <ActivityIndicator size="small" color="white" />
-          ) : (
-            <Text className="text-lg font-bold text-white">Save Spot</Text>
-          )}
-        </TouchableOpacity>
+        <View className="mb-8 mt-8">
+          <TouchableOpacity
+            className="flex-row items-center justify-center rounded-xl bg-amber-600 p-4"
+            onPress={handleSubmit(onSubmit)}
+            disabled={isSubmitting}>
+            {isSubmitting ? (
+              <ActivityIndicator size="small" color="white" />
+            ) : (
+              <Text className="text-lg font-bold text-white">Save Spot</Text>
+            )}
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </Container>
   );
