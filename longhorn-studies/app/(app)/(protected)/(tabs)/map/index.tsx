@@ -22,7 +22,7 @@ export default function Home() {
         }
 
         if (data) {
-          console.log('Fetched spots');
+          console.log('Map fetched spots');
           setSpots(data);
         }
       };
