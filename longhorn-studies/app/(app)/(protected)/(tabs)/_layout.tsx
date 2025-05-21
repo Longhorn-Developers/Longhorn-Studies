@@ -1,4 +1,4 @@
-import { AntDesign, Entypo, MaterialIcons } from '@expo/vector-icons';
+import { AntDesign, Entypo } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 
 export default function AppLayout() {
@@ -10,13 +10,6 @@ export default function AppLayout() {
         options={{
           title: 'Explore',
           tabBarIcon: ({ color }) => <Entypo name="magnifying-glass" size={24} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="groups/index"
-        options={{
-          title: 'Groups',
-          tabBarIcon: ({ color }) => <MaterialIcons name="group" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
