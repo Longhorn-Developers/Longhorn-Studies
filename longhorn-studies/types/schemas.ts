@@ -146,7 +146,10 @@ export const publicSpotsInsertSchemaSchema = z.object({
   body: z.string().optional().nullable(),
   created_at: z.string().optional().nullable(),
   id: z.string().optional(),
-  location: z.unknown(),
+  location: z.object({
+    latitude: z.number(),
+    longitude: z.number(),
+  }),
   title: z.string(),
   updated_at: z.string().optional().nullable(),
   user_id: z.string().optional(),

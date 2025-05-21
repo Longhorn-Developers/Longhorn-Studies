@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as FileSystem from 'expo-file-system';
 import { ImagePickerAsset } from 'expo-image-picker';
-import { AppleMaps, GoogleMaps, Coordinates } from 'expo-maps';
+import { AppleMaps, Coordinates, GoogleMaps } from 'expo-maps';
 import { router } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
@@ -29,12 +29,15 @@ const CreateSpot = () => {
   const { selectedTags, resetTags } = useTagStore();
   const [commonTags, setCommonTags] = useState<PublicTagsRowSchema[]>([]);
   const [images, setImages] = useState<ImagePickerAsset[]>([]);
+  const [defaultLocation, setDefaultLocation] = useState<Coordinates>({
+    latitude: 30.285,
+    longitude: -97.739,
+  });
 
   const {
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
-    setValue,
   } = useForm<PublicSpotsInsertSchema>({
     resolver: zodResolver(publicSpotsInsertSchemaSchema),
   });
@@ -69,12 +72,22 @@ const CreateSpot = () => {
       newImages[0].exif.GPSLatitude &&
       newImages[0].exif.GPSLongitude
     ) {
-      setValue('location', {
+      // Check if longitude should be negative (western hemisphere)
+      // Some cameras store longitude as positive and use GPSLongitudeRef to indicate direction
+      let longitude = newImages[0].exif.GPSLongitude;
+
+      // Check for longitude reference or handle specific regions we know should be negative
+      if (
+        newImages[0].exif.GPSLongitudeRef === 'W' ||
+        (longitude > 100 && longitude < 180) // North America western regions
+      ) {
+        longitude = -Math.abs(longitude);
+      }
+
+      setDefaultLocation({
         latitude: newImages[0].exif.GPSLatitude,
-        longitude: newImages[0].exif.GPSLongitude,
+        longitude,
       });
-    } else if (newImages.length === 0) {
-      // setValue('location', undefined);
     }
   };
 
@@ -111,6 +124,23 @@ const CreateSpot = () => {
       return null;
     }
   };
+
+  const renderMapUI = () => (
+    <View pointerEvents="none">
+      {/* Pin Design */}
+      <View className="mb-10">
+        <View className="items-center">
+          {/* Pill text */}
+          <View className="items-center justify-center rounded-full bg-white shadow-md">
+            <Text className="p-2 text-xs font-semibold">Spot Here</Text>
+          </View>
+
+          {/* Pin Pointer */}
+          <View className="h-4 w-1 bg-white" style={{ marginTop: -3 }} />
+        </View>
+      </View>
+    </View>
+  );
 
   const onSubmit = async (spot_data: PublicSpotsInsertSchema) => {
     try {
@@ -227,30 +257,29 @@ const CreateSpot = () => {
         {/* Spot Location */}
         <View>
           <Text className="text-lg font-semibold text-gray-800">Location</Text>
-          <Text className="mb-2 text-sm font-medium text-gray-400">Press to select a location</Text>
+          <Text className="mb-2 text-sm font-medium text-gray-400">Drag to select a location</Text>
           <Controller
             control={control}
             name="location"
-            render={({ field: { onChange, value } }) => (
+            render={({ field: { onChange } }) => (
               <View
-                className={`flex h-60 items-center justify-center rounded-xl ${errors.location ? 'border-2 border-red-500' : null}`}>
+                className={`flex h-64 items-center justify-center rounded-xl ${errors.location ? 'border-2 border-red-500' : null}`}>
                 {Platform.OS === 'ios' ? (
                   <AppleMaps.View
                     style={[StyleSheet.absoluteFill, { overflow: 'hidden', borderRadius: 16 }]}
                     cameraPosition={{
                       // Default coordinates for UT
-                      coordinates: value ? value : { latitude: 30.285, longitude: -97.739 },
+                      coordinates: defaultLocation,
                       zoom: 15.5,
                     }}
-                    markers={value ? [{ coordinates: value }] : undefined}
-                    onMapClick={(event) => {
-                      const { latitude, longitude } = event as Coordinates;
-                      onChange({ latitude, longitude });
+                    onCameraMove={(event) => {
+                      onChange(event.coordinates);
                     }}
                   />
                 ) : (
                   <GoogleMaps.View style={{ flex: 1 }} />
                 )}
+                {renderMapUI()}
               </View>
             )}
           />
