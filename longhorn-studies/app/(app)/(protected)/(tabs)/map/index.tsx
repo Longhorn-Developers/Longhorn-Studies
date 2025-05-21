@@ -1,6 +1,7 @@
 import { AppleMaps, GoogleMaps } from 'expo-maps';
 import { AppleMapsMarker } from 'expo-maps/build/apple/AppleMaps.types';
-import { useEffect, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { Platform } from 'react-native';
 
 import { PublicSpotsWithDetailsRowSchema } from '~/types/schemas_infer';
@@ -9,23 +10,26 @@ import { supabase } from '~/utils/supabase';
 export default function Home() {
   const [spots, setSpots] = useState<PublicSpotsWithDetailsRowSchema[] | null>(null);
 
-  // Fetch spots from Supabase
-  useEffect(() => {
-    const fetchSpots = async () => {
-      const { data, error } = await supabase.from('spots_with_details').select();
+  // Fetch spots from Supabase whenever the screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      const fetchSpots = async () => {
+        const { data, error } = await supabase.from('spots_with_details').select();
 
-      if (error) {
-        console.error('Error fetching spots:', error);
-        return;
-      }
+        if (error) {
+          console.error('Error fetching spots:', error);
+          return;
+        }
 
-      if (data) {
-        setSpots(data);
-      }
-    };
+        if (data) {
+          console.log('Fetched spots');
+          setSpots(data);
+        }
+      };
 
-    fetchSpots();
-  }, []);
+      fetchSpots();
+    }, [])
+  );
 
   return Platform.OS === 'ios' ? (
     <AppleMaps.View

@@ -8,8 +8,8 @@ export default function AppLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <Entypo name="home" size={24} color={color} />,
+          title: 'Explore',
+          tabBarIcon: ({ color }) => <Entypo name="magnifying-glass" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
