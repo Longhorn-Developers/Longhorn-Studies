@@ -64,6 +64,13 @@ export type Database = {
             referencedRelation: "spots"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "media_spot_id_fkey"
+            columns: ["spot_id"]
+            isOneToOne: false
+            referencedRelation: "spots_with_details"
+            referencedColumns: ["id"]
+          },
         ]
       }
       profiles: {
@@ -109,6 +116,13 @@ export type Database = {
             columns: ["spot_id"]
             isOneToOne: false
             referencedRelation: "spots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spot_tags_spot_id_fkey"
+            columns: ["spot_id"]
+            isOneToOne: false
+            referencedRelation: "spots_with_details"
             referencedColumns: ["id"]
           },
           {
@@ -173,7 +187,21 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      spots_with_details: {
+        Row: {
+          body: string | null
+          created_at: string | null
+          id: string | null
+          latitude: number | null
+          longitude: number | null
+          media: Json | null
+          tags: Json | null
+          title: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       slugify: {

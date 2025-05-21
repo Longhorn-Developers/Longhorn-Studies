@@ -4,8 +4,8 @@
  * ==========================================
  */
 
-import { z } from 'zod';
-import { type Json } from './database';
+import { z } from "zod";
+import { type Json } from "./database";
 
 export const jsonSchema: z.ZodSchema<Json> = z.lazy(() =>
   z
@@ -16,7 +16,7 @@ export const jsonSchema: z.ZodSchema<Json> = z.lazy(() =>
       z.record(z.union([jsonSchema, z.undefined()])),
       z.array(jsonSchema),
     ])
-    .nullable()
+    .nullable(),
 );
 
 export const graphqlPublicGraphqlArgsSchemaSchema = z.object({
@@ -54,11 +54,18 @@ export const publicMediaUpdateSchemaSchema = z.object({
 
 export const publicMediaRelationshipsSchemaSchema = z.tuple([
   z.object({
-    foreignKeyName: z.literal('media_spot_id_fkey'),
-    columns: z.tuple([z.literal('spot_id')]),
+    foreignKeyName: z.literal("media_spot_id_fkey"),
+    columns: z.tuple([z.literal("spot_id")]),
     isOneToOne: z.literal(false),
-    referencedRelation: z.literal('spots'),
-    referencedColumns: z.tuple([z.literal('id')]),
+    referencedRelation: z.literal("spots"),
+    referencedColumns: z.tuple([z.literal("id")]),
+  }),
+  z.object({
+    foreignKeyName: z.literal("media_spot_id_fkey"),
+    columns: z.tuple([z.literal("spot_id")]),
+    isOneToOne: z.literal(false),
+    referencedRelation: z.literal("spots_with_details"),
+    referencedColumns: z.tuple([z.literal("id")]),
   }),
 ]);
 
@@ -103,18 +110,25 @@ export const publicSpotTagsUpdateSchemaSchema = z.object({
 
 export const publicSpotTagsRelationshipsSchemaSchema = z.tuple([
   z.object({
-    foreignKeyName: z.literal('spot_tags_spot_id_fkey'),
-    columns: z.tuple([z.literal('spot_id')]),
+    foreignKeyName: z.literal("spot_tags_spot_id_fkey"),
+    columns: z.tuple([z.literal("spot_id")]),
     isOneToOne: z.literal(false),
-    referencedRelation: z.literal('spots'),
-    referencedColumns: z.tuple([z.literal('id')]),
+    referencedRelation: z.literal("spots"),
+    referencedColumns: z.tuple([z.literal("id")]),
   }),
   z.object({
-    foreignKeyName: z.literal('spot_tags_tag_id_fkey'),
-    columns: z.tuple([z.literal('tag_id')]),
+    foreignKeyName: z.literal("spot_tags_spot_id_fkey"),
+    columns: z.tuple([z.literal("spot_id")]),
     isOneToOne: z.literal(false),
-    referencedRelation: z.literal('tags'),
-    referencedColumns: z.tuple([z.literal('id')]),
+    referencedRelation: z.literal("spots_with_details"),
+    referencedColumns: z.tuple([z.literal("id")]),
+  }),
+  z.object({
+    foreignKeyName: z.literal("spot_tags_tag_id_fkey"),
+    columns: z.tuple([z.literal("tag_id")]),
+    isOneToOne: z.literal(false),
+    referencedRelation: z.literal("tags"),
+    referencedColumns: z.tuple([z.literal("id")]),
   }),
 ]);
 
@@ -132,10 +146,7 @@ export const publicSpotsInsertSchemaSchema = z.object({
   body: z.string().optional().nullable(),
   created_at: z.string().optional().nullable(),
   id: z.string().optional(),
-  location: z.object({
-    latitude: z.number(),
-    longitude: z.number(),
-  }),
+  location: z.unknown(),
   title: z.string(),
   updated_at: z.string().optional().nullable(),
   user_id: z.string().optional(),
@@ -172,6 +183,19 @@ export const publicTagsUpdateSchemaSchema = z.object({
   slug: z.string().optional(),
 });
 
+export const publicSpotsWithDetailsRowSchemaSchema = z.object({
+  body: z.string().nullable(),
+  created_at: z.string().nullable(),
+  id: z.string().nullable(),
+  latitude: z.number().nullable(),
+  longitude: z.number().nullable(),
+  media: jsonSchema.nullable(),
+  tags: jsonSchema.nullable(),
+  title: z.string().nullable(),
+  updated_at: z.string().nullable(),
+  user_id: z.string().nullable(),
+});
+
 export const publicSlugifyArgsSchemaSchema = z.object({
   txt: z.string(),
 });
@@ -188,5 +212,5 @@ export const publicUpsertTagsReturnsSchemaSchema = z.array(
     is_system: z.boolean().nullable(),
     label: z.string(),
     slug: z.string(),
-  })
+  }),
 );
