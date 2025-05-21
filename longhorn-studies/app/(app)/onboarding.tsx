@@ -12,13 +12,13 @@ export default function Onboarding() {
 
   return (
     <Container>
-      <ScreenContent title="Onboarding" />
+      <ScreenContent title="Longhorn Studies" />
       <View className="gap-3">
         <Link href={{ pathname: '/signup' }} asChild>
           <Button title="Sign Up" />
         </Link>
         <Button
-          icon={<AntDesign name="google" size={24} color="#6366f1" />}
+          icon={<AntDesign name="google" size={24} color="#d97706" />}
           variant="secondary"
           title="Sign In with Google"
           onPress={async () => {

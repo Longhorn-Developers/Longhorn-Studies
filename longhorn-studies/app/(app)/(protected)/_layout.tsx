@@ -25,7 +25,7 @@ export default function ProtectedLayout() {
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen
         name="create-spot"
-        options={{ presentation: 'modal', headerTitle: 'Create Spot' }}
+        options={{ presentation: 'modal', headerTitle: 'Create Spot', headerShown: false }}
       />
     </Stack>
   );
