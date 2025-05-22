@@ -4,7 +4,7 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Platform } from 'react-native';
 
-import { PublicSpotsWithDetailsRowSchema } from '~/types/schemas_infer';
+import { PublicSpotsWithDetailsRowSchema } from '~/supabase/functions/new-spot/types/schemas_infer';
 import { supabase } from '~/utils/supabase';
 
 export default function Home() {

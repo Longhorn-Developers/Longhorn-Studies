@@ -12,7 +12,7 @@ import {
   PublicSpotsWithDetailsRowSchema,
   PublicTagsRowSchema,
   PublicMediaRowSchema,
-} from '~/types/schemas_infer';
+} from '~/supabase/functions/new-spot/types/schemas_infer';
 import { supabase } from '~/utils/supabase';
 
 const SpotCard = ({ spot }: { spot: PublicSpotsWithDetailsRowSchema }) => {

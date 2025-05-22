@@ -1,6 +1,9 @@
 import { createWithEqualityFn } from 'zustand/traditional';
 
-import { PublicTagsInsertSchema, PublicTagsRowSchema } from '~/types/schemas_infer';
+import {
+  PublicTagsInsertSchema,
+  PublicTagsRowSchema,
+} from '~/supabase/functions/new-spot/types/schemas_infer';
 import { supabase } from '~/utils/supabase';
 
 type TagState = {
