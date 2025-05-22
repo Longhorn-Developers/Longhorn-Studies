@@ -20,12 +20,35 @@ import {
 import { Container } from '~/components/Container';
 import ImageUploader from '~/components/ImageUploader';
 import TagSelector from '~/components/TagSelector';
+import { useAuth } from '~/store/AuthProvider';
 import { useTagStore } from '~/store/TagStore';
-import { publicSpotsInsertSchemaSchema } from '~/types/schemas';
-import { PublicSpotsInsertSchema, PublicTagsRowSchema } from '~/types/schemas_infer';
+import { TablesInsert } from '~/supabase/functions/new-spot/types/database';
+import { publicSpotsInsertSchemaSchema } from '~/supabase/functions/new-spot/types/schemas';
+import {
+  PublicSpotsInsertSchema,
+  PublicTagsRowSchema,
+} from '~/supabase/functions/new-spot/types/schemas_infer';
 import { supabase } from '~/utils/supabase';
 
+type Spot = TablesInsert<'spots'> & {
+  selectedTags: { id: number; label: string }[];
+  location: {
+    latitude: number;
+    longitude: number;
+  };
+  images: Image[];
+};
+
+type Image = {
+  fileName: string;
+  mimeType: string;
+  position: number;
+  base64: string;
+};
+
 const CreateSpot = () => {
+  const { session } = useAuth();
+
   const { selectedTags, resetTags } = useTagStore();
   const [commonTags, setCommonTags] = useState<PublicTagsRowSchema[]>([]);
   const [images, setImages] = useState<ImagePickerAsset[]>([]);
@@ -91,40 +114,6 @@ const CreateSpot = () => {
     }
   };
 
-  const uploadImagesToSupabase = async (spot_data_id: string) => {
-    if (images.length <= 0) return null;
-
-    try {
-      // Upload the first image as the main spot image (you can modify this to handle multiple images)
-      // Upload each image with its position index
-      await Promise.all(
-        images.map(async (image, index) => {
-          const file_path = `spots/${spot_data_id}/${new Date().getTime()}-${image.fileName}`;
-          const base64 = await FileSystem.readAsStringAsync(image.uri, {
-            encoding: 'base64',
-          });
-
-          const { error } = await supabase.storage
-            .from('media')
-            .upload(file_path, base64, { contentType: image.mimeType });
-
-          if (error) {
-            throw new Error(`Error uploading image: ${error}`);
-          }
-
-          await supabase.from('media').insert({
-            spot_id: spot_data_id,
-            storage_key: file_path,
-            position: index,
-          });
-        })
-      );
-    } catch (error) {
-      console.error('Error in image upload process:', error);
-      return null;
-    }
-  };
-
   const renderMapUI = () => (
     <View pointerEvents="none">
       {/* Pin Design */}
@@ -144,52 +133,46 @@ const CreateSpot = () => {
 
   const onSubmit = async (spot_data: PublicSpotsInsertSchema) => {
     try {
-      // Insert the spot
-      const { data: spot, error: spotError } = await supabase
-        .from('spots')
-        .insert({
-          ...spot_data,
-          // Transform location coordinates to POINT type
-          location: `POINT(${spot_data.location.longitude} ${spot_data.location.latitude})`,
+      // Process images to base64 if needed
+      const processedImages = await Promise.all(
+        images.map(async (image, index) => {
+          const base64 = await FileSystem.readAsStringAsync(image.uri, {
+            encoding: 'base64',
+          });
+
+          return {
+            fileName: image.fileName || `image-${index}.jpg`,
+            mimeType: image.mimeType || 'image/jpeg',
+            position: index,
+            base64,
+          };
         })
-        .select()
-        .single();
+      );
 
-      if (spotError) {
-        Alert.alert('Error', 'Failed to save spot. Please try again.');
-        console.error('Error inserting data:', spotError);
-        return;
+      // Prepare data for submission
+      const spotData = {
+        ...spot_data,
+        selectedTags,
+        images: processedImages,
+      } as Spot;
+
+      // Send POST request to create new spot
+      const response = await fetch('http://127.0.0.1:54321/functions/v1/new-spot', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify(spotData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server responded with status: ${response.status}`);
       }
 
-      // Spot tag handling
-      if (selectedTags.length > 0) {
-        // Upsert tags the user selected/created
-        const userLabels = selectedTags.map((tag) => tag.label);
-        const { data: tags, error: tagsError } = await supabase.rpc('upsert_tags', {
-          label_list: userLabels,
-        });
+      const result = await response.json();
+      console.log('Spot created successfully:', result);
 
-        if (tagsError) {
-          console.error('Error upserting tags:', tagsError);
-          // We can still continue since the spot was created
-        } else if (tags) {
-          // Bridge spot <-> tags
-          const { error: linkError } = await supabase
-            .from('spot_tags')
-            .insert(tags.map((t) => ({ spot_id: spot.id, tag_id: t.id })));
-
-          if (linkError) {
-            console.error('Error linking tags to spot:', linkError);
-          }
-        } else {
-          console.error('No tags returned from upsert unexpectedly');
-        }
-      }
-
-      // Upload spot images to Supabase
-      await uploadImagesToSupabase(spot.id);
-
-      console.log('Spot Submitted Successfully');
       router.back();
     } catch (error) {
       Alert.alert('Error', 'Failed to save spot. Please try again.');
