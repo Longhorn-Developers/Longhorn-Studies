@@ -1,4 +1,5 @@
-import { createClient } from 'npm:@supabase/supabase-js';
+import { GoogleAPI } from 'https://deno.land/x/google_deno_integration@v1.1/mod.ts';
+import { createClient } from 'jsr:@supabase/supabase-js';
 
 // Setup type definitions for built-in Supabase Runtime APIs
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
@@ -6,6 +7,10 @@ import { Database, TablesInsert } from './types/database.ts';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL');
 const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY');
+
+const GOOGLE_APPLICATION_CREDENTIALS = JSON.parse(
+  Deno.env.get('GOOGLE_APPLICATION_CREDENTIALS') || '{}'
+);
 
 type Spot = TablesInsert<'spots'> & {
   selectedTags: TablesInsert<'tags'>[];
@@ -143,6 +148,47 @@ Deno.serve(async (req) => {
       }
     }
 
+    const vision = new GoogleAPI({
+      email: GOOGLE_APPLICATION_CREDENTIALS.client_email,
+      key: GOOGLE_APPLICATION_CREDENTIALS.private_key,
+      scope: ['https://www.googleapis.com/auth/cloud-platform'],
+    });
+
+    const result = await vision.post('https://vision.googleapis.com/v1/images:annotate', {
+      requests: images.map((image) => ({
+        image: {
+          content: image.base64, // Use each image for analysis
+        },
+        features: [
+          {
+            type: 'SAFE_SEARCH_DETECTION',
+          },
+        ],
+      })),
+    });
+
+    // Go through results and throw an error if any image is flagged
+    const unallowedFlags = ['LIKELY', 'VERY_LIKELY'];
+    for (const response of result.responses) {
+      if (response.safeSearchAnnotation) {
+        const safeSearch = response.safeSearchAnnotation;
+        if (
+          unallowedFlags.includes(safeSearch.adult) ||
+          unallowedFlags.includes(safeSearch.spoof) ||
+          unallowedFlags.includes(safeSearch.medical) ||
+          unallowedFlags.includes(safeSearch.violence) ||
+          unallowedFlags.includes(safeSearch.racy)
+        ) {
+          return new Response(JSON.stringify({ error: 'Image contains inappropriate content' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+      } else {
+        console.warn('No SafeSearch annotation found for an image');
+      }
+    }
+
     // Upload spot images to Supabase
     await uploadImagesToSupabase(supabase, spot.id, images);
 
@@ -151,7 +197,7 @@ Deno.serve(async (req) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error }), {
+    return new Response(JSON.stringify(error instanceof Error ? error.message : error), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });

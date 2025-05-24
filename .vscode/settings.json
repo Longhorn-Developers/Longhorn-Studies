@@ -1,7 +1,5 @@
 {
-  "deno.enablePaths": [
-    "longhorn-studies/supabase/functions"
-  ],
+  "deno.enablePaths": ["longhorn-studies/supabase/functions"],
   "deno.lint": true,
   "deno.unstable": [
     "bare-node-builtins",
@@ -20,5 +18,5 @@
   ],
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+  },
 }

@@ -166,16 +166,17 @@ const CreateSpot = () => {
         body: JSON.stringify(spotData),
       });
 
+      const result = await response.json();
+
       if (!response.ok) {
-        throw new Error(`Server responded with status: ${response.status}`);
+        throw new Error(result.error || 'Failed to create spot');
       }
 
-      const result = await response.json();
       console.log('Spot created successfully:', result);
 
       router.back();
     } catch (error) {
-      Alert.alert('Error', 'Failed to save spot. Please try again.');
+      Alert.alert('Error', error instanceof Error ? error.message : 'An unexpected error occurred');
       console.error('Error saving spot:', error);
     }
   };
