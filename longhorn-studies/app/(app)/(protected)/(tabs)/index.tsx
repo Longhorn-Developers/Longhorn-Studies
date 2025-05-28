@@ -1,4 +1,4 @@
-import { Entypo } from '@expo/vector-icons';
+import { Entypo, FontAwesome } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
@@ -151,10 +151,10 @@ const SpotCard = ({
         <View className="flex-row items-center justify-between">
           <Text className="text-lg font-bold text-gray-900">{spot.title}</Text>
           <Pressable onPress={toggleFavorited} className="p-2">
-            <Entypo
-              name={isFavorited ? 'heart' : 'heart-outlined'}
+            <FontAwesome
+              name={isFavorited ? 'star' : 'star-o'}
               size={22}
-              color={isFavorited ? '#ef4444' : '#6b7280'}
+              color={isFavorited ? '#d97706' : '#6b7280'}
             />
           </Pressable>
         </View>
@@ -204,8 +204,6 @@ export default function Explore() {
         return;
       }
 
-      setSpots(spots_data);
-
       // Fetch favorites for the current user
       const { data: favorites_data, error: favorites_error } = await supabase
         .from('spot_favorites')
@@ -219,6 +217,7 @@ export default function Explore() {
       }
 
       setFavorites(favorites_data);
+      setSpots(spots_data);
       console.log('Explore fetched spots and favorites');
     } catch (error) {
       console.error('Error in fetchSpots:', error);
