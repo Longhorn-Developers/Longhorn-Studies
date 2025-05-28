@@ -34,6 +34,46 @@ export type Database = {
   }
   public: {
     Tables: {
+      favorites: {
+        Row: {
+          created_at: string
+          spot_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          spot_id: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          spot_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorites_spot_id_fkey"
+            columns: ["spot_id"]
+            isOneToOne: false
+            referencedRelation: "spot_favorites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favorites_spot_id_fkey"
+            columns: ["spot_id"]
+            isOneToOne: false
+            referencedRelation: "spots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favorites_spot_id_fkey"
+            columns: ["spot_id"]
+            isOneToOne: false
+            referencedRelation: "spots_with_details"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       media: {
         Row: {
           created_at: string | null
@@ -57,6 +97,13 @@ export type Database = {
           storage_key?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "media_spot_id_fkey"
+            columns: ["spot_id"]
+            isOneToOne: false
+            referencedRelation: "spot_favorites"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "media_spot_id_fkey"
             columns: ["spot_id"]
@@ -111,6 +158,13 @@ export type Database = {
           tag_id?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "spot_tags_spot_id_fkey"
+            columns: ["spot_id"]
+            isOneToOne: false
+            referencedRelation: "spot_favorites"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "spot_tags_spot_id_fkey"
             columns: ["spot_id"]
@@ -187,6 +241,22 @@ export type Database = {
       }
     }
     Views: {
+      spot_favorites: {
+        Row: {
+          body: string | null
+          created_at: string | null
+          favorited_at: string | null
+          id: string | null
+          latitude: number | null
+          longitude: number | null
+          media: Json | null
+          tags: Json | null
+          title: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
       spots_with_details: {
         Row: {
           body: string | null
