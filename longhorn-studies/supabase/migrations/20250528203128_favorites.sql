@@ -2,9 +2,9 @@
 -- Favorites
 -- ============================================================================
 create table public.favorites (
-  user_id uuid references auth.users(id) on delete cascade,
-  spot_id uuid references spots(id) on delete cascade,
-  created_at timestamptz default now(),
+  user_id uuid not null references auth.users(id) on delete cascade default auth.uid(),
+  spot_id uuid not null references spots(id) on delete cascade,
+  created_at timestamptz not null default now(),
   primary key (user_id, spot_id)
 );
 

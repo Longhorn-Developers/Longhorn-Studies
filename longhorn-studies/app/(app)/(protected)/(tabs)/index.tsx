@@ -8,15 +8,18 @@ import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
 
 import { Button } from '~/components/Button';
 import { Container } from '~/components/Container';
+import { useAuth } from '~/store/AuthProvider';
 import {
   PublicSpotsWithDetailsRowSchema,
   PublicTagsRowSchema,
   PublicMediaRowSchema,
+  PublicSpotFavoritesRowSchema,
 } from '~/supabase/functions/new-spot/types/schemas_infer';
 import { supabase } from '~/utils/supabase';
 
 const SpotCard = ({ spot }: { spot: PublicSpotsWithDetailsRowSchema }) => {
   const [image, setImage] = useState<string | null>(null);
+  const [isFavorited, setIsFavorited] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   // Check if the spot has media and if so, fetch the first image
@@ -62,6 +65,41 @@ const SpotCard = ({ spot }: { spot: PublicSpotsWithDetailsRowSchema }) => {
     fetchImage();
   }, []);
 
+  const toggleFavorited = async () => {
+    if (!spot.id) return;
+
+    if (!isFavorited) {
+      // From unfavorited to favorite
+      // Add spot to favorites table
+      const { data, error } = await supabase
+        .from('favorites')
+        .insert({ spot_id: spot.id })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error adding to favorites:', error);
+      }
+      console.log('Added spot to favorites:', data?.spot_id);
+    } else {
+      // From favorite to unfavorited
+      // Remove spot from favorites table
+      const { data, error } = await supabase
+        .from('favorites')
+        .delete()
+        .eq('spot_id', spot.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error removing from favorites:', error);
+      }
+      console.log('Removed from favorites:', data?.spot_id);
+    }
+
+    setIsFavorited(!isFavorited);
+  };
+
   // Check if the spot has tags
   let tags;
   try {
@@ -73,44 +111,56 @@ const SpotCard = ({ spot }: { spot: PublicSpotsWithDetailsRowSchema }) => {
 
   return (
     <Pressable className="my-2 flex-row items-center gap-4 rounded-xl border border-gray-200 px-5 py-3">
-      <View>
-        {spot.media ? (
-          <View>
-            {/* Loading shimmer placeholder */}
-            {isLoading ? (
-              <ShimmerPlaceHolder
-                LinearGradient={LinearGradient}
-                style={{ height: 80, width: 80, borderRadius: 12 }}
-              />
-            ) : // Display the image if available
-            image ? (
-              <Image
-                style={{ height: 80, width: 80 }}
-                source={{ uri: image }}
-                className="rounded-xl"
-              />
-            ) : (
-              <View
-                style={{ height: 80, width: 80 }}
-                className="items-center justify-center rounded-xl bg-gray-200">
-                <Entypo name="image" size={18} />
-              </View>
-            )}
-          </View>
-        ) : (
-          <View className="h-20 w-20 items-center justify-center rounded-xl bg-gray-200" />
-        )}
-      </View>
+      {/* Spot Image Preview */}
+      {spot.media ? (
+        <View>
+          {/* Loading shimmer placeholder */}
+          {isLoading ? (
+            <ShimmerPlaceHolder
+              LinearGradient={LinearGradient}
+              style={{ height: 80, width: 80, borderRadius: 12 }}
+            />
+          ) : // Display the image if available
+          image ? (
+            <Image
+              style={{ height: 80, width: 80 }}
+              source={{ uri: image }}
+              className="rounded-xl"
+            />
+          ) : (
+            <View
+              style={{ height: 80, width: 80 }}
+              className="items-center justify-center rounded-xl bg-gray-200">
+              <Entypo name="image" size={18} />
+            </View>
+          )}
+        </View>
+      ) : (
+        <View className="h-20 w-20 items-center justify-center rounded-xl bg-gray-200" />
+      )}
 
-      <View>
-        <Text className="text-lg font-bold text-gray-900">{spot.title}</Text>
+      {/* Spot Details */}
+      <View className="flex-1">
+        {/* Title row with favorite button */}
+        <View className="flex-row items-center justify-between">
+          <Text className="text-lg font-bold text-gray-900">{spot.title}</Text>
+          <Pressable onPress={toggleFavorited} className="p-2">
+            <Entypo
+              name={isFavorited ? 'heart' : 'heart-outlined'}
+              size={22}
+              color={isFavorited ? '#ef4444' : '#6b7280'}
+            />
+          </Pressable>
+        </View>
 
+        {/* Spot Body */}
         {spot.body && (
           <Text className="mt-1 text-gray-600" numberOfLines={2}>
             {spot.body}
           </Text>
         )}
 
+        {/* Tags */}
         {tags && tags.length > 0 && (
           <View className="mt-3 flex-row flex-wrap gap-2">
             {tags.map((tag) => (
@@ -126,26 +176,44 @@ const SpotCard = ({ spot }: { spot: PublicSpotsWithDetailsRowSchema }) => {
 };
 
 export default function Explore() {
+  const { user } = useAuth();
+
   const [spots, setSpots] = useState<PublicSpotsWithDetailsRowSchema[]>([]);
+  const [favorites, setFavorites] = useState<PublicSpotFavoritesRowSchema[]>([]);
   const [loading, setLoading] = useState(true);
 
   async function fetchSpots() {
+    // Fetch spots from the database
     setLoading(true);
     try {
       // Fetch spots with their tags and media
-      const { data, error } = await supabase
+      const { data: spots_data, error: spots_error } = await supabase
         .from('spots_with_details')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(20);
 
-      if (error) {
-        console.error('Error fetching spots:', error);
+      if (spots_error) {
+        console.error('Error fetching spots:', spots_error);
         return;
       }
 
-      setSpots(data);
-      console.log('Explore fetched spots');
+      setSpots(spots_data);
+
+      // Fetch favorites for the current user
+      const { data: favorites_data, error: favorites_error } = await supabase
+        .from('spot_favorites')
+        .select('*')
+        .eq('user_id', user!.id) // Ensure to filter by the current user
+        .order('created_at', { ascending: false });
+
+      if (favorites_error) {
+        console.error('Error fetching favorites:', favorites_error);
+        return;
+      }
+
+      setFavorites(favorites_data);
+      console.log('Explore fetched spots and favorites');
     } catch (error) {
       console.error('Error in fetchSpots:', error);
     } finally {
@@ -171,7 +239,7 @@ export default function Explore() {
           <FlashList
             data={spots}
             renderItem={({ item }: any) => <SpotCard spot={item} />}
-            estimatedItemSize={50}
+            estimatedItemSize={20}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 20 }}
             onRefresh={() => {
