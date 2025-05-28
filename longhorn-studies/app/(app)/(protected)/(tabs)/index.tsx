@@ -17,9 +17,15 @@ import {
 } from '~/supabase/functions/new-spot/types/schemas_infer';
 import { supabase } from '~/utils/supabase';
 
-const SpotCard = ({ spot }: { spot: PublicSpotsWithDetailsRowSchema }) => {
+const SpotCard = ({
+  spot,
+  favorited,
+}: {
+  spot: PublicSpotsWithDetailsRowSchema;
+  favorited: boolean;
+}) => {
   const [image, setImage] = useState<string | null>(null);
-  const [isFavorited, setIsFavorited] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(favorited);
   const [isLoading, setIsLoading] = useState(true);
 
   // Check if the spot has media and if so, fetch the first image
@@ -94,7 +100,7 @@ const SpotCard = ({ spot }: { spot: PublicSpotsWithDetailsRowSchema }) => {
       if (error) {
         console.error('Error removing from favorites:', error);
       }
-      console.log('Removed from favorites:', data?.spot_id);
+      console.log('Removed spot from favorites:', data?.spot_id);
     }
 
     setIsFavorited(!isFavorited);
@@ -238,7 +244,9 @@ export default function Explore() {
           contentStyle={{ width: '100%', height: '100%' }}>
           <FlashList
             data={spots}
-            renderItem={({ item }: any) => <SpotCard spot={item} />}
+            renderItem={({ item }: any) => (
+              <SpotCard spot={item} favorited={favorites.some((fav) => fav.id === item.id)} />
+            )}
             estimatedItemSize={20}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 20 }}
