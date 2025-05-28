@@ -54,7 +54,7 @@ export default function SignUp() {
     try {
       await signUp(data.email, data.password);
       // If we get here, sign up was successful
-      router.replace('/home');
+      router.replace('/(app)/(protected)/(tabs)');
     } catch (error) {
       // Handle signup error
       setSignUpError(error instanceof Error ? error.message : 'Sign up failed');
