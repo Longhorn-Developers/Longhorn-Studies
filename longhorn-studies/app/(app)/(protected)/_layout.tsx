@@ -21,8 +21,19 @@ export default function ProtectedLayout() {
   }
 
   return (
-    <Stack>
+    <Stack
+      screenOptions={{
+        headerTintColor: '#d97706',
+        headerTitleStyle: { color: 'black' },
+        headerShadowVisible: false,
+      }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      {/* Stacks */}
+      <Stack.Screen
+        name="favorites"
+        options={{ headerTitle: 'Favorites', headerBackTitle: 'Explore' }}
+      />
+      {/* Modals */}
       <Stack.Screen
         name="create-spot"
         options={{ presentation: 'modal', headerTitle: 'Create Spot', headerShown: false }}

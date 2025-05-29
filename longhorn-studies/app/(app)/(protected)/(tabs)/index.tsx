@@ -88,9 +88,9 @@ export default function Explore() {
           {/* Header */}
           <View className="flex-row items-center justify-between">
             <Text className="text-2xl font-bold text-gray-800">Your Favorites</Text>
-            {/* <Link href="/favorites" asChild> */}
-            <Text className="font-bold text-amber-600">see all</Text>
-            {/* </Link> */}
+            <Link href="/favorites" asChild>
+              <Text className="font-bold text-amber-600">see all</Text>
+            </Link>
           </View>
 
           {/* Favorites Horizontal List */}
@@ -99,7 +99,7 @@ export default function Explore() {
               horizontal
               showsHorizontalScrollIndicator={false}
               showsVerticalScrollIndicator={false}
-              data={[{ id: 'add-button' }, ...favorites.slice(0, 4)]}
+              data={[{ id: 'add-button' }, ...favorites]}
               estimatedItemSize={10}
               renderItem={({ item }: { item: PublicSpotsWithDetailsRowSchema }) => {
                 if (item.id === 'add-button') {
