@@ -1,10 +1,8 @@
 import { Entypo } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
-import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
 
 import { Button } from '~/components/Button';
 import { Container } from '~/components/Container';
@@ -121,34 +119,28 @@ export default function Explore() {
         </View>
 
         {/* Study Spots List */}
-        <View>
+        <View className="flex-1">
           {/* Header */}
           <Text className="text-2xl font-bold text-gray-800">Spots For You</Text>
           {/* Spots List */}
-          <ShimmerPlaceHolder
-            LinearGradient={LinearGradient}
-            visible={!spotsLoading}
-            shimmerStyle={{ borderRadius: 10 }}
-            contentStyle={{ height: '100%', marginTop: 4 }}>
-            <FlashList
-              data={spots}
-              renderItem={({ item }: any) => (
-                <SpotCard spot={item} favorited={favorites.some((fav) => fav.id === item.id)} />
-              )}
-              estimatedItemSize={20}
-              showsVerticalScrollIndicator={false}
-              // TODO: Fix this padding issue with useBottomTabBarHeight
-              // not supported in expo??? https://github.com/expo/expo/discussions/26714
-              contentContainerStyle={{ paddingBottom: 200 }}
-              onRefresh={fetchSpots}
-              refreshing={spotsLoading}
-              ListEmptyComponent={
-                <View className="mt-5 items-center justify-center">
-                  <Text className="text-gray-500">No spots found</Text>
-                </View>
-              }
-            />
-          </ShimmerPlaceHolder>
+          <FlashList
+            data={spots}
+            renderItem={({ item }: any) => (
+              <SpotCard spot={item} favorited={favorites.some((fav) => fav.id === item.id)} />
+            )}
+            estimatedItemSize={20}
+            showsVerticalScrollIndicator={false}
+            // TODO: Fix bottom pad with useBottomTabBarHeight when using with shimmer placeholder
+            // not supported in expo??? https://github.com/expo/expo/discussions/26714
+            // contentContainerStyle={{ paddingBottom: 200 }}
+            onRefresh={fetchSpots}
+            refreshing={spotsLoading}
+            ListEmptyComponent={
+              <View className="mt-5 items-center justify-center">
+                <Text className="text-gray-500">No spots found</Text>
+              </View>
+            }
+          />
         </View>
       </View>
 
