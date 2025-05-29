@@ -6,6 +6,7 @@ import { Text, View } from 'react-native';
 
 import { Button } from '~/components/Button';
 import { Container } from '~/components/Container';
+import Searchbox from '~/components/Searchbox';
 import SpotCard from '~/components/SpotCard';
 import SpotIcon from '~/components/SpotIcon';
 import { useAuth } from '~/store/AuthProvider';
@@ -81,7 +82,10 @@ export default function Explore() {
     <Container>
       {/* Spot Explorer */}
       <View className="flex-1 gap-4">
-        {/* Favorite Spots List */}
+        {/* Search box */}
+        <Searchbox />
+
+        {/* Favorites List */}
         <View>
           {/* Header */}
           <View className="flex-row items-center justify-between">
@@ -118,7 +122,7 @@ export default function Explore() {
           </View>
         </View>
 
-        {/* Study Spots List */}
+        {/* Spots List */}
         <View className="flex-1">
           {/* Header */}
           <Text className="text-2xl font-bold text-gray-800">Spots For You</Text>
@@ -130,6 +134,7 @@ export default function Explore() {
             )}
             estimatedItemSize={20}
             showsVerticalScrollIndicator={false}
+            className="mt-2"
             // TODO: Fix bottom pad with useBottomTabBarHeight when using with shimmer placeholder
             // not supported in expo??? https://github.com/expo/expo/discussions/26714
             // contentContainerStyle={{ paddingBottom: 200 }}
