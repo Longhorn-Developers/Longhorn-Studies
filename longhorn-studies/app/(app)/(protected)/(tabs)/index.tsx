@@ -9,6 +9,7 @@ import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
 import { Button } from '~/components/Button';
 import { Container } from '~/components/Container';
 import SpotCard from '~/components/SpotCard';
+import SpotIcon from '~/components/SpotIcon';
 import { useAuth } from '~/store/AuthProvider';
 import {
   PublicSpotsWithDetailsRowSchema,
@@ -68,28 +69,71 @@ export default function Explore() {
   return (
     <Container>
       {/* Spot Explorer */}
-      <View className="flex-1">
-        <Text className="text-2xl font-bold text-gray-800">Study Spots</Text>
+      <View className="flex-1 gap-8">
+        {/* Favorite Spots List */}
+        <View>
+          {/* Header */}
+          <View className="flex-row items-center justify-between">
+            <Text className="text-2xl font-bold text-gray-800">Your Favorites</Text>
+            {/* <Link href="/favorites" asChild> */}
+            <Text className="font-bold text-amber-600">see all</Text>
+            {/* </Link> */}
+          </View>
 
-        <ShimmerPlaceHolder
-          LinearGradient={LinearGradient}
-          visible={!loading}
-          shimmerStyle={{ borderRadius: 10 }}
-          contentStyle={{ width: '100%', height: '100%' }}>
-          <FlashList
-            data={spots}
-            renderItem={({ item }: any) => (
-              <SpotCard spot={item} favorited={favorites.some((fav) => fav.id === item.id)} />
-            )}
-            estimatedItemSize={20}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 20 }}
-            onRefresh={() => {
-              fetchSpots();
-            }}
-            refreshing={loading}
-          />
-        </ShimmerPlaceHolder>
+          {/* Favorites Horizontal List */}
+          <View className="mt-4">
+            <FlashList
+              data={[{ id: 'add-button' }, ...favorites.slice(0, 4)]}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              estimatedItemSize={10}
+              renderItem={({ item }: { item: PublicSpotFavoritesRowSchema }) => {
+                if (item.id === 'add-button') {
+                  return (
+                    // <Link href="/favorites/add" asChild>
+                    <View className="mr-4 h-20 w-20 items-center justify-center rounded-xl border-2 border-dashed border-gray-300">
+                      <Entypo name="plus" size={28} color="#9CA3AF" />
+                    </View>
+                    // </Link>
+                  );
+                }
+
+                return <SpotIcon spot={item} />;
+              }}
+            />
+          </View>
+        </View>
+
+        {/* Study Spots List */}
+        <View>
+          {/* Header */}
+          <Text className="text-2xl font-bold text-gray-800">Spots For You</Text>
+          {/* Spots List */}
+          <ShimmerPlaceHolder
+            LinearGradient={LinearGradient}
+            visible={!loading}
+            shimmerStyle={{ borderRadius: 10 }}
+            contentStyle={{ width: '100%', height: '100%' }}>
+            <FlashList
+              data={spots}
+              renderItem={({ item }: any) => (
+                <SpotCard spot={item} favorited={favorites.some((fav) => fav.id === item.id)} />
+              )}
+              estimatedItemSize={20}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 20 }}
+              onRefresh={() => {
+                fetchSpots();
+              }}
+              refreshing={loading}
+              ListEmptyComponent={
+                <View className="mt-5 items-center justify-center">
+                  <Text className="text-gray-500">No spots found</Text>
+                </View>
+              }
+            />
+          </ShimmerPlaceHolder>
+        </View>
       </View>
 
       {/* Floating New Spot Button */}
