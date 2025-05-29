@@ -22,30 +22,19 @@ export default function Explore() {
 
   const [spots, setSpots] = useState<PublicSpotsWithDetailsRowSchema[]>([]);
   const [favorites, setFavorites] = useState<PublicSpotFavoritesRowSchema[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  async function fetchSpots() {
-    // Fetch spots from the database
-    setLoading(true);
+  const [spotsLoading, setSpotsLoading] = useState(true);
+  const [favoritesLoading, setFavoritesLoading] = useState(true);
+
+  async function fetchFavorites() {
+    // Fetch favorites from the database
+    setFavoritesLoading(true);
     try {
-      // Fetch spots with their tags and media
-      const { data: spots_data, error: spots_error } = await supabase
-        .from('spots_with_details')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(20);
-
-      if (spots_error) {
-        console.error('Error fetching spots:', spots_error);
-        return;
-      }
-
       // Fetch favorites for the current user
       const { data: favorites_data, error: favorites_error } = await supabase
         .from('spot_favorites')
-        .select('*')
-        .eq('user_id', user!.id) // Ensure to filter by the current user
-        .order('created_at', { ascending: false });
+        .select()
+        .eq('user_id', user!.id); // Ensure to filter by the current user
 
       if (favorites_error) {
         console.error('Error fetching favorites:', favorites_error);
@@ -53,16 +42,40 @@ export default function Explore() {
       }
 
       setFavorites(favorites_data);
+      console.log('Explore fetched favorites');
+    } catch (error) {
+      console.error('Error in fetchFavorites:', error);
+    } finally {
+      setFavoritesLoading(false);
+    }
+  }
+
+  async function fetchSpots() {
+    // Fetch spots from the database
+    setSpotsLoading(true);
+    try {
+      // Fetch spots with their tags and media
+      const { data: spots_data, error: spots_error } = await supabase
+        .from('spots_with_details')
+        .select()
+        .limit(20);
+
+      if (spots_error) {
+        console.error('Error fetching spots:', spots_error);
+        return;
+      }
+
       setSpots(spots_data);
-      console.log('Explore fetched spots and favorites');
+      console.log('Explore fetched spots');
     } catch (error) {
       console.error('Error in fetchSpots:', error);
     } finally {
-      setLoading(false);
+      setSpotsLoading(false);
     }
   }
 
   useEffect(() => {
+    fetchFavorites();
     fetchSpots();
   }, []);
 
@@ -101,8 +114,8 @@ export default function Explore() {
 
                 return <SpotIcon spot={item} />;
               }}
-              onRefresh={fetchSpots}
-              refreshing={loading}
+              onRefresh={fetchFavorites}
+              refreshing={favoritesLoading}
             />
           </View>
         </View>
@@ -114,7 +127,7 @@ export default function Explore() {
           {/* Spots List */}
           <ShimmerPlaceHolder
             LinearGradient={LinearGradient}
-            visible={!loading}
+            visible={!spotsLoading}
             shimmerStyle={{ borderRadius: 10 }}
             contentStyle={{ height: '100%', marginTop: 4 }}>
             <FlashList
@@ -126,7 +139,7 @@ export default function Explore() {
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 20 }}
               onRefresh={fetchSpots}
-              refreshing={loading}
+              refreshing={spotsLoading}
               ListEmptyComponent={
                 <View className="mt-5 items-center justify-center">
                   <Text className="text-gray-500">No spots found</Text>
