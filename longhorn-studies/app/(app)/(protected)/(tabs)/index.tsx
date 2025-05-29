@@ -69,7 +69,7 @@ export default function Explore() {
   return (
     <Container>
       {/* Spot Explorer */}
-      <View className="flex-1 gap-8">
+      <View className="flex-1 gap-4">
         {/* Favorite Spots List */}
         <View>
           {/* Header */}
@@ -83,9 +83,10 @@ export default function Explore() {
           {/* Favorites Horizontal List */}
           <View className="mt-4">
             <FlashList
-              data={[{ id: 'add-button' }, ...favorites.slice(0, 4)]}
               horizontal
-              showsHorizontalScrollIndicator={false}
+              showsHorizontalScrollIndicator
+              showsVerticalScrollIndicator={false}
+              data={[{ id: 'add-button' }, ...favorites.slice(0, 4)]}
               estimatedItemSize={10}
               renderItem={({ item }: { item: PublicSpotFavoritesRowSchema }) => {
                 if (item.id === 'add-button') {
@@ -100,6 +101,8 @@ export default function Explore() {
 
                 return <SpotIcon spot={item} />;
               }}
+              onRefresh={fetchSpots}
+              refreshing={loading}
             />
           </View>
         </View>
@@ -113,7 +116,7 @@ export default function Explore() {
             LinearGradient={LinearGradient}
             visible={!loading}
             shimmerStyle={{ borderRadius: 10 }}
-            contentStyle={{ width: '100%', height: '100%' }}>
+            contentStyle={{ height: '100%', marginTop: 4 }}>
             <FlashList
               data={spots}
               renderItem={({ item }: any) => (
@@ -122,9 +125,7 @@ export default function Explore() {
               estimatedItemSize={20}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 20 }}
-              onRefresh={() => {
-                fetchSpots();
-              }}
+              onRefresh={fetchSpots}
               refreshing={loading}
               ListEmptyComponent={
                 <View className="mt-5 items-center justify-center">

@@ -1,7 +1,6 @@
-import { Entypo } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState } from 'react';
-import { View, Pressable, Image, Text, ImageBackground } from 'react-native';
+import { View, Pressable, Text, ImageBackground } from 'react-native';
 import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
 
 import {
@@ -60,74 +59,26 @@ const SpotIcon = ({ spot }: { spot: PublicSpotFavoritesRowSchema }) => {
   return (
     <Pressable className="mr-4 rounded-xl">
       {/* Spot Image Preview */}
-      {spot.media ? (
-        <View>
-          {isLoading ? (
-            // Loading shimmer placeholder
-            <ShimmerPlaceHolder
-              LinearGradient={LinearGradient}
-              style={{ height: 70, width: 70, borderRadius: 12 }}
-            />
-          ) : image ? (
-            // Display the image with gradient overlay and title
-            <View className="relative overflow-hidden rounded-xl">
-              <ImageBackground
-                style={{ height: 70, width: 70 }}
-                source={{ uri: image }}
-                imageStyle={{ borderRadius: 12 }}>
-                {/* Gradient overlay */}
-                <LinearGradient
-                  colors={['transparent', 'rgba(0,0,0,0.7)']}
-                  style={{
-                    position: 'absolute',
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    height: 35,
-                    borderBottomLeftRadius: 12,
-                    borderBottomRightRadius: 12,
-                  }}
-                />
-                {/* Spot title */}
-                <Text
-                  className="absolute bottom-0 px-2 pb-1 font-bold text-white"
-                  numberOfLines={1}>
-                  {spot.title}
-                </Text>
-              </ImageBackground>
-            </View>
-          ) : (
-            //  Fallback icon if no image is available
-            <View
-              style={{ height: 70, width: 70 }}
-              className="items-center justify-center rounded-xl bg-gray-200">
-              {/* Gradient overlay */}
-              <LinearGradient
-                colors={['transparent', 'rgba(0,0,0,0.7)']}
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  height: 35,
-                  borderBottomLeftRadius: 12,
-                  borderBottomRightRadius: 12,
-                }}
-              />
-
-              <Text
-                className="absolute bottom-0 left-2 pb-1 font-bold text-white"
-                numberOfLines={1}>
-                {spot.title}
-              </Text>
-            </View>
-          )}
-        </View>
+      {isLoading ? (
+        // Loading shimmer placeholder
+        <ShimmerPlaceHolder
+          LinearGradient={LinearGradient}
+          style={{ height: 70, width: 70, borderRadius: 12 }}
+        />
       ) : (
-        <View className="h-20 w-20 items-center justify-center rounded-xl bg-gray-200">
-          <Text className="mt-1 px-2 text-center text-xs" numberOfLines={1}>
-            {spot.title}
-          </Text>
+        // Display the image with gradient overlay and title
+        <View className="relative overflow-hidden rounded-xl">
+          <ImageBackground
+            style={{ height: 70, width: 70 }}
+            source={{ uri: image ? image : undefined }}
+            imageStyle={{ borderRadius: 12 }}>
+            {/* Gradient overlay */}
+            <LinearGradient colors={['transparent', 'rgba(0,0,0,0.7)']} style={{ height: 70 }} />
+            {/* Spot title */}
+            <Text className="absolute bottom-0 px-2 pb-1 font-bold text-white" numberOfLines={1}>
+              {spot.title}
+            </Text>
+          </ImageBackground>
         </View>
       )}
     </Pressable>

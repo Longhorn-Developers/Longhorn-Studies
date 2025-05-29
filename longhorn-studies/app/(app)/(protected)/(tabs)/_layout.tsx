@@ -9,6 +9,7 @@ export default function AppLayout() {
         name="index"
         options={{
           title: 'Explore',
+          headerShown: false,
           tabBarIcon: ({ color }) => <Entypo name="magnifying-glass" size={24} color={color} />,
         }}
       />
