@@ -33,8 +33,6 @@ const uploadImagesToSupabase = async (
   spot_data_id: string,
   images: Image[]
 ) => {
-  if (images.length <= 0) return null;
-
   try {
     // Upload the first image as the main spot image (you can modify this to handle multiple images)
     // Upload each image with its position index
@@ -148,55 +146,59 @@ Deno.serve(async (req) => {
       }
     }
 
-    const vision = new GoogleAPI({
-      email: GOOGLE_APPLICATION_CREDENTIALS.client_email,
-      key: GOOGLE_APPLICATION_CREDENTIALS.private_key,
-      scope: ['https://www.googleapis.com/auth/cloud-platform'],
-    });
+    // upload images if present
+    if (images.length > 0) {
+      const vision = new GoogleAPI({
+        email: GOOGLE_APPLICATION_CREDENTIALS.client_email,
+        key: GOOGLE_APPLICATION_CREDENTIALS.private_key,
+        scope: ['https://www.googleapis.com/auth/cloud-platform'],
+      });
 
-    const result = await vision.post('https://vision.googleapis.com/v1/images:annotate', {
-      requests: images.map((image) => ({
-        image: {
-          content: image.base64, // Use each image for analysis
-        },
-        features: [
-          {
-            type: 'SAFE_SEARCH_DETECTION',
+      const result = await vision.post('https://vision.googleapis.com/v1/images:annotate', {
+        requests: images.map((image) => ({
+          image: {
+            content: image.base64, // Use each image for analysis
           },
-        ],
-      })),
-    });
+          features: [
+            {
+              type: 'SAFE_SEARCH_DETECTION',
+            },
+          ],
+        })),
+      });
 
-    // Go through results and throw an error if any image is flagged
-    const unallowedFlags = ['LIKELY', 'VERY_LIKELY'];
-    for (const response of result.responses) {
-      if (response.safeSearchAnnotation) {
-        const safeSearch = response.safeSearchAnnotation;
-        if (
-          unallowedFlags.includes(safeSearch.adult) ||
-          unallowedFlags.includes(safeSearch.spoof) ||
-          unallowedFlags.includes(safeSearch.medical) ||
-          unallowedFlags.includes(safeSearch.violence) ||
-          unallowedFlags.includes(safeSearch.racy)
-        ) {
-          return new Response(JSON.stringify({ error: 'Image contains inappropriate content' }), {
-            status: 400,
-            headers: { 'Content-Type': 'application/json' },
-          });
+      // Go through results and throw an error if any image is flagged
+      const unallowedFlags = ['LIKELY', 'VERY_LIKELY'];
+      for (const response of result.responses) {
+        if (response.safeSearchAnnotation) {
+          const safeSearch = response.safeSearchAnnotation;
+          if (
+            unallowedFlags.includes(safeSearch.adult) ||
+            unallowedFlags.includes(safeSearch.spoof) ||
+            unallowedFlags.includes(safeSearch.medical) ||
+            unallowedFlags.includes(safeSearch.violence) ||
+            unallowedFlags.includes(safeSearch.racy)
+          ) {
+            return new Response(JSON.stringify({ error: 'Image contains inappropriate content' }), {
+              status: 400,
+              headers: { 'Content-Type': 'application/json' },
+            });
+          }
+        } else {
+          console.warn('No SafeSearch annotation found for an image');
         }
-      } else {
-        console.warn('No SafeSearch annotation found for an image');
       }
-    }
 
-    // Upload spot images to Supabase
-    await uploadImagesToSupabase(supabase, spot.id, images);
+      // Upload spot images to Supabase
+      await uploadImagesToSupabase(supabase, spot.id, images);
+    }
 
     return new Response(JSON.stringify({ id: spot.id }), {
       status: 201,
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
+    console.error('Error in adding spot:', error);
     return new Response(JSON.stringify(error instanceof Error ? error.message : error), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
