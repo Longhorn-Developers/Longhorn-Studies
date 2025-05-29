@@ -24,11 +24,7 @@ import { useAuth } from '~/store/AuthProvider';
 import { useTagStore } from '~/store/TagStore';
 import { TablesInsert } from '~/supabase/functions/new-spot/types/database';
 import { publicSpotsInsertSchemaSchema } from '~/supabase/functions/new-spot/types/schemas';
-import {
-  PublicSpotsInsertSchema,
-  PublicTagsRowSchema,
-} from '~/supabase/functions/new-spot/types/schemas_infer';
-import { supabase } from '~/utils/supabase';
+import { PublicSpotsInsertSchema } from '~/supabase/functions/new-spot/types/schemas_infer';
 
 type Spot = TablesInsert<'spots'> & {
   selectedTags: { id: number; label: string }[];
@@ -50,7 +46,6 @@ const CreateSpot = () => {
   const { session } = useAuth();
 
   const { selectedTags, resetTags } = useTagStore();
-  const [commonTags, setCommonTags] = useState<PublicTagsRowSchema[]>([]);
   const [images, setImages] = useState<ImagePickerAsset[]>([]);
   const [defaultLocation, setDefaultLocation] = useState<Coordinates>({
     latitude: 30.285,
@@ -67,20 +62,6 @@ const CreateSpot = () => {
 
   // Fetch common tags on component mount
   useEffect(() => {
-    const fetchCommonTags = async () => {
-      const { data, error } = await supabase
-        .from('tags')
-        .select()
-        .order('id', { ascending: true })
-        .limit(10);
-
-      if (!error && data) {
-        setCommonTags(data);
-      }
-    };
-
-    fetchCommonTags();
-
     // Reset tags when component unmounts
     return () => resetTags();
   }, []);
@@ -235,7 +216,7 @@ const CreateSpot = () => {
         {/* Spot Tags */}
         <View className="mt-6">
           <Text className="mb-1 text-sm text-gray-800">Spot Tags</Text>
-          <TagSelector commonTags={commonTags} />
+          <TagSelector />
         </View>
 
         {/* Spot Location */}

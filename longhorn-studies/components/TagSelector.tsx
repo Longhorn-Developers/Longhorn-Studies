@@ -12,11 +12,10 @@ import { useTagStore } from '~/store/TagStore';
 import { PublicTagsRowSchema } from '~/supabase/functions/new-spot/types/schemas_infer';
 
 type TagSelectorProps = {
-  commonTags?: PublicTagsRowSchema[];
   onTagsChange?: (tags: PublicTagsRowSchema[]) => void;
 };
 
-const TagSelector: React.FC<TagSelectorProps> = ({ commonTags = [], onTagsChange }) => {
+const TagSelector: React.FC<TagSelectorProps> = ({ onTagsChange }) => {
   const {
     searchQuery,
     isSearching,
@@ -27,7 +26,14 @@ const TagSelector: React.FC<TagSelectorProps> = ({ commonTags = [], onTagsChange
     addTag,
     removeTag,
     toggleTag,
+    commonTags,
+    fetchCommonTags,
   } = useTagStore();
+
+  useEffect(() => {
+    // Fetch common tags when the component mounts
+    fetchCommonTags();
+  }, []);
 
   // Notify parent component when tags change
   useEffect(() => {
@@ -115,7 +121,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({ commonTags = [], onTagsChange
       </View>
 
       {/* Common Tags */}
-      {commonTags.length > 0 && (
+      {commonTags && commonTags.length > 0 && (
         <>
           <Text className="mb-2 text-sm font-medium text-gray-700">Common Tags:</Text>
           <View className="mb-4 flex-row flex-wrap gap-2">

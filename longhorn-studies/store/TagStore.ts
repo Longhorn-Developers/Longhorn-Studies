@@ -11,6 +11,7 @@ type TagState = {
   isSearching: boolean;
   searchResults: PublicTagsRowSchema[];
   selectedTags: PublicTagsRowSchema[];
+  commonTags?: PublicTagsRowSchema[];
 
   // Actions
   setSearchQuery: (query: string) => void;
@@ -19,6 +20,7 @@ type TagState = {
   removeTag: (tag: PublicTagsRowSchema) => void;
   toggleTag: (tag: PublicTagsRowSchema) => void;
   resetTags: () => void;
+  fetchCommonTags: () => Promise<void>;
 };
 
 export const useTagStore = createWithEqualityFn<TagState>((set, get) => ({
@@ -103,4 +105,16 @@ export const useTagStore = createWithEqualityFn<TagState>((set, get) => ({
   },
 
   resetTags: () => set({ selectedTags: [], searchQuery: '', searchResults: [] }),
+
+  fetchCommonTags: async () => {
+    const { data, error } = await supabase
+      .from('tags')
+      .select()
+      .order('id', { ascending: true })
+      .limit(10);
+
+    if (!error && data) {
+      set({ commonTags: data });
+    }
+  },
 }));
