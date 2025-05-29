@@ -5,11 +5,11 @@ import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
 
 import {
   PublicMediaRowSchema,
-  PublicSpotFavoritesRowSchema,
+  PublicSpotsWithDetailsRowSchema,
 } from '~/supabase/functions/new-spot/types/schemas_infer';
 import { supabase } from '~/utils/supabase';
 
-const SpotIcon = ({ spot }: { spot: PublicSpotFavoritesRowSchema }) => {
+const SpotIcon = ({ spot }: { spot: PublicSpotsWithDetailsRowSchema }) => {
   const [image, setImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 

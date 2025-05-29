@@ -97,11 +97,11 @@ export default function Explore() {
           <View className="mt-4">
             <FlashList
               horizontal
-              showsHorizontalScrollIndicator
+              showsHorizontalScrollIndicator={false}
               showsVerticalScrollIndicator={false}
               data={[{ id: 'add-button' }, ...favorites.slice(0, 4)]}
               estimatedItemSize={10}
-              renderItem={({ item }: { item: PublicSpotFavoritesRowSchema }) => {
+              renderItem={({ item }: { item: PublicSpotsWithDetailsRowSchema }) => {
                 if (item.id === 'add-button') {
                   return (
                     // <Link href="/favorites/add" asChild>
@@ -137,7 +137,9 @@ export default function Explore() {
               )}
               estimatedItemSize={20}
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 20 }}
+              // TODO: Fix this padding issue with useBottomTabBarHeight
+              // not supported in expo??? https://github.com/expo/expo/discussions/26714
+              contentContainerStyle={{ paddingBottom: 200 }}
               onRefresh={fetchSpots}
               refreshing={spotsLoading}
               ListEmptyComponent={
