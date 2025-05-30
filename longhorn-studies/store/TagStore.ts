@@ -115,6 +115,7 @@ export const useTagStore = createWithEqualityFn<TagState>((set, get) => ({
 
     if (!error && data) {
       set({ commonTags: data });
+      console.log('Fetched common tags');
     }
   },
 }));

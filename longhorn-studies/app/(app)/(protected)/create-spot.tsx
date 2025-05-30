@@ -19,7 +19,7 @@ import {
 
 import { Container } from '~/components/Container';
 import ImageUploader from '~/components/ImageUploader';
-import TagSelector from '~/components/TagSelector';
+import TagSearch from '~/components/TagSearch';
 import { useAuth } from '~/store/AuthProvider';
 import { useTagStore } from '~/store/TagStore';
 import { TablesInsert } from '~/supabase/functions/new-spot/types/database';
@@ -216,7 +216,7 @@ const CreateSpot = () => {
         {/* Spot Tags */}
         <View className="mt-6">
           <Text className="mb-1 text-sm text-gray-800">Spot Tags</Text>
-          <TagSelector />
+          <TagSearch />
         </View>
 
         {/* Spot Location */}
