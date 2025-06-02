@@ -1,9 +1,12 @@
+import { Entypo } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Link } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Text, View, Pressable, Image } from 'react-native';
 import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
 
+import { Button } from '~/components/Button';
 import { Container } from '~/components/Container';
 import {
   PublicMediaRowSchema,
@@ -146,6 +149,7 @@ export default function Home() {
   }, []);
   return (
     <Container>
+      {/* Spot Explorer */}
       <View className="flex-1">
         <Text className="text-2xl font-bold text-gray-800">Study Spots</Text>
 
@@ -167,6 +171,17 @@ export default function Home() {
           />
         </ShimmerPlaceHolder>
       </View>
+
+      {/* Floating New Spot Button */}
+      <Link href="/create-spot" asChild>
+        <Button
+          title="New Spot"
+          icon={<Entypo name="plus" size={18} color="white" />}
+          iconPosition="left"
+          className="absolute bottom-1 right-1 h-12 w-28 justify-center"
+          size="small"
+        />
+      </Link>
     </Container>
   );
 }
