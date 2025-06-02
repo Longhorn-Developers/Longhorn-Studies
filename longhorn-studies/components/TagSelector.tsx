@@ -23,7 +23,7 @@ const TagSelector = () => {
               return (
                 <TouchableOpacity
                   key={tag.id || tag.label}
-                  className={`rounded-full ${isSelected ? 'bg-amber-600' : 'border border-gray-200 bg-white'} px-4 py-2`}
+                  className={`rounded-full border ${isSelected ? 'border-white bg-amber-600' : 'border-gray-200 bg-white'} px-4 py-2`}
                   onPress={() => toggleTag(tag)}>
                   <Text className={`font-bold ${isSelected ? 'text-white' : 'text-gray-800'}`}>
                     {tag.label}
