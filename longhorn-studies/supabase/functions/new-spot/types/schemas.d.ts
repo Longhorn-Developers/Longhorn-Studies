@@ -6,7 +6,6 @@
 
 import { z } from "zod";
 import * as generated from "./schemas";
-export type PublicMediaKind = z.infer<typeof generated.publicMediaKindSchema>;
 export type Json = z.infer<typeof generated.jsonSchema>;
 export type GraphqlPublicGraphqlArgsSchema = z.infer<
   typeof generated.graphqlPublicGraphqlArgsSchemaSchema
@@ -64,6 +63,9 @@ export type PublicTagsInsertSchema = z.infer<
 >;
 export type PublicTagsUpdateSchema = z.infer<
   typeof generated.publicTagsUpdateSchemaSchema
+>;
+export type PublicSpotsWithDetailsRowSchema = z.infer<
+  typeof generated.publicSpotsWithDetailsRowSchemaSchema
 >;
 export type PublicSlugifyArgsSchema = z.infer<
   typeof generated.publicSlugifyArgsSchemaSchema

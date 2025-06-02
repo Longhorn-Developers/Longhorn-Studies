@@ -51,9 +51,9 @@ export const Button = forwardRef<View, ButtonProps>(
     return (
       <TouchableOpacity ref={ref} {...touchableProps} className={buttonClassName}>
         <View className="flex-row items-center justify-center">
-          {icon && iconPosition === 'left' && <View className="mr-2">{icon}</View>}
+          {icon && iconPosition === 'left' && <View className="mr-0.5">{icon}</View>}
           <Text className={textClassName}>{title}</Text>
-          {icon && iconPosition === 'right' && <View className="ml-2">{icon}</View>}
+          {icon && iconPosition === 'right' && <View className="mr-0.5">{icon}</View>}
         </View>
       </TouchableOpacity>
     );

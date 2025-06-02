@@ -12,7 +12,7 @@ export default function Onboarding() {
 
   return (
     <Container>
-      <ScreenContent title="Onboarding" />
+      <ScreenContent title="Longhorn Studies" />
       <View className="gap-3">
         <Link href={{ pathname: '/signup' }} asChild>
           <Button title="Sign Up" />

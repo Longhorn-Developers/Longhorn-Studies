@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 
 import { useTagStore } from '~/store/TagStore';
-import { PublicTagsRowSchema } from '~/types/schemas_infer';
+import { PublicTagsRowSchema } from '~/supabase/functions/new-spot/types/schemas_infer';
 
 type TagSelectorProps = {
   commonTags?: PublicTagsRowSchema[];

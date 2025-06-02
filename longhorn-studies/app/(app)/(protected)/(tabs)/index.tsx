@@ -1,33 +1,45 @@
+import { Entypo } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Link } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Text, View, Pressable, Image } from 'react-native';
 import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
 
+import { Button } from '~/components/Button';
 import { Container } from '~/components/Container';
 import {
-  PublicMediaRowSchema,
-  PublicSpotsRowSchema,
+  PublicSpotsWithDetailsRowSchema,
   PublicTagsRowSchema,
-} from '~/types/schemas_infer';
+  PublicMediaRowSchema,
+} from '~/supabase/functions/new-spot/types/schemas_infer';
 import { supabase } from '~/utils/supabase';
 
-// Add tags and media to the spot schema
-type Spot = PublicSpotsRowSchema & {
-  tags: PublicTagsRowSchema[];
-  media: PublicMediaRowSchema[];
-};
-
-const SpotCard = ({ spot }: { spot: Spot }) => {
-  const [imageBase64, setImageBase64] = useState<string | null>(null);
+const SpotCard = ({ spot }: { spot: PublicSpotsWithDetailsRowSchema }) => {
+  const [image, setImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  const hasMedia = spot.media && spot.media.length > 0;
 
   // Check if the spot has media and if so, fetch the first image
   useEffect(() => {
     const fetchImage = async () => {
-      const mediaItem = spot.media.find((m) => m.position === 0) || spot.media[0];
+      // Cast Json[] to PublicMediaRowSchema[]
+      let media;
+      try {
+        media = spot.media as PublicMediaRowSchema[];
+      } catch (error) {
+        console.error('Error casting media:', error);
+        setIsLoading(false);
+        return;
+      }
+
+      // Check if media is empty
+      if (!media || media.length === 0) {
+        setIsLoading(false);
+        return;
+      }
+
+      // Get the media with position 0 or the first media item
+      const mediaItem = media.find((m) => m && m && m.position === 0) || media[0];
 
       supabase.storage
         .from('media')
@@ -37,36 +49,52 @@ const SpotCard = ({ spot }: { spot: Spot }) => {
           fr.readAsText(data!);
           fr.onload = () => {
             const result = `data:${data?.type};base64,${fr.result as string}`;
-            setImageBase64(result);
+            setImage(result);
             setIsLoading(false);
           };
           fr.onerror = (error) => {
             console.error('Error reading file:', error);
+            setIsLoading(false);
           };
         });
     };
-    if (hasMedia) {
-      fetchImage();
-    }
-  }, [hasMedia]);
+
+    fetchImage();
+  }, []);
+
+  // Check if the spot has tags
+  let tags;
+  try {
+    tags = spot.tags as PublicTagsRowSchema[];
+  } catch (error) {
+    console.error('Error casting tags:', error);
+    return;
+  }
 
   return (
     <Pressable className="my-2 flex-row items-center gap-4 rounded-xl border border-gray-200 px-5 py-3">
       <View>
-        {spot.media && spot.media.length > 0 ? (
+        {spot.media ? (
           <View>
-            {/* Using useState and useEffect to load base64 image */}
-            {isLoading || !imageBase64 ? (
+            {/* Loading shimmer placeholder */}
+            {isLoading ? (
               <ShimmerPlaceHolder
                 LinearGradient={LinearGradient}
                 style={{ height: 80, width: 80, borderRadius: 12 }}
               />
-            ) : (
+            ) : // Display the image if available
+            image ? (
               <Image
                 style={{ height: 80, width: 80 }}
-                source={{ uri: imageBase64 }}
+                source={{ uri: image }}
                 className="rounded-xl"
               />
+            ) : (
+              <View
+                style={{ height: 80, width: 80 }}
+                className="items-center justify-center rounded-xl bg-gray-200">
+                <Entypo name="image" size={18} />
+              </View>
             )}
           </View>
         ) : (
@@ -83,9 +111,9 @@ const SpotCard = ({ spot }: { spot: Spot }) => {
           </Text>
         )}
 
-        {spot.tags && spot.tags.length > 0 && (
+        {tags && tags.length > 0 && (
           <View className="mt-3 flex-row flex-wrap gap-2">
-            {spot.tags.map((tag) => (
+            {tags.map((tag) => (
               <View key={tag.id} className="rounded-full bg-amber-600 px-3 py-1">
                 <Text className="text-xs font-medium text-white">{tag.label}</Text>
               </View>
@@ -97,8 +125,8 @@ const SpotCard = ({ spot }: { spot: Spot }) => {
   );
 };
 
-export default function Home() {
-  const [spots, setSpots] = useState<Spot[]>([]);
+export default function Explore() {
+  const [spots, setSpots] = useState<PublicSpotsWithDetailsRowSchema[]>([]);
   const [loading, setLoading] = useState(true);
 
   async function fetchSpots() {
@@ -106,16 +134,8 @@ export default function Home() {
     try {
       // Fetch spots with their tags and media
       const { data, error } = await supabase
-        .from('spots')
-        .select(
-          `
-          *,
-          tags:spot_tags(
-            tag:tags(*)
-          ),
-          media:media(*)
-        `
-        )
+        .from('spots_with_details')
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(20);
 
@@ -124,16 +144,8 @@ export default function Home() {
         return;
       }
 
-      // Transform the data to match our Spot type
-      const spotsJoined = data.map((spot) => {
-        return {
-          ...spot,
-          tags: spot.tags ? spot.tags.map((st: any) => st.tag).filter(Boolean) : [],
-          media: spot.media ? spot.media.filter(Boolean) : [],
-        };
-      });
-
-      setSpots(spotsJoined);
+      setSpots(data);
+      console.log('Explore fetched spots');
     } catch (error) {
       console.error('Error in fetchSpots:', error);
     } finally {
@@ -144,8 +156,10 @@ export default function Home() {
   useEffect(() => {
     fetchSpots();
   }, []);
+
   return (
     <Container>
+      {/* Spot Explorer */}
       <View className="flex-1">
         <Text className="text-2xl font-bold text-gray-800">Study Spots</Text>
 
@@ -167,6 +181,17 @@ export default function Home() {
           />
         </ShimmerPlaceHolder>
       </View>
+
+      {/* Floating New Spot Button */}
+      <Link href="/create-spot" asChild>
+        <Button
+          title="New Spot"
+          icon={<Entypo name="plus" size={18} color="white" />}
+          iconPosition="left"
+          className="absolute bottom-1 right-1 h-12 w-28 justify-center"
+          size="small"
+        />
+      </Link>
     </Container>
   );
 }
