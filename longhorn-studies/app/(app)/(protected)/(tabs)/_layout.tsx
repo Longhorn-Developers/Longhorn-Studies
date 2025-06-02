@@ -1,6 +1,8 @@
 import { AntDesign, Entypo, MaterialIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 
+import { Button } from '~/components/Button';
+
 export default function AppLayout() {
   // This layout can be deferred because it's not the root layout.
   return (
