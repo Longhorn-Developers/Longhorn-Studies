@@ -3,7 +3,7 @@
 -- ============================================================================
 -- Create a table for public profiles
 create table public.profiles (
-  id uuid references auth.users on delete cascade not null primary key,
+  id uuid references auth.users on delete cascade not null primary key default auth.uid(),
   updated_at timestamp with time zone,
   username text unique,
   full_name text,
@@ -42,8 +42,8 @@ create trigger on_auth_user_created
   for each row execute procedure public.handle_new_user();
 
 -- Set up Storage!
-insert into storage.buckets (id, name)
-  values ('avatars', 'avatars');
+insert into storage.buckets (id, name, public)
+  values ('avatars', 'avatars', true);
 
 -- Set up access controls for storage.
 -- See https://supabase.com/docs/guides/storage#policy-examples for more details.
@@ -59,7 +59,7 @@ create policy "Anyone can upload an avatar." on storage.objects
 -- ============================================================================
 create table public.spots (
   id            uuid primary key default gen_random_uuid(),
-  user_id       uuid not null  references auth.users(id) on delete cascade,
+  user_id       uuid not null  references auth.users(id) on delete cascade default auth.uid(),
   title         text not null,
   body          text,
   created_at    timestamptz default now(),
@@ -71,7 +71,6 @@ create table public.tags (
   id            bigint generated always as identity primary key,
   label         text     not null check (length(label) <= 40),
   slug          text     not null unique,            -- lower(label)‑spaces→dashes
-  created_by    uuid     references auth.users(id),
   is_system     boolean  default false               -- “official” tags you seed
 );
 
@@ -83,20 +82,17 @@ create table public.spot_tags (
 );
 
 -- --------------  media  --------------------------------------------
-create type public.media_kind as enum ('image','video');
-
 create table public.media (
   id          uuid primary key default gen_random_uuid(),
   spot_id     uuid      references spots(id) on delete cascade,
   storage_key text      not null,      -- e.g. 'public/spot-media/abc123.webp'
-  kind        public.media_kind not null,
   position    int       default 1,     -- for manual ordering in galleries
   created_at  timestamptz default now()
 );
 
 -- Set up Storage!
-insert into storage.buckets (id, name)
-  values ('media', 'media');
+insert into storage.buckets (id, name, public)
+  values ('media', 'media', true);
 
 -- Set up access controls for storage.
 create policy "Media publicly accessible." on storage.objects
@@ -127,27 +123,16 @@ create policy "Media Owner" on public.media
                       from spots s
                       where s.id = spot_id and s.user_id = (select auth.uid())));
 
--- Tags: anyone may read; creator may update; you may also lock system tags
+-- Tags: anyone may read; anyone can insert non_system tags
 create policy "Tag Read" on public.tags
   for select 
   to authenticated
   using (true);
 
-create policy "Tag Creator Insert" on public.tags
+create policy "Tag Insert" on public.tags
   for insert
   to authenticated 
-  with check (created_by = (select auth.uid()) and not is_system);
-
-create policy "Tag Creator Update" on public.tags
-  for update
-  to authenticated 
-  using (created_by = (select auth.uid()) and not is_system)
-  with check (created_by = (select auth.uid()) and not is_system);
-
-create policy "Tag Creator Delete" on public.tags
-  for delete
-  to authenticated 
-  using (created_by = (select auth.uid()) and not is_system);-- Spot tag link: follow its spot
+  with check (not is_system);
 
 create policy "Spot Tag Owner" on public.spot_tags
   using  (exists (select 1
@@ -166,7 +151,6 @@ create index on public.media         (spot_id, position);
 create index on public.media         (spot_id);
 create index on public.spot_tags     (spot_id);
 create index on public.spots         (user_id);
-create index on public.tags          (created_by);
 
 -- ============================================================================
 -- Helper function Slugify
@@ -214,12 +198,16 @@ language plpgsql
 set search_path = ''
 as $$
 begin
-  return query
-  insert into tags (label, slug)
+  -- Insert new tags, ignore existing slug duplicates
+  insert into public.tags (label, slug)
   select lbl, public.slugify(lbl)
   from unnest(label_list) as lbl
-  on conflict (slug) do update
-    set label = excluded.label          -- optional: sync label changes
-  returning *;
+  on conflict (slug) do nothing;
+
+  -- Return all tags that match the labels (new and existing duplicates)
+  return query
+  select t.*
+  from public.tags t
+  where t.slug in (select public.slugify(lbl) from unnest(label_list) as lbl);
 end;
 $$;
