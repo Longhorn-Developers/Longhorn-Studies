@@ -60,6 +60,7 @@ export const publicMediaRelationshipsSchemaSchema = z.tuple([
     referencedRelation: z.literal("spots"),
     referencedColumns: z.tuple([z.literal("id")]),
   }),
+<<<<<<< HEAD
   z.object({
     foreignKeyName: z.literal("media_spot_id_fkey"),
     columns: z.tuple([z.literal("spot_id")]),
@@ -67,6 +68,8 @@ export const publicMediaRelationshipsSchemaSchema = z.tuple([
     referencedRelation: z.literal("spots_with_details"),
     referencedColumns: z.tuple([z.literal("id")]),
   }),
+=======
+>>>>>>> main
 ]);
 
 export const publicProfilesRowSchemaSchema = z.object({
@@ -117,6 +120,7 @@ export const publicSpotTagsRelationshipsSchemaSchema = z.tuple([
     referencedColumns: z.tuple([z.literal("id")]),
   }),
   z.object({
+<<<<<<< HEAD
     foreignKeyName: z.literal("spot_tags_spot_id_fkey"),
     columns: z.tuple([z.literal("spot_id")]),
     isOneToOne: z.literal(false),
@@ -124,6 +128,8 @@ export const publicSpotTagsRelationshipsSchemaSchema = z.tuple([
     referencedColumns: z.tuple([z.literal("id")]),
   }),
   z.object({
+=======
+>>>>>>> main
     foreignKeyName: z.literal("spot_tags_tag_id_fkey"),
     columns: z.tuple([z.literal("tag_id")]),
     isOneToOne: z.literal(false),
@@ -136,7 +142,10 @@ export const publicSpotsRowSchemaSchema = z.object({
   body: z.string().nullable(),
   created_at: z.string().nullable(),
   id: z.string(),
+<<<<<<< HEAD
   location: z.unknown(),
+=======
+>>>>>>> main
   title: z.string(),
   updated_at: z.string().nullable(),
   user_id: z.string(),
@@ -146,10 +155,13 @@ export const publicSpotsInsertSchemaSchema = z.object({
   body: z.string().optional().nullable(),
   created_at: z.string().optional().nullable(),
   id: z.string().optional(),
+<<<<<<< HEAD
   location: z.object({
     latitude: z.number(),
     longitude: z.number(),
   }),
+=======
+>>>>>>> main
   title: z.string(),
   updated_at: z.string().optional().nullable(),
   user_id: z.string().optional(),
@@ -159,13 +171,20 @@ export const publicSpotsUpdateSchemaSchema = z.object({
   body: z.string().optional().nullable(),
   created_at: z.string().optional().nullable(),
   id: z.string().optional(),
+<<<<<<< HEAD
   location: z.unknown().optional(),
+=======
+>>>>>>> main
   title: z.string().optional(),
   updated_at: z.string().optional().nullable(),
   user_id: z.string().optional(),
 });
 
 export const publicTagsRowSchemaSchema = z.object({
+<<<<<<< HEAD
+=======
+  created_by: z.string().nullable(),
+>>>>>>> main
   id: z.number(),
   is_system: z.boolean().nullable(),
   label: z.string(),
@@ -173,6 +192,10 @@ export const publicTagsRowSchemaSchema = z.object({
 });
 
 export const publicTagsInsertSchemaSchema = z.object({
+<<<<<<< HEAD
+=======
+  created_by: z.string().optional().nullable(),
+>>>>>>> main
   id: z.never().optional(),
   is_system: z.boolean().optional().nullable(),
   label: z.string(),
@@ -180,12 +203,17 @@ export const publicTagsInsertSchemaSchema = z.object({
 });
 
 export const publicTagsUpdateSchemaSchema = z.object({
+<<<<<<< HEAD
+=======
+  created_by: z.string().optional().nullable(),
+>>>>>>> main
   id: z.never().optional(),
   is_system: z.boolean().optional().nullable(),
   label: z.string().optional(),
   slug: z.string().optional(),
 });
 
+<<<<<<< HEAD
 export const publicSpotsWithDetailsRowSchemaSchema = z.object({
   body: z.string().nullable(),
   created_at: z.string().nullable(),
@@ -199,6 +227,8 @@ export const publicSpotsWithDetailsRowSchemaSchema = z.object({
   user_id: z.string().nullable(),
 });
 
+=======
+>>>>>>> main
 export const publicSlugifyArgsSchemaSchema = z.object({
   txt: z.string(),
 });
@@ -211,6 +241,10 @@ export const publicUpsertTagsArgsSchemaSchema = z.object({
 
 export const publicUpsertTagsReturnsSchemaSchema = z.array(
   z.object({
+<<<<<<< HEAD
+=======
+    created_by: z.string().nullable(),
+>>>>>>> main
     id: z.number(),
     is_system: z.boolean().nullable(),
     label: z.string(),

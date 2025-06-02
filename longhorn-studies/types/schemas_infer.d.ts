@@ -4,8 +4,13 @@
  * ==========================================
  */
 
+<<<<<<< HEAD
 import { z } from 'zod';
 import * as generated from './schemas';
+=======
+import { z } from "zod";
+import * as generated from "./schemas";
+>>>>>>> main
 export type PublicMediaKind = z.infer<typeof generated.publicMediaKindSchema>;
 export type Json = z.infer<typeof generated.jsonSchema>;
 export type GraphqlPublicGraphqlArgsSchema = z.infer<
@@ -14,6 +19,7 @@ export type GraphqlPublicGraphqlArgsSchema = z.infer<
 export type GraphqlPublicGraphqlReturnsSchema = z.infer<
   typeof generated.graphqlPublicGraphqlReturnsSchemaSchema
 >;
+<<<<<<< HEAD
 export type PublicMediaRowSchema = z.infer<typeof generated.publicMediaRowSchemaSchema>;
 export type PublicMediaInsertSchema = z.infer<typeof generated.publicMediaInsertSchemaSchema>;
 export type PublicMediaUpdateSchema = z.infer<typeof generated.publicMediaUpdateSchemaSchema>;
@@ -45,3 +51,68 @@ export type PublicUpsertTagsReturnsSchema = z.infer<
 export type PublicSpotsWithDetailsRowSchema = z.infer<
   typeof generated.publicSpotsWithDetailsRowSchemaSchema
 >;
+=======
+export type PublicMediaRowSchema = z.infer<
+  typeof generated.publicMediaRowSchemaSchema
+>;
+export type PublicMediaInsertSchema = z.infer<
+  typeof generated.publicMediaInsertSchemaSchema
+>;
+export type PublicMediaUpdateSchema = z.infer<
+  typeof generated.publicMediaUpdateSchemaSchema
+>;
+export type PublicMediaRelationshipsSchema = z.infer<
+  typeof generated.publicMediaRelationshipsSchemaSchema
+>;
+export type PublicProfilesRowSchema = z.infer<
+  typeof generated.publicProfilesRowSchemaSchema
+>;
+export type PublicProfilesInsertSchema = z.infer<
+  typeof generated.publicProfilesInsertSchemaSchema
+>;
+export type PublicProfilesUpdateSchema = z.infer<
+  typeof generated.publicProfilesUpdateSchemaSchema
+>;
+export type PublicSpotTagsRowSchema = z.infer<
+  typeof generated.publicSpotTagsRowSchemaSchema
+>;
+export type PublicSpotTagsInsertSchema = z.infer<
+  typeof generated.publicSpotTagsInsertSchemaSchema
+>;
+export type PublicSpotTagsUpdateSchema = z.infer<
+  typeof generated.publicSpotTagsUpdateSchemaSchema
+>;
+export type PublicSpotTagsRelationshipsSchema = z.infer<
+  typeof generated.publicSpotTagsRelationshipsSchemaSchema
+>;
+export type PublicSpotsRowSchema = z.infer<
+  typeof generated.publicSpotsRowSchemaSchema
+>;
+export type PublicSpotsInsertSchema = z.infer<
+  typeof generated.publicSpotsInsertSchemaSchema
+>;
+export type PublicSpotsUpdateSchema = z.infer<
+  typeof generated.publicSpotsUpdateSchemaSchema
+>;
+export type PublicTagsRowSchema = z.infer<
+  typeof generated.publicTagsRowSchemaSchema
+>;
+export type PublicTagsInsertSchema = z.infer<
+  typeof generated.publicTagsInsertSchemaSchema
+>;
+export type PublicTagsUpdateSchema = z.infer<
+  typeof generated.publicTagsUpdateSchemaSchema
+>;
+export type PublicSlugifyArgsSchema = z.infer<
+  typeof generated.publicSlugifyArgsSchemaSchema
+>;
+export type PublicSlugifyReturnsSchema = z.infer<
+  typeof generated.publicSlugifyReturnsSchemaSchema
+>;
+export type PublicUpsertTagsArgsSchema = z.infer<
+  typeof generated.publicUpsertTagsArgsSchemaSchema
+>;
+export type PublicUpsertTagsReturnsSchema = z.infer<
+  typeof generated.publicUpsertTagsReturnsSchemaSchema
+>;
+>>>>>>> main

@@ -64,6 +64,7 @@ export type Database = {
             referencedRelation: "spots"
             referencedColumns: ["id"]
           },
+<<<<<<< HEAD
           {
             foreignKeyName: "media_spot_id_fkey"
             columns: ["spot_id"]
@@ -71,6 +72,8 @@ export type Database = {
             referencedRelation: "spots_with_details"
             referencedColumns: ["id"]
           },
+=======
+>>>>>>> main
         ]
       }
       profiles: {
@@ -119,6 +122,7 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+<<<<<<< HEAD
             foreignKeyName: "spot_tags_spot_id_fkey"
             columns: ["spot_id"]
             isOneToOne: false
@@ -126,6 +130,8 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+=======
+>>>>>>> main
             foreignKeyName: "spot_tags_tag_id_fkey"
             columns: ["tag_id"]
             isOneToOne: false
@@ -139,7 +145,10 @@ export type Database = {
           body: string | null
           created_at: string | null
           id: string
+<<<<<<< HEAD
           location: unknown
+=======
+>>>>>>> main
           title: string
           updated_at: string | null
           user_id: string
@@ -148,7 +157,10 @@ export type Database = {
           body?: string | null
           created_at?: string | null
           id?: string
+<<<<<<< HEAD
           location: unknown
+=======
+>>>>>>> main
           title: string
           updated_at?: string | null
           user_id?: string
@@ -157,7 +169,10 @@ export type Database = {
           body?: string | null
           created_at?: string | null
           id?: string
+<<<<<<< HEAD
           location?: unknown
+=======
+>>>>>>> main
           title?: string
           updated_at?: string | null
           user_id?: string
@@ -166,18 +181,30 @@ export type Database = {
       }
       tags: {
         Row: {
+<<<<<<< HEAD
+=======
+          created_by: string | null
+>>>>>>> main
           id: number
           is_system: boolean | null
           label: string
           slug: string
         }
         Insert: {
+<<<<<<< HEAD
+=======
+          created_by?: string | null
+>>>>>>> main
           id?: never
           is_system?: boolean | null
           label: string
           slug: string
         }
         Update: {
+<<<<<<< HEAD
+=======
+          created_by?: string | null
+>>>>>>> main
           id?: never
           is_system?: boolean | null
           label?: string
@@ -187,6 +214,7 @@ export type Database = {
       }
     }
     Views: {
+<<<<<<< HEAD
       spots_with_details: {
         Row: {
           body: string | null
@@ -202,6 +230,9 @@ export type Database = {
         }
         Relationships: []
       }
+=======
+      [_ in never]: never
+>>>>>>> main
     }
     Functions: {
       slugify: {
@@ -211,6 +242,10 @@ export type Database = {
       upsert_tags: {
         Args: { label_list: string[] }
         Returns: {
+<<<<<<< HEAD
+=======
+          created_by: string | null
+>>>>>>> main
           id: number
           is_system: boolean | null
           label: string
