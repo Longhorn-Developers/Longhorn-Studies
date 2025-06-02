@@ -1,172 +1,159 @@
+import { Entypo } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
-import { LinearGradient } from 'expo-linear-gradient';
+import { Link } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Text, View, Pressable, Image } from 'react-native';
-import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
+import { Text, View } from 'react-native';
 
+import { Button } from '~/components/Button';
 import { Container } from '~/components/Container';
+import SpotCard from '~/components/SpotCard';
+import SpotIcon from '~/components/SpotIcon';
+import { useAuth } from '~/store/AuthProvider';
 import {
-  PublicMediaRowSchema,
-  PublicSpotsRowSchema,
-  PublicTagsRowSchema,
-} from '~/types/schemas_infer';
+  PublicSpotsWithDetailsRowSchema,
+  PublicSpotFavoritesRowSchema,
+} from '~/supabase/functions/new-spot/types/schemas_infer';
 import { supabase } from '~/utils/supabase';
 
-// Add tags and media to the spot schema
-type Spot = PublicSpotsRowSchema & {
-  tags: PublicTagsRowSchema[];
-  media: PublicMediaRowSchema[];
-};
+export default function Explore() {
+  const { user } = useAuth();
 
-const SpotCard = ({ spot }: { spot: Spot }) => {
-  const [imageBase64, setImageBase64] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [spots, setSpots] = useState<PublicSpotsWithDetailsRowSchema[]>([]);
+  const [favorites, setFavorites] = useState<PublicSpotFavoritesRowSchema[]>([]);
 
-  const hasMedia = spot.media && spot.media.length > 0;
+  const [spotsLoading, setSpotsLoading] = useState(true);
+  const [favoritesLoading, setFavoritesLoading] = useState(true);
 
-  // Check if the spot has media and if so, fetch the first image
-  useEffect(() => {
-    const fetchImage = async () => {
-      const mediaItem = spot.media.find((m) => m.position === 0) || spot.media[0];
-
-      supabase.storage
-        .from('media')
-        .download(mediaItem.storage_key)
-        .then(({ data }) => {
-          const fr = new FileReader();
-          fr.readAsText(data!);
-          fr.onload = () => {
-            const result = `data:${data?.type};base64,${fr.result as string}`;
-            setImageBase64(result);
-            setIsLoading(false);
-          };
-          fr.onerror = (error) => {
-            console.error('Error reading file:', error);
-          };
-        });
-    };
-    if (hasMedia) {
-      fetchImage();
-    }
-  }, [hasMedia]);
-
-  return (
-    <Pressable className="my-2 flex-row items-center gap-4 rounded-xl border border-gray-200 px-5 py-3">
-      <View>
-        {spot.media && spot.media.length > 0 ? (
-          <View>
-            {/* Using useState and useEffect to load base64 image */}
-            {isLoading || !imageBase64 ? (
-              <ShimmerPlaceHolder
-                LinearGradient={LinearGradient}
-                style={{ height: 80, width: 80, borderRadius: 12 }}
-              />
-            ) : (
-              <Image
-                style={{ height: 80, width: 80 }}
-                source={{ uri: imageBase64 }}
-                className="rounded-xl"
-              />
-            )}
-          </View>
-        ) : (
-          <View className="h-20 w-20 items-center justify-center rounded-xl bg-gray-200" />
-        )}
-      </View>
-
-      <View>
-        <Text className="text-lg font-bold text-gray-900">{spot.title}</Text>
-
-        {spot.body && (
-          <Text className="mt-1 text-gray-600" numberOfLines={2}>
-            {spot.body}
-          </Text>
-        )}
-
-        {spot.tags && spot.tags.length > 0 && (
-          <View className="mt-3 flex-row flex-wrap gap-2">
-            {spot.tags.map((tag) => (
-              <View key={tag.id} className="rounded-full bg-amber-600 px-3 py-1">
-                <Text className="text-xs font-medium text-white">{tag.label}</Text>
-              </View>
-            ))}
-          </View>
-        )}
-      </View>
-    </Pressable>
-  );
-};
-
-export default function Home() {
-  const [spots, setSpots] = useState<Spot[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  async function fetchSpots() {
-    setLoading(true);
+  async function fetchFavorites() {
+    // Fetch favorites from the database
+    setFavoritesLoading(true);
     try {
-      // Fetch spots with their tags and media
-      const { data, error } = await supabase
-        .from('spots')
-        .select(
-          `
-          *,
-          tags:spot_tags(
-            tag:tags(*)
-          ),
-          media:media(*)
-        `
-        )
-        .order('created_at', { ascending: false })
-        .limit(20);
+      // Fetch favorites for the current user
+      const { data: favorites_data, error: favorites_error } = await supabase
+        .from('spot_favorites')
+        .select()
+        .eq('user_id', user!.id); // Ensure to filter by the current user
 
-      if (error) {
-        console.error('Error fetching spots:', error);
+      if (favorites_error) {
+        console.error('Error fetching favorites:', favorites_error);
         return;
       }
 
-      // Transform the data to match our Spot type
-      const spotsJoined = data.map((spot) => {
-        return {
-          ...spot,
-          tags: spot.tags ? spot.tags.map((st: any) => st.tag).filter(Boolean) : [],
-          media: spot.media ? spot.media.filter(Boolean) : [],
-        };
-      });
+      setFavorites(favorites_data);
+      console.log('Explore fetched favorites');
+    } catch (error) {
+      console.error('Error in fetchFavorites:', error);
+    } finally {
+      setFavoritesLoading(false);
+    }
+  }
 
-      setSpots(spotsJoined);
+  async function fetchSpots() {
+    // Fetch spots from the database
+    setSpotsLoading(true);
+    try {
+      // Fetch spots with their tags and media
+      const { data: spots_data, error: spots_error } = await supabase
+        .from('spots_with_details')
+        .select()
+        .limit(20);
+
+      if (spots_error) {
+        console.error('Error fetching spots:', spots_error);
+        return;
+      }
+
+      setSpots(spots_data);
+      console.log('Explore fetched spots');
     } catch (error) {
       console.error('Error in fetchSpots:', error);
     } finally {
-      setLoading(false);
+      setSpotsLoading(false);
     }
   }
 
   useEffect(() => {
+    fetchFavorites();
     fetchSpots();
   }, []);
+
   return (
     <Container>
-      <View className="flex-1">
-        <Text className="text-2xl font-bold text-gray-800">Study Spots</Text>
+      {/* Spot Explorer */}
+      <View className="flex-1 gap-4">
+        {/* Favorite Spots List */}
+        <View>
+          {/* Header */}
+          <View className="flex-row items-center justify-between">
+            <Text className="text-2xl font-bold text-gray-800">Your Favorites</Text>
+            <Link href="/favorites" asChild>
+              <Text className="font-bold text-amber-600">see all</Text>
+            </Link>
+          </View>
 
-        <ShimmerPlaceHolder
-          LinearGradient={LinearGradient}
-          visible={!loading}
-          shimmerStyle={{ borderRadius: 10 }}
-          contentStyle={{ width: '100%', height: '100%' }}>
+          {/* Favorites Horizontal List */}
+          <View className="mt-4">
+            <FlashList
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              showsVerticalScrollIndicator={false}
+              data={[{ id: 'add-button' }, ...favorites]}
+              estimatedItemSize={10}
+              renderItem={({ item }: { item: PublicSpotsWithDetailsRowSchema }) => {
+                if (item.id === 'add-button') {
+                  return (
+                    // <Link href="/favorites/add" asChild>
+                    <View className="mr-4 h-20 w-20 items-center justify-center rounded-xl border-2 border-dashed border-gray-300">
+                      <Entypo name="plus" size={28} color="#9CA3AF" />
+                    </View>
+                    // </Link>
+                  );
+                }
+
+                return <SpotIcon spot={item} />;
+              }}
+              onRefresh={fetchFavorites}
+              refreshing={favoritesLoading}
+            />
+          </View>
+        </View>
+
+        {/* Study Spots List */}
+        <View className="flex-1">
+          {/* Header */}
+          <Text className="text-2xl font-bold text-gray-800">Spots For You</Text>
+          {/* Spots List */}
           <FlashList
             data={spots}
-            renderItem={({ item }: any) => <SpotCard spot={item} />}
-            estimatedItemSize={50}
+            renderItem={({ item }: any) => (
+              <SpotCard spot={item} favorited={favorites.some((fav) => fav.id === item.id)} />
+            )}
+            estimatedItemSize={20}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 20 }}
-            onRefresh={() => {
-              fetchSpots();
-            }}
-            refreshing={loading}
+            // TODO: Fix bottom pad with useBottomTabBarHeight when using with shimmer placeholder
+            // not supported in expo??? https://github.com/expo/expo/discussions/26714
+            // contentContainerStyle={{ paddingBottom: 200 }}
+            onRefresh={fetchSpots}
+            refreshing={spotsLoading}
+            ListEmptyComponent={
+              <View className="mt-5 items-center justify-center">
+                <Text className="text-gray-500">No spots found</Text>
+              </View>
+            }
           />
-        </ShimmerPlaceHolder>
+        </View>
       </View>
+
+      {/* Floating New Spot Button */}
+      <Link href="/create-spot" asChild>
+        <Button
+          title="New Spot"
+          icon={<Entypo name="plus" size={18} color="white" />}
+          iconPosition="left"
+          className="absolute bottom-1 right-1 h-12 w-28 justify-center"
+          size="small"
+        />
+      </Link>
     </Container>
   );
 }

@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as FileSystem from 'expo-file-system';
 import { ImagePickerAsset } from 'expo-image-picker';
+import { AppleMaps, Coordinates, GoogleMaps } from 'expo-maps';
 import { router } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
@@ -12,20 +13,49 @@ import {
   TouchableOpacity,
   View,
   ActivityIndicator,
+  Platform,
+  StyleSheet,
 } from 'react-native';
 
 import { Container } from '~/components/Container';
 import ImageUploader from '~/components/ImageUploader';
 import TagSelector from '~/components/TagSelector';
+import { useAuth } from '~/store/AuthProvider';
 import { useTagStore } from '~/store/TagStore';
-import { publicSpotsInsertSchemaSchema } from '~/types/schemas';
-import { PublicSpotsInsertSchema, PublicTagsRowSchema } from '~/types/schemas_infer';
+import { TablesInsert } from '~/supabase/functions/new-spot/types/database';
+import { publicSpotsInsertSchemaSchema } from '~/supabase/functions/new-spot/types/schemas';
+import {
+  PublicSpotsInsertSchema,
+  PublicTagsRowSchema,
+} from '~/supabase/functions/new-spot/types/schemas_infer';
 import { supabase } from '~/utils/supabase';
 
+type Spot = TablesInsert<'spots'> & {
+  selectedTags: { id: number; label: string }[];
+  location: {
+    latitude: number;
+    longitude: number;
+  };
+  images: Image[];
+};
+
+type Image = {
+  fileName: string;
+  mimeType: string;
+  position: number;
+  base64: string;
+};
+
 const CreateSpot = () => {
+  const { session } = useAuth();
+
+  const { selectedTags, resetTags } = useTagStore();
   const [commonTags, setCommonTags] = useState<PublicTagsRowSchema[]>([]);
   const [images, setImages] = useState<ImagePickerAsset[]>([]);
-  const { selectedTags, resetTags } = useTagStore();
+  const [defaultLocation, setDefaultLocation] = useState<Coordinates>({
+    latitude: 30.285,
+    longitude: -97.739,
+  });
 
   const {
     control,
@@ -57,107 +87,115 @@ const CreateSpot = () => {
 
   const handleImagesChange = (newImages: ImagePickerAsset[]) => {
     setImages(newImages);
+
+    // Update selected location based on the first image's EXIF data if present
+    if (
+      newImages.length > 0 &&
+      newImages[0].exif &&
+      newImages[0].exif.GPSLatitude &&
+      newImages[0].exif.GPSLongitude
+    ) {
+      // Check if longitude should be negative (western hemisphere)
+      // Some cameras store longitude as positive and use GPSLongitudeRef to indicate direction
+      let longitude = newImages[0].exif.GPSLongitude;
+
+      // Check for longitude reference or handle specific regions we know should be negative
+      if (
+        newImages[0].exif.GPSLongitudeRef === 'W' ||
+        (longitude > 100 && longitude < 180) // North America western regions
+      ) {
+        longitude = -Math.abs(longitude);
+      }
+
+      setDefaultLocation({
+        latitude: newImages[0].exif.GPSLatitude,
+        longitude,
+      });
+    }
   };
 
-  const uploadImagesToSupabase = async (spot_data_id: string) => {
-    if (images.length <= 0) return null;
+  const renderMapUI = () => (
+    <View pointerEvents="none">
+      {/* Pin Design */}
+      <View className="mb-10">
+        <View className="items-center">
+          {/* Pill text */}
+          <View className="items-center justify-center rounded-full bg-white shadow-md">
+            <Text className="p-2 text-xs font-semibold">Spot Here</Text>
+          </View>
 
+          {/* Pin Pointer */}
+          <View className="h-4 w-1 bg-white" style={{ marginTop: -3 }} />
+        </View>
+      </View>
+    </View>
+  );
+
+  const onSubmit = async (spot_data: PublicSpotsInsertSchema) => {
     try {
-      // Upload the first image as the main spot image (you can modify this to handle multiple images)
-      // Upload each image with its position index
-      await Promise.all(
+      // Process images to base64 if needed
+      const processedImages = await Promise.all(
         images.map(async (image, index) => {
-          const file_path = `spots/${spot_data_id}/${new Date().getTime()}-${image.fileName}`;
           const base64 = await FileSystem.readAsStringAsync(image.uri, {
             encoding: 'base64',
           });
 
-          const { error } = await supabase.storage
-            .from('media')
-            .upload(file_path, base64, { contentType: image.mimeType });
-
-          if (error) {
-            throw new Error(`Error uploading image: ${error}`);
-          }
-
-          await supabase.from('media').insert({
-            spot_id: spot_data_id,
-            storage_key: file_path,
+          return {
+            fileName: image.fileName || `image-${index}.jpg`,
+            mimeType: image.mimeType || 'image/jpeg',
             position: index,
-          });
+            base64,
+          };
         })
       );
-    } catch (error) {
-      console.error('Error in image upload process:', error);
-      return null;
-    }
-  };
 
-  const onSubmit = async (spot_data: PublicSpotsInsertSchema) => {
-    try {
-      // Insert the spot
-      const { data: spot, error: spotError } = await supabase
-        .from('spots')
-        .insert(spot_data)
-        .select()
-        .single();
+      // Prepare data for submission
+      const spotData = {
+        ...spot_data,
+        selectedTags,
+        images: processedImages,
+      } as Spot;
 
-      if (spotError) {
-        Alert.alert('Error', 'Failed to insert data. Please try again.');
-        console.error('Error inserting data:', spotError);
-        return;
+      // Send POST request to create new spot
+      const response = await fetch('http://127.0.0.1:54321/functions/v1/new-spot', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify(spotData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create spot');
       }
 
-      // Spot tag handling
-      if (selectedTags.length > 0) {
-        // Upsert tags the user selected/created
-        const userLabels = selectedTags.map((tag) => tag.label);
-        const { data: tags, error: tagsError } = await supabase.rpc('upsert_tags', {
-          label_list: userLabels,
-        });
+      console.log('Spot created successfully:', result);
 
-        if (tagsError) {
-          console.error('Error upserting tags:', tagsError);
-          // We can still continue since the spot was created
-        } else if (tags) {
-          // Bridge spot <-> tags
-          const { error: linkError } = await supabase
-            .from('spot_tags')
-            .insert(tags.map((t) => ({ spot_id: spot.id, tag_id: t.id })));
-
-          if (linkError) {
-            console.error('Error linking tags to spot:', linkError);
-          }
-        } else {
-          console.error('No tags returned from upsert unexpectedly');
-        }
-      }
-
-      // Upload spot images to Supabase
-      await uploadImagesToSupabase(spot.id);
-
-      console.log('Spot Submitted Successfully');
       router.back();
     } catch (error) {
-      Alert.alert('Error', 'Failed to save spot. Please try again.');
+      Alert.alert('Error', error instanceof Error ? error.message : 'An unexpected error occurred');
       console.error('Error saving spot:', error);
     }
   };
 
   return (
     <Container>
+      {/* Create Spot Form */}
       <ScrollView className="flex-1 px-4">
-        <View className="mb-6 mt-4 flex-row items-center">
-          <Text className="text-2xl font-bold text-gray-800">Add New Study Spot</Text>
+        <Text className="mt-4 text-2xl font-bold text-gray-800">Add New Study Spot</Text>
+
+        {/* Upload spot images */}
+        <View className="mt-6">
+          <Text className="mb-1 text-sm font-medium text-gray-700">Upload Images</Text>
+          <ImageUploader onImagesChange={handleImagesChange} />
         </View>
 
-        {/* Create Spot Form */}
-        <View className="mb-6 gap-3">
-          {/* Upload spot images */}
-          <ImageUploader onImagesChange={handleImagesChange} />
-
-          {/* Spot Name */}
-          <Text className="mb-2 text-sm font-medium text-gray-700">Spot Name *</Text>
+        {/* Spot Name */}
+        <View className="mt-6">
+          <Text className="mb-1 text-sm font-medium text-gray-700">Spot Name *</Text>
           <Controller
             control={control}
             name="title"
@@ -175,8 +213,8 @@ const CreateSpot = () => {
         </View>
 
         {/* Spot Body Description */}
-        <View className="mb-6">
-          <Text className="mb-2 text-sm font-medium text-gray-700">Description</Text>
+        <View className="mt-6">
+          <Text className="mb-1 text-sm font-medium text-gray-700">Description</Text>
           <Controller
             control={control}
             name="body"
@@ -195,30 +233,56 @@ const CreateSpot = () => {
         </View>
 
         {/* Spot Tags */}
-        <View className="mb-6">
-          <Text className="mb-3 text-lg font-semibold text-gray-800">Spot Tags</Text>
+        <View className="mt-6">
+          <Text className="mb-1 text-sm text-gray-800">Spot Tags</Text>
           <TagSelector commonTags={commonTags} />
         </View>
 
         {/* Spot Location */}
-        <View className="mb-6">
-          <Text className="mb-3 text-lg font-semibold text-gray-800">Location</Text>
-          <View className="flex h-40 items-center justify-center rounded-xl bg-gray-200">
-            <Text className="text-gray-500">Map Placeholder</Text>
-          </View>
+        <View>
+          <Text className="text-lg font-semibold text-gray-800">Location</Text>
+          <Text className="mb-2 text-sm font-medium text-gray-400">Drag to select a location</Text>
+          <Controller
+            control={control}
+            name="location"
+            render={({ field: { onChange } }) => (
+              <View
+                className={`flex h-64 items-center justify-center rounded-xl ${errors.location ? 'border-2 border-red-500' : null}`}>
+                {Platform.OS === 'ios' ? (
+                  <AppleMaps.View
+                    style={[StyleSheet.absoluteFill, { overflow: 'hidden', borderRadius: 16 }]}
+                    cameraPosition={{
+                      // Default coordinates for UT
+                      coordinates: defaultLocation,
+                      zoom: 15.5,
+                    }}
+                    onCameraMove={(event) => {
+                      onChange(event.coordinates);
+                    }}
+                  />
+                ) : (
+                  <GoogleMaps.View style={{ flex: 1 }} />
+                )}
+                {renderMapUI()}
+              </View>
+            )}
+          />
+          {errors.location && <Text className="mt-1 text-red-500">{errors.location.message}</Text>}
         </View>
 
         {/* Submit Button */}
-        <TouchableOpacity
-          className="mb-8 flex-row items-center justify-center rounded-xl bg-amber-600 p-4"
-          onPress={handleSubmit(onSubmit)}
-          disabled={isSubmitting}>
-          {isSubmitting ? (
-            <ActivityIndicator size="small" color="white" />
-          ) : (
-            <Text className="text-lg font-bold text-white">Save Spot</Text>
-          )}
-        </TouchableOpacity>
+        <View className="mb-8 mt-8">
+          <TouchableOpacity
+            className="flex-row items-center justify-center rounded-xl bg-amber-600 p-4"
+            onPress={handleSubmit(onSubmit)}
+            disabled={isSubmitting}>
+            {isSubmitting ? (
+              <ActivityIndicator size="small" color="white" />
+            ) : (
+              <Text className="text-lg font-bold text-white">Save Spot</Text>
+            )}
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </Container>
   );

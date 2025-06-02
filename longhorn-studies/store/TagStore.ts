@@ -1,6 +1,9 @@
-import { create } from 'zustand';
+import { createWithEqualityFn } from 'zustand/traditional';
 
-import { PublicTagsInsertSchema, PublicTagsRowSchema } from '~/types/schemas_infer';
+import {
+  PublicTagsInsertSchema,
+  PublicTagsRowSchema,
+} from '~/supabase/functions/new-spot/types/schemas_infer';
 import { supabase } from '~/utils/supabase';
 
 type TagState = {
@@ -18,7 +21,7 @@ type TagState = {
   resetTags: () => void;
 };
 
-export const useTagStore = create<TagState>((set, get) => ({
+export const useTagStore = createWithEqualityFn<TagState>((set, get) => ({
   searchQuery: '',
   isSearching: false,
   searchResults: [],

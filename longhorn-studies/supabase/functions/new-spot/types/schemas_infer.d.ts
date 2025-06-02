@@ -6,13 +6,24 @@
 
 import { z } from "zod";
 import * as generated from "./schemas";
-export type PublicMediaKind = z.infer<typeof generated.publicMediaKindSchema>;
 export type Json = z.infer<typeof generated.jsonSchema>;
 export type GraphqlPublicGraphqlArgsSchema = z.infer<
   typeof generated.graphqlPublicGraphqlArgsSchemaSchema
 >;
 export type GraphqlPublicGraphqlReturnsSchema = z.infer<
   typeof generated.graphqlPublicGraphqlReturnsSchemaSchema
+>;
+export type PublicFavoritesRowSchema = z.infer<
+  typeof generated.publicFavoritesRowSchemaSchema
+>;
+export type PublicFavoritesInsertSchema = z.infer<
+  typeof generated.publicFavoritesInsertSchemaSchema
+>;
+export type PublicFavoritesUpdateSchema = z.infer<
+  typeof generated.publicFavoritesUpdateSchemaSchema
+>;
+export type PublicFavoritesRelationshipsSchema = z.infer<
+  typeof generated.publicFavoritesRelationshipsSchemaSchema
 >;
 export type PublicMediaRowSchema = z.infer<
   typeof generated.publicMediaRowSchemaSchema
@@ -64,6 +75,12 @@ export type PublicTagsInsertSchema = z.infer<
 >;
 export type PublicTagsUpdateSchema = z.infer<
   typeof generated.publicTagsUpdateSchemaSchema
+>;
+export type PublicSpotFavoritesRowSchema = z.infer<
+  typeof generated.publicSpotFavoritesRowSchemaSchema
+>;
+export type PublicSpotsWithDetailsRowSchema = z.infer<
+  typeof generated.publicSpotsWithDetailsRowSchemaSchema
 >;
 export type PublicSlugifyArgsSchema = z.infer<
   typeof generated.publicSlugifyArgsSchemaSchema
