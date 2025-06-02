@@ -1,6 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as FileSystem from 'expo-file-system';
 import { ImagePickerAsset } from 'expo-image-picker';
+<<<<<<< HEAD
+import { AppleMaps, Coordinates, GoogleMaps } from 'expo-maps';
+=======
+>>>>>>> main
 import { router } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
@@ -12,6 +16,11 @@ import {
   TouchableOpacity,
   View,
   ActivityIndicator,
+<<<<<<< HEAD
+  Platform,
+  StyleSheet,
+=======
+>>>>>>> main
 } from 'react-native';
 
 import { Container } from '~/components/Container';
@@ -23,9 +32,19 @@ import { PublicSpotsInsertSchema, PublicTagsRowSchema } from '~/types/schemas_in
 import { supabase } from '~/utils/supabase';
 
 const CreateSpot = () => {
+<<<<<<< HEAD
+  const { selectedTags, resetTags } = useTagStore();
+  const [commonTags, setCommonTags] = useState<PublicTagsRowSchema[]>([]);
+  const [images, setImages] = useState<ImagePickerAsset[]>([]);
+  const [defaultLocation, setDefaultLocation] = useState<Coordinates>({
+    latitude: 30.285,
+    longitude: -97.739,
+  });
+=======
   const [commonTags, setCommonTags] = useState<PublicTagsRowSchema[]>([]);
   const [images, setImages] = useState<ImagePickerAsset[]>([]);
   const { selectedTags, resetTags } = useTagStore();
+>>>>>>> main
 
   const {
     control,
@@ -57,6 +76,34 @@ const CreateSpot = () => {
 
   const handleImagesChange = (newImages: ImagePickerAsset[]) => {
     setImages(newImages);
+<<<<<<< HEAD
+
+    // Update selected location based on the first image's EXIF data if present
+    if (
+      newImages.length > 0 &&
+      newImages[0].exif &&
+      newImages[0].exif.GPSLatitude &&
+      newImages[0].exif.GPSLongitude
+    ) {
+      // Check if longitude should be negative (western hemisphere)
+      // Some cameras store longitude as positive and use GPSLongitudeRef to indicate direction
+      let longitude = newImages[0].exif.GPSLongitude;
+
+      // Check for longitude reference or handle specific regions we know should be negative
+      if (
+        newImages[0].exif.GPSLongitudeRef === 'W' ||
+        (longitude > 100 && longitude < 180) // North America western regions
+      ) {
+        longitude = -Math.abs(longitude);
+      }
+
+      setDefaultLocation({
+        latitude: newImages[0].exif.GPSLatitude,
+        longitude,
+      });
+    }
+=======
+>>>>>>> main
   };
 
   const uploadImagesToSupabase = async (spot_data_id: string) => {
@@ -93,17 +140,49 @@ const CreateSpot = () => {
     }
   };
 
+<<<<<<< HEAD
+  const renderMapUI = () => (
+    <View pointerEvents="none">
+      {/* Pin Design */}
+      <View className="mb-10">
+        <View className="items-center">
+          {/* Pill text */}
+          <View className="items-center justify-center rounded-full bg-white shadow-md">
+            <Text className="p-2 text-xs font-semibold">Spot Here</Text>
+          </View>
+
+          {/* Pin Pointer */}
+          <View className="h-4 w-1 bg-white" style={{ marginTop: -3 }} />
+        </View>
+      </View>
+    </View>
+  );
+
+=======
+>>>>>>> main
   const onSubmit = async (spot_data: PublicSpotsInsertSchema) => {
     try {
       // Insert the spot
       const { data: spot, error: spotError } = await supabase
         .from('spots')
+<<<<<<< HEAD
+        .insert({
+          ...spot_data,
+          // Transform location coordinates to POINT type
+          location: `POINT(${spot_data.location.longitude} ${spot_data.location.latitude})`,
+        })
+=======
         .insert(spot_data)
+>>>>>>> main
         .select()
         .single();
 
       if (spotError) {
+<<<<<<< HEAD
+        Alert.alert('Error', 'Failed to save spot. Please try again.');
+=======
         Alert.alert('Error', 'Failed to insert data. Please try again.');
+>>>>>>> main
         console.error('Error inserting data:', spotError);
         return;
       }
@@ -146,6 +225,21 @@ const CreateSpot = () => {
 
   return (
     <Container>
+<<<<<<< HEAD
+      {/* Create Spot Form */}
+      <ScrollView className="flex-1 px-4">
+        <Text className="mt-4 text-2xl font-bold text-gray-800">Add New Study Spot</Text>
+
+        {/* Upload spot images */}
+        <View className="mt-6">
+          <Text className="mb-1 text-sm font-medium text-gray-700">Upload Images</Text>
+          <ImageUploader onImagesChange={handleImagesChange} />
+        </View>
+
+        {/* Spot Name */}
+        <View className="mt-6">
+          <Text className="mb-1 text-sm font-medium text-gray-700">Spot Name *</Text>
+=======
       <ScrollView className="flex-1 px-4">
         <View className="mb-6 mt-4 flex-row items-center">
           <Text className="text-2xl font-bold text-gray-800">Add New Study Spot</Text>
@@ -158,6 +252,7 @@ const CreateSpot = () => {
 
           {/* Spot Name */}
           <Text className="mb-2 text-sm font-medium text-gray-700">Spot Name *</Text>
+>>>>>>> main
           <Controller
             control={control}
             name="title"
@@ -175,8 +270,13 @@ const CreateSpot = () => {
         </View>
 
         {/* Spot Body Description */}
+<<<<<<< HEAD
+        <View className="mt-6">
+          <Text className="mb-1 text-sm font-medium text-gray-700">Description</Text>
+=======
         <View className="mb-6">
           <Text className="mb-2 text-sm font-medium text-gray-700">Description</Text>
+>>>>>>> main
           <Controller
             control={control}
             name="body"
@@ -195,12 +295,63 @@ const CreateSpot = () => {
         </View>
 
         {/* Spot Tags */}
+<<<<<<< HEAD
+        <View className="mt-6">
+          <Text className="mb-1 text-sm text-gray-800">Spot Tags</Text>
+=======
         <View className="mb-6">
           <Text className="mb-3 text-lg font-semibold text-gray-800">Spot Tags</Text>
+>>>>>>> main
           <TagSelector commonTags={commonTags} />
         </View>
 
         {/* Spot Location */}
+<<<<<<< HEAD
+        <View>
+          <Text className="text-lg font-semibold text-gray-800">Location</Text>
+          <Text className="mb-2 text-sm font-medium text-gray-400">Drag to select a location</Text>
+          <Controller
+            control={control}
+            name="location"
+            render={({ field: { onChange } }) => (
+              <View
+                className={`flex h-64 items-center justify-center rounded-xl ${errors.location ? 'border-2 border-red-500' : null}`}>
+                {Platform.OS === 'ios' ? (
+                  <AppleMaps.View
+                    style={[StyleSheet.absoluteFill, { overflow: 'hidden', borderRadius: 16 }]}
+                    cameraPosition={{
+                      // Default coordinates for UT
+                      coordinates: defaultLocation,
+                      zoom: 15.5,
+                    }}
+                    onCameraMove={(event) => {
+                      onChange(event.coordinates);
+                    }}
+                  />
+                ) : (
+                  <GoogleMaps.View style={{ flex: 1 }} />
+                )}
+                {renderMapUI()}
+              </View>
+            )}
+          />
+          {errors.location && <Text className="mt-1 text-red-500">{errors.location.message}</Text>}
+        </View>
+
+        {/* Submit Button */}
+        <View className="mb-8 mt-8">
+          <TouchableOpacity
+            className="flex-row items-center justify-center rounded-xl bg-amber-600 p-4"
+            onPress={handleSubmit(onSubmit)}
+            disabled={isSubmitting}>
+            {isSubmitting ? (
+              <ActivityIndicator size="small" color="white" />
+            ) : (
+              <Text className="text-lg font-bold text-white">Save Spot</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+=======
         <View className="mb-6">
           <Text className="mb-3 text-lg font-semibold text-gray-800">Location</Text>
           <View className="flex h-40 items-center justify-center rounded-xl bg-gray-200">
@@ -219,6 +370,7 @@ const CreateSpot = () => {
             <Text className="text-lg font-bold text-white">Save Spot</Text>
           )}
         </TouchableOpacity>
+>>>>>>> main
       </ScrollView>
     </Container>
   );

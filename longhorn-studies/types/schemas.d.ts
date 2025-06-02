@@ -64,6 +64,12 @@ export type PublicTagsInsertSchema = z.infer<
 export type PublicTagsUpdateSchema = z.infer<
   typeof generated.publicTagsUpdateSchemaSchema
 >;
+<<<<<<< HEAD
+export type PublicSpotsWithDetailsRowSchema = z.infer<
+  typeof generated.publicSpotsWithDetailsRowSchemaSchema
+>;
+=======
+>>>>>>> main
 export type PublicSlugifyArgsSchema = z.infer<
   typeof generated.publicSlugifyArgsSchemaSchema
 >;
