@@ -108,7 +108,7 @@ const TagSearch: React.FC<TagSearchProps> = ({ onTagsChange }) => {
       )}
 
       {/* Selected Tags */}
-      <View className="mb-4 flex-row flex-wrap gap-2">
+      <View className="mb-1 flex-row flex-wrap gap-2">
         {selectedTags.map((tag) => (
           <TouchableOpacity
             key={tag.id || tag.label}
@@ -121,6 +121,7 @@ const TagSearch: React.FC<TagSearchProps> = ({ onTagsChange }) => {
       </View>
 
       {/* Common Tags */}
+      <Text className="mb-2 text-sm font-medium text-gray-700">Common Tags:</Text>
       <TagSelector />
     </View>
   );

@@ -111,7 +111,7 @@ export const useTagStore = createWithEqualityFn<TagState>((set, get) => ({
       .from('tags')
       .select()
       .order('id', { ascending: true })
-      .limit(10);
+      .limit(7);
 
     if (!error && data) {
       set({ commonTags: data });
