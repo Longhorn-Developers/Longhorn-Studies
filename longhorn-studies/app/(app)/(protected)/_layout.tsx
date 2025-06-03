@@ -28,11 +28,17 @@ export default function ProtectedLayout() {
         headerShadowVisible: false,
       }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+
       {/* Stacks */}
       <Stack.Screen
         name="favorites"
         options={{ headerTitle: 'Favorites', headerBackTitle: 'Explore' }}
       />
+      <Stack.Screen
+        name="search"
+        options={{ headerShown: false, presentation: 'transparentModal', animation: 'fade' }}
+      />
+
       {/* Modals */}
       <Stack.Screen
         name="create-spot"

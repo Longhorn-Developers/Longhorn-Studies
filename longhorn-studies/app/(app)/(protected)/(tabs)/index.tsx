@@ -1,12 +1,11 @@
-import { Entypo } from '@expo/vector-icons';
+import { Entypo, Ionicons } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
 import { Link } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import { Button } from '~/components/Button';
 import { Container } from '~/components/Container';
-import Searchbox from '~/components/Searchbox';
 import SpotCard from '~/components/SpotCard';
 import SpotIcon from '~/components/SpotIcon';
 import { useAuth } from '~/store/AuthProvider';
@@ -82,8 +81,17 @@ export default function Explore() {
     <Container>
       {/* Spot Explorer */}
       <View className="flex-1 gap-4">
-        {/* Search box */}
-        <Searchbox />
+        {/* Search box placeholder transition */}
+        <Link href="/search" asChild>
+          <Pressable>
+            <View
+              // sharedTransitionTag="explore-search"
+              className="flex-row items-center rounded-xl border border-gray-300 px-3">
+              <Ionicons name="search" size={20} color="gray" />
+              <Text className="flex-1 p-4 text-gray-300">Explore study spots...</Text>
+            </View>
+          </Pressable>
+        </Link>
 
         {/* Favorites List */}
         <View>
