@@ -53,7 +53,7 @@ const Search = () => {
 
   return (
     <Container>
-      <View className="flex gap-4">
+      <View className="flex h-full gap-4">
         <Searchbox
           placeholder="Search for spots, tags, or location..."
           sharedTag="explore-search"
@@ -70,30 +70,28 @@ const Search = () => {
         </View>
 
         {/* Spots Lists */}
-        <View className="flex h-full">
-          {searchQuery.length <= 0 ? (
-            // Popular Spots
-            <View className="mb-2 flex-row items-center gap-2">
-              <Ionicons name="stats-chart" size={20} color="gray" />
-              <Text className="text-lg font-semibold">Popular Spots</Text>
-            </View>
-          ) : (
-            // Search Query Spot Results
-            <FlashList
-              data={spots}
-              renderItem={({ item }: any) => <SpotCard spot={item} favorited={false} />}
-              estimatedItemSize={10}
-              showsVerticalScrollIndicator={false}
-              className="mt-2"
-              refreshing={spotsLoading}
-              ListEmptyComponent={
-                <View className="mt-5 items-center justify-center">
-                  <Text className="text-gray-500">No spots found</Text>
-                </View>
-              }
-            />
-          )}
-        </View>
+        {searchQuery.length <= 0 ? (
+          // Popular Spots
+          <View className="mb-2 flex-row items-center gap-2">
+            <Ionicons name="stats-chart" size={20} color="gray" />
+            <Text className="text-lg font-semibold">Popular Spots</Text>
+          </View>
+        ) : (
+          // Search Query Spot Results
+          <FlashList
+            data={spots}
+            renderItem={({ item }: any) => <SpotCard spot={item} favorited={false} />}
+            estimatedItemSize={10}
+            showsVerticalScrollIndicator={false}
+            className="mt-2"
+            refreshing={spotsLoading}
+            ListEmptyComponent={
+              <View className="mt-5 items-center justify-center">
+                <Text className="text-gray-500">No spots found</Text>
+              </View>
+            }
+          />
+        )}
       </View>
     </Container>
   );
