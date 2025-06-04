@@ -1,14 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect } from 'react';
-import {
-  ActivityIndicator,
-  ScrollView,
-  Text,
-  TextInput,
-  TextInputProps,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Text, TextInput, TextInputProps, TouchableOpacity, View } from 'react-native';
 
 import TagSelector from './TagSelector';
 
@@ -35,7 +27,6 @@ const TagSearch: React.FC<TagSearchProps> = ({
     setSearchQuery,
     searchTags,
     addTag,
-    removeTag,
     fetchCommonTags,
   } = useTagStore();
 
@@ -89,32 +80,6 @@ const TagSearch: React.FC<TagSearchProps> = ({
         />
       </View>
 
-      {/* Search Results */}
-      {isSearching && (
-        <View className="items-center py-2">
-          <ActivityIndicator size="small" color="#d97706" />
-        </View>
-      )}
-
-      {searchResults.length > 0 && (
-        <View className="mb-3 max-h-40 rounded-xl border border-gray-200 bg-white">
-          <ScrollView nestedScrollEnabled>
-            {searchResults.map((tag) => (
-              <TouchableOpacity
-                key={tag.id || tag.label}
-                className="border-b border-gray-100 p-3"
-                onPress={() => {
-                  const { id, ...tagWithoutId } = tag;
-                  addTag(tagWithoutId);
-                  setSearchQuery('');
-                }}>
-                <Text>{tag.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-      )}
-
       {/* Create New Tag */}
       {searchQuery.trim().length > 0 &&
         searchResults.length === 0 &&
@@ -127,18 +92,19 @@ const TagSearch: React.FC<TagSearchProps> = ({
           </TouchableOpacity>
         )}
 
-      {/* Selected Tags */}
-      <View className="mb-1 flex-row flex-wrap gap-2">
-        {selectedTags.map((tag) => (
-          <TouchableOpacity
-            key={tag.id || tag.label}
-            className="flex-row items-center rounded-full bg-amber-600 px-4 py-2"
-            onPress={() => removeTag(tag)}>
-            <Text className="font-medium text-white">{tag.label}</Text>
-            <Text className="ml-2 font-bold text-white">×</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      {/* Search Results and Selected Tags Combined */}
+      {(searchResults.length > 0 || selectedTags.length > 0) && (
+        <View className="mb-3">
+          <TagSelector
+            tags={[
+              ...selectedTags,
+              ...searchResults.filter(
+                (result) => !selectedTags.some((selected) => selected.slug === result.slug)
+              ),
+            ]}
+          />
+        </View>
+      )}
 
       {/* Common Tags */}
       <View className="mb-2 flex-row items-center gap-2">
