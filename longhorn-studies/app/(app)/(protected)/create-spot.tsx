@@ -17,7 +17,6 @@ import {
   StyleSheet,
 } from 'react-native';
 
-import { Container } from '~/components/Container';
 import ImageUploader from '~/components/ImageUploader';
 import TagSearch from '~/components/TagSearch';
 import { useAuth } from '~/store/AuthProvider';

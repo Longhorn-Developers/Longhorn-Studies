@@ -1,22 +1,18 @@
-import { useEffect } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 
 import { useTagStore } from '~/store/TagStore';
+import { PublicTagsRowSchema } from '~/supabase/functions/new-spot/types/schemas_infer';
 
-const TagSelector = () => {
-  const { commonTags, selectedTags, toggleTag, fetchCommonTags } = useTagStore();
-
-  useEffect(() => {
-    fetchCommonTags();
-  }, []);
+const TagSelector = ({ tags }: { tags?: PublicTagsRowSchema[] }) => {
+  const { selectedTags, toggleTag } = useTagStore();
 
   return (
     <>
       {/* Common Tags */}
-      {commonTags && commonTags.length > 0 && (
+      {tags && tags.length > 0 && (
         <>
           <View className="flex-row flex-wrap gap-2">
-            {commonTags.map((tag) => {
+            {tags.map((tag) => {
               const isSelected = selectedTags.some((t) =>
                 t.id ? t.id === tag.id : t.label.toLowerCase() === tag.label.toLowerCase()
               );

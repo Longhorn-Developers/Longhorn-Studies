@@ -1,16 +1,19 @@
 import { Ionicons } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
 
 import { Container } from '~/components/Container';
-import Searchbox from '~/components/Searchbox';
 import SpotCard from '~/components/SpotCard';
-import TagSelector from '~/components/TagSelector';
+import TagSearch from '~/components/TagSearch';
+import { useTagStore } from '~/store/TagStore';
 import { PublicSpotsWithDetailsRowSchema } from '~/supabase/functions/new-spot/types/schemas_infer';
 import { supabase } from '~/utils/supabase';
 const Search = () => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const router = useRouter();
+  const { searchQuery } = useTagStore();
+
   const [spots, setSpots] = useState<PublicSpotsWithDetailsRowSchema[]>();
   const [spotsLoading, setSpotsLoading] = useState(true);
 
@@ -54,27 +57,26 @@ const Search = () => {
   return (
     <Container>
       <View className="flex h-full gap-4">
-        <Searchbox
+        <TagSearch
+          leftIcon={
+            <Ionicons
+              className="pl-3"
+              name="arrow-back"
+              size={20}
+              color="gray"
+              onPress={router.back}
+            />
+          }
           placeholder="Search for spots, tags, or location..."
-          sharedTag="explore-search"
-          onChangeText={setSearchQuery}
-          value={searchQuery}
+          addTagEnabled={false}
         />
-        {/* Trending Tags */}
-        <View>
-          <View className="mb-2 flex-row items-center gap-2">
-            <Ionicons name="trending-up" size={20} color="gray" />
-            <Text className="text-lg font-semibold">Trending Tags</Text>
-          </View>
-          <TagSelector />
-        </View>
 
         {/* Spots Lists */}
         {searchQuery.length <= 0 ? (
           // Popular Spots
           <View className="mb-2 flex-row items-center gap-2">
-            <Ionicons name="stats-chart" size={20} color="gray" />
-            <Text className="text-lg font-semibold">Popular Spots</Text>
+            <Ionicons name="stats-chart" size={16} color="gray" />
+            <Text className="text-sm font-bold">Popular Spots</Text>
           </View>
         ) : (
           // Search Query Spot Results

@@ -5,6 +5,7 @@ import {
   ScrollView,
   Text,
   TextInput,
+  TextInputProps,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -14,16 +15,23 @@ import TagSelector from './TagSelector';
 import { useTagStore } from '~/store/TagStore';
 import { PublicTagsRowSchema } from '~/supabase/functions/new-spot/types/schemas_infer';
 
-type TagSearchProps = {
+export interface TagSearchProps extends TextInputProps {
   onTagsChange?: (tags: PublicTagsRowSchema[]) => void;
-};
+  addTagEnabled?: boolean; // Whether to allow adding new tags
+  leftIcon?: React.ReactNode; // Optional children for custom input components
+}
 
-const TagSearch: React.FC<TagSearchProps> = ({ onTagsChange }) => {
+const TagSearch: React.FC<TagSearchProps> = ({
+  onTagsChange,
+  addTagEnabled = true,
+  ...textInputProps
+}) => {
   const {
     searchQuery,
     isSearching,
     searchResults,
     selectedTags,
+    commonTags,
     setSearchQuery,
     searchTags,
     addTag,
@@ -66,12 +74,20 @@ const TagSearch: React.FC<TagSearchProps> = ({ onTagsChange }) => {
   return (
     <View>
       {/* Tag Input */}
-      <TextInput
-        className="mb-2 rounded-xl border border-gray-300 bg-white p-4"
-        placeholder="Search or add tags (e.g., 'quiet', 'coffee')"
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-      />
+      <View className="mb-2 flex-row items-center rounded-xl border border-gray-300">
+        {textInputProps.leftIcon}
+        <TextInput
+          placeholder="Search or add tags (e.g., 'quiet', 'coffee')"
+          autoCapitalize="none"
+          autoCorrect={false}
+          returnKeyType="search"
+          clearButtonMode="while-editing"
+          className="flex-1 p-4"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          {...textInputProps}
+        />
+      </View>
 
       {/* Search Results */}
       {isSearching && (
@@ -100,13 +116,16 @@ const TagSearch: React.FC<TagSearchProps> = ({ onTagsChange }) => {
       )}
 
       {/* Create New Tag */}
-      {searchQuery.trim().length > 0 && searchResults.length === 0 && !isSearching && (
-        <TouchableOpacity
-          className="mb-3 flex-row items-center rounded-xl bg-gray-100 p-3"
-          onPress={handleCreateTag}>
-          <Text>Add tag: "{searchQuery.trim()}"</Text>
-        </TouchableOpacity>
-      )}
+      {searchQuery.trim().length > 0 &&
+        searchResults.length === 0 &&
+        !isSearching &&
+        addTagEnabled && (
+          <TouchableOpacity
+            className="mb-3 flex-row items-center rounded-xl bg-gray-100 p-3"
+            onPress={handleCreateTag}>
+            <Text>Add tag: "{searchQuery.trim()}"</Text>
+          </TouchableOpacity>
+        )}
 
       {/* Selected Tags */}
       <View className="mb-1 flex-row flex-wrap gap-2">
@@ -127,7 +146,7 @@ const TagSearch: React.FC<TagSearchProps> = ({ onTagsChange }) => {
         <Text className="text-sm font-bold">Trending Tags</Text>
       </View>
 
-      <TagSelector />
+      <TagSelector tags={commonTags} />
     </View>
   );
 };
