@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect } from 'react';
 import {
   ActivityIndicator,
@@ -12,7 +13,6 @@ import TagSelector from './TagSelector';
 
 import { useTagStore } from '~/store/TagStore';
 import { PublicTagsRowSchema } from '~/supabase/functions/new-spot/types/schemas_infer';
-import { Ionicons } from '@expo/vector-icons';
 
 type TagSearchProps = {
   onTagsChange?: (tags: PublicTagsRowSchema[]) => void;
@@ -124,7 +124,7 @@ const TagSearch: React.FC<TagSearchProps> = ({ onTagsChange }) => {
       {/* Common Tags */}
       <View className="mb-2 flex-row items-center gap-2">
         <Ionicons name="trending-up" size={16} color="gray" />
-        <Text className="text-sm">Trending Tags</Text>
+        <Text className="text-sm font-bold">Trending Tags</Text>
       </View>
 
       <TagSelector />

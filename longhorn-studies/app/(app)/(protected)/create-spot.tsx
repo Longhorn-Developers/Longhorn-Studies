@@ -163,109 +163,107 @@ const CreateSpot = () => {
   };
 
   return (
-    <Container>
-      {/* Create Spot Form */}
-      <ScrollView className="flex-1 px-4">
-        <Text className="mt-4 text-2xl font-bold text-gray-800">Add New Study Spot</Text>
+    // {/* Create Spot Form */}
+    <ScrollView className="flex-1 bg-white px-8 py-8">
+      <Text className="mt-4 text-2xl font-bold text-gray-800">Add New Study Spot</Text>
 
-        {/* Upload spot images */}
-        <View className="mt-6">
-          <Text className="mb-1 text-sm font-medium text-gray-700">Upload Images</Text>
-          <ImageUploader onImagesChange={handleImagesChange} />
-        </View>
+      {/* Upload spot images */}
+      <View className="mt-6">
+        <Text className="mb-1 text-sm font-bold text-gray-700">Upload Images</Text>
+        <ImageUploader onImagesChange={handleImagesChange} />
+      </View>
 
-        {/* Spot Name */}
-        <View className="mt-6">
-          <Text className="mb-1 text-sm font-medium text-gray-700">Spot Name *</Text>
-          <Controller
-            control={control}
-            name="title"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                className={`rounded-xl border p-4 ${errors.title ? 'border-red-500' : 'border-gray-300'} bg-white`}
-                placeholder="Enter spot name"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-              />
-            )}
-          />
-          {errors.title && <Text className="mt-1 text-red-500">{errors.title.message}</Text>}
-        </View>
+      {/* Spot Name */}
+      <View className="mt-6">
+        <Text className="mb-1 text-sm font-bold text-gray-700">Spot Name *</Text>
+        <Controller
+          control={control}
+          name="title"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInput
+              className={`rounded-xl border p-4 ${errors.title ? 'border-red-500' : 'border-gray-300'} bg-white`}
+              placeholder="Enter spot name"
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+            />
+          )}
+        />
+        {errors.title && <Text className="mt-1 text-red-500">{errors.title.message}</Text>}
+      </View>
 
-        {/* Spot Body Description */}
-        <View className="mt-6">
-          <Text className="mb-1 text-sm font-medium text-gray-700">Description</Text>
-          <Controller
-            control={control}
-            name="body"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                className="min-h-[120px] rounded-xl border border-gray-300 bg-white p-4"
-                placeholder="Describe this study spot (optional)"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value || ''}
-                multiline
-                textAlignVertical="top"
-              />
-            )}
-          />
-        </View>
+      {/* Spot Body Description */}
+      <View className="mt-6">
+        <Text className="mb-1 text-sm font-bold text-gray-700">Description</Text>
+        <Controller
+          control={control}
+          name="body"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInput
+              className="min-h-[120px] rounded-xl border border-gray-300 bg-white p-4"
+              placeholder="Describe this study spot (optional)"
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value || ''}
+              multiline
+              textAlignVertical="top"
+            />
+          )}
+        />
+      </View>
 
-        {/* Spot Tags */}
-        <View className="mb-4 mt-6">
-          <Text className="mb-1 text-sm text-gray-800">Spot Tags</Text>
-          <TagSearch />
-        </View>
+      {/* Spot Tags */}
+      <View className="mb-4 mt-6">
+        <Text className="mb-1 text-sm font-bold text-gray-800">Spot Tags</Text>
+        <TagSearch />
+      </View>
 
-        {/* Spot Location */}
-        <View>
-          <Text className="text-lg font-semibold text-gray-800">Location</Text>
-          <Text className="mb-2 text-sm font-medium text-gray-400">Drag to select a location</Text>
-          <Controller
-            control={control}
-            name="location"
-            render={({ field: { onChange } }) => (
-              <View
-                className={`flex h-64 items-center justify-center rounded-xl ${errors.location ? 'border-2 border-red-500' : null}`}>
-                {Platform.OS === 'ios' ? (
-                  <AppleMaps.View
-                    style={[StyleSheet.absoluteFill, { overflow: 'hidden', borderRadius: 16 }]}
-                    cameraPosition={{
-                      // Default coordinates for UT
-                      coordinates: defaultLocation,
-                      zoom: 15.5,
-                    }}
-                    onCameraMove={(event) => {
-                      onChange(event.coordinates);
-                    }}
-                  />
-                ) : (
-                  <GoogleMaps.View style={{ flex: 1 }} />
-                )}
-                {renderMapUI()}
-              </View>
-            )}
-          />
-          {errors.location && <Text className="mt-1 text-red-500">{errors.location.message}</Text>}
-        </View>
+      {/* Spot Location */}
+      <View>
+        <Text className="text-lg font-semibold text-gray-800">Location</Text>
+        <Text className="mb-2 text-sm font-medium text-gray-400">Drag to select a location</Text>
+        <Controller
+          control={control}
+          name="location"
+          render={({ field: { onChange } }) => (
+            <View
+              className={`flex h-64 items-center justify-center rounded-xl ${errors.location ? 'border-2 border-red-500' : null}`}>
+              {Platform.OS === 'ios' ? (
+                <AppleMaps.View
+                  style={[StyleSheet.absoluteFill, { overflow: 'hidden', borderRadius: 16 }]}
+                  cameraPosition={{
+                    // Default coordinates for UT
+                    coordinates: defaultLocation,
+                    zoom: 15.5,
+                  }}
+                  onCameraMove={(event) => {
+                    onChange(event.coordinates);
+                  }}
+                />
+              ) : (
+                <GoogleMaps.View style={{ flex: 1 }} />
+              )}
+              {renderMapUI()}
+            </View>
+          )}
+        />
+        {errors.location && <Text className="mt-1 text-red-500">{errors.location.message}</Text>}
+      </View>
 
-        {/* Submit Button */}
-        <View className="mb-8 mt-8">
-          <TouchableOpacity
-            className="flex-row items-center justify-center rounded-xl bg-amber-600 p-4"
-            onPress={handleSubmit(onSubmit)}
-            disabled={isSubmitting}>
-            {isSubmitting ? (
-              <ActivityIndicator size="small" color="white" />
-            ) : (
-              <Text className="text-lg font-bold text-white">Save Spot</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </Container>
+      {/* Submit Button */}
+      <View className="mb-8 mt-8">
+        <TouchableOpacity
+          className="flex-row items-center justify-center rounded-xl bg-amber-600 p-4"
+          onPress={handleSubmit(onSubmit)}
+          disabled={isSubmitting}>
+          {isSubmitting ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            <Text className="text-lg font-bold text-white">Save Spot</Text>
+          )}
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 };
 
