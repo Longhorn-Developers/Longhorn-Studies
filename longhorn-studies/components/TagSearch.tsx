@@ -5,19 +5,13 @@ import { Text, TextInput, TextInputProps, TouchableOpacity, View } from 'react-n
 import TagSelector from './TagSelector';
 
 import { useTagStore } from '~/store/TagStore';
-import { PublicTagsRowSchema } from '~/supabase/functions/new-spot/types/schemas_infer';
 
 export interface TagSearchProps extends TextInputProps {
-  onTagsChange?: (tags: PublicTagsRowSchema[]) => void;
   addTagEnabled?: boolean; // Whether to allow adding new tags
   leftIcon?: React.ReactNode; // Optional children for custom input components
 }
 
-const TagSearch: React.FC<TagSearchProps> = ({
-  onTagsChange,
-  addTagEnabled = true,
-  ...textInputProps
-}) => {
+const TagSearch: React.FC<TagSearchProps> = ({ addTagEnabled = true, ...textInputProps }) => {
   const {
     searchQuery,
     isSearching,
@@ -34,13 +28,6 @@ const TagSearch: React.FC<TagSearchProps> = ({
     // Fetch common tags when the component mounts
     fetchCommonTags();
   }, []);
-
-  // Notify parent component when tags change
-  useEffect(() => {
-    if (onTagsChange) {
-      onTagsChange(selectedTags);
-    }
-  }, [selectedTags, onTagsChange]);
 
   // Debounced search
   useEffect(() => {
