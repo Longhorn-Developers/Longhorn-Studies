@@ -1,8 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { TextInput, View } from 'react-native';
+import { TextInput, View, TextInputProps } from 'react-native';
 
-const Searchbox = ({ sharedTag }: { sharedTag?: string }) => {
+export interface SearchboxProps extends TextInputProps {
+  sharedTag?: string;
+}
+
+const Searchbox = ({ sharedTag, ...props }: SearchboxProps) => {
   const router = useRouter();
 
   return (
@@ -13,14 +17,10 @@ const Searchbox = ({ sharedTag }: { sharedTag?: string }) => {
         autoCapitalize="none"
         autoCorrect={false}
         returnKeyType="search"
-        onSubmitEditing={(event) => {
-          const query = event.nativeEvent.text;
-          // Handle search logic here, e.g., navigate to search results
-          console.log('Search query:', query);
-        }}
         clearButtonMode="while-editing"
         className="flex-1 p-4"
         autoFocus
+        {...props}
       />
     </View>
   );

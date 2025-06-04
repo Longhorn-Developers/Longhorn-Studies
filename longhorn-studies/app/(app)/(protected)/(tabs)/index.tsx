@@ -88,7 +88,7 @@ export default function Explore() {
               // sharedTransitionTag="explore-search"
               className="flex-row items-center rounded-xl border border-gray-300 px-3">
               <Ionicons name="search" size={20} color="gray" />
-              <Text className="flex-1 p-4 text-gray-300">Explore study spots...</Text>
+              <Text className="flex-1 p-4 text-gray-300">Explore study spots</Text>
             </View>
           </Pressable>
         </Link>
