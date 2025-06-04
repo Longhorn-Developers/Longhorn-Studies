@@ -12,6 +12,7 @@ import TagSelector from './TagSelector';
 
 import { useTagStore } from '~/store/TagStore';
 import { PublicTagsRowSchema } from '~/supabase/functions/new-spot/types/schemas_infer';
+import { Ionicons } from '@expo/vector-icons';
 
 type TagSearchProps = {
   onTagsChange?: (tags: PublicTagsRowSchema[]) => void;
@@ -121,7 +122,11 @@ const TagSearch: React.FC<TagSearchProps> = ({ onTagsChange }) => {
       </View>
 
       {/* Common Tags */}
-      <Text className="mb-2 text-sm font-medium text-gray-700">Common Tags:</Text>
+      <View className="mb-2 flex-row items-center gap-2">
+        <Ionicons name="trending-up" size={16} color="gray" />
+        <Text className="text-sm">Trending Tags</Text>
+      </View>
+
       <TagSelector />
     </View>
   );

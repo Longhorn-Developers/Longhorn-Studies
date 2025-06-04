@@ -214,7 +214,7 @@ const CreateSpot = () => {
         </View>
 
         {/* Spot Tags */}
-        <View className="mt-6">
+        <View className="mb-4 mt-6">
           <Text className="mb-1 text-sm text-gray-800">Spot Tags</Text>
           <TagSearch />
         </View>
