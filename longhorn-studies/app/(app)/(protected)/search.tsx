@@ -71,6 +71,7 @@ const Search = () => {
           }
           placeholder="Search for spots, tags, or location..."
           addTagEnabled={false}
+          showTrendingTags={selectedTags.length <= 0 && searchQuery.length <= 0}
           autoFocus
         />
 
@@ -88,10 +89,9 @@ const Search = () => {
             renderItem={({ item }: any) => <SpotCard spot={item} favorited={false} />}
             estimatedItemSize={10}
             showsVerticalScrollIndicator={false}
-            className="mt-2"
             refreshing={spotsLoading}
             ListEmptyComponent={
-              <View className="mt-5 items-center justify-center">
+              <View className="items-center justify-center">
                 <Text className="text-gray-500">No spots found</Text>
               </View>
             }

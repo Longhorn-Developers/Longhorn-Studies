@@ -8,10 +8,16 @@ import { useTagStore } from '~/store/TagStore';
 
 export interface TagSearchProps extends TextInputProps {
   addTagEnabled?: boolean; // Whether to allow adding new tags
+  showTrendingTags?: boolean; // Whether to show trending tags
   leftIcon?: React.ReactNode; // Optional children for custom input components
 }
 
-const TagSearch: React.FC<TagSearchProps> = ({ addTagEnabled = true, ...textInputProps }) => {
+const TagSearch: React.FC<TagSearchProps> = ({
+  addTagEnabled = true,
+  showTrendingTags = true, // Default to showing trending tags
+  leftIcon,
+  ...textInputProps
+}) => {
   const {
     searchQuery,
     isSearching,
@@ -44,6 +50,7 @@ const TagSearch: React.FC<TagSearchProps> = ({ addTagEnabled = true, ...textInpu
       addTag({
         label: searchQuery.trim(),
         slug: '',
+        is_system: false,
       });
       setSearchQuery('');
     }
@@ -53,7 +60,7 @@ const TagSearch: React.FC<TagSearchProps> = ({ addTagEnabled = true, ...textInpu
     <View>
       {/* Tag Input */}
       <View className="mb-2 flex-row items-center rounded-xl border border-gray-300">
-        {textInputProps.leftIcon}
+        {leftIcon}
         <TextInput
           placeholder="Search or add tags (e.g., 'quiet', 'coffee')"
           autoCapitalize="none"
@@ -93,13 +100,19 @@ const TagSearch: React.FC<TagSearchProps> = ({ addTagEnabled = true, ...textInpu
         </View>
       )}
 
-      {/* Common Tags */}
-      <View className="mb-2 flex-row items-center gap-2">
-        <Ionicons name="trending-up" size={16} color="gray" />
-        <Text className="text-sm font-bold">Trending Tags</Text>
-      </View>
+      {/* Trending Tags */}
+      {showTrendingTags && (
+        <>
+          {/* Header */}
+          <View className="mb-2 flex-row items-center gap-2">
+            <Ionicons name="trending-up" size={16} color="gray" />
+            <Text className="text-sm font-bold">Trending Tags</Text>
+          </View>
 
-      <TagSelector tags={commonTags} />
+          {/* Trending Tags */}
+          <TagSelector tags={commonTags} />
+        </>
+      )}
     </View>
   );
 };
