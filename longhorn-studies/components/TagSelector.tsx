@@ -1,9 +1,8 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 
-import { useTagStore } from '~/store/TagStore';
-import { PublicTagsRowSchema } from '~/supabase/functions/new-spot/types/schemas_infer';
+import { useTagStore, PublicTagsRow } from '~/store/TagStore';
 
-const TagSelector = ({ tags }: { tags?: PublicTagsRowSchema[] }) => {
+const TagSelector = ({ tags }: { tags?: PublicTagsRow[] }) => {
   const { selectedTags, toggleTag } = useTagStore();
 
   return (

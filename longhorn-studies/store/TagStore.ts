@@ -3,19 +3,22 @@ import { createWithEqualityFn } from 'zustand/traditional';
 import { PublicTagsRowSchema } from '~/supabase/functions/new-spot/types/schemas_infer';
 import { supabase } from '~/utils/supabase';
 
+// optional id type for tags
+export type PublicTagsRow = Omit<PublicTagsRowSchema, 'id'> & { id?: PublicTagsRowSchema['id'] };
+
 type TagState = {
   searchQuery: string;
   isSearching: boolean;
-  searchResults: PublicTagsRowSchema[];
-  selectedTags: PublicTagsRowSchema[];
-  commonTags?: PublicTagsRowSchema[];
+  searchResults: PublicTagsRow[];
+  selectedTags: PublicTagsRow[];
+  commonTags?: PublicTagsRow[];
 
   // Actions
   setSearchQuery: (query: string) => void;
   searchTags: () => Promise<void>;
-  addTag: (tag: PublicTagsRowSchema) => void;
-  removeTag: (tag: PublicTagsRowSchema) => void;
-  toggleTag: (tag: PublicTagsRowSchema) => void;
+  addTag: (tag: PublicTagsRow) => void;
+  removeTag: (tag: PublicTagsRow) => void;
+  toggleTag: (tag: PublicTagsRow) => void;
   resetTags: () => void;
   fetchCommonTags: () => Promise<void>;
 };
@@ -57,28 +60,23 @@ export const useTagStore = createWithEqualityFn<TagState>((set, get) => ({
     }
   },
 
-  addTag: (tag: PublicTagsRowSchema) => {
+  addTag: (tag: PublicTagsRow) => {
     const { selectedTags } = get();
-    if (!selectedTags.some((t) => t.slug === tag.slug)) {
-      set({ selectedTags: [...selectedTags, tag] });
-    }
+    set({ selectedTags: [...selectedTags, tag] });
   },
 
-  removeTag: (tag: PublicTagsRowSchema) => {
+  removeTag: (tag: PublicTagsRow) => {
     const { selectedTags } = get();
-    set({
-      selectedTags: selectedTags.filter((t) => t.slug !== tag.slug),
-    });
+    set({ selectedTags: selectedTags.filter((t) => t.slug !== tag.slug) });
   },
 
-  toggleTag: (tag: PublicTagsRowSchema) => {
+  toggleTag: (tag: PublicTagsRow) => {
     const { selectedTags } = get();
     const isSelected = selectedTags.some((t) => t.slug === tag.slug);
 
     if (isSelected) {
       get().removeTag(tag);
     } else {
-      // Convert to PublicTagsInsertSchema compatible object
       get().addTag(tag);
     }
   },
