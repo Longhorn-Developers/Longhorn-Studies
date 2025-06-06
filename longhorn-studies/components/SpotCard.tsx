@@ -110,7 +110,7 @@ const SpotCard = ({
   }
 
   return (
-    <Pressable className="my-2 flex-row items-center gap-4 rounded-xl border border-gray-200 px-5 py-3">
+    <Pressable className="my-2 flex-row items-center gap-4 rounded-xl border border-gray-200 bg-white px-5 py-3">
       {/* Spot Image Preview */}
       {spot.media ? (
         <View>
