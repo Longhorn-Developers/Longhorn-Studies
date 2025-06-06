@@ -58,7 +58,7 @@ const Search = () => {
 
   return (
     <Container>
-      <View className="flex h-full gap-4">
+      <View className="flex h-full">
         <TagSearch
           leftIcon={
             <Ionicons
@@ -78,7 +78,7 @@ const Search = () => {
         {/* Spots Lists */}
         {searchQuery.length <= 0 && selectedTags.length <= 0 ? (
           // Popular Spots
-          <View className="mb-2 flex-row items-center gap-2">
+          <View className="mb-2 mt-4 flex-row items-center gap-2">
             <Ionicons name="stats-chart" size={16} color="gray" />
             <Text className="text-sm font-bold">Popular Spots</Text>
           </View>
