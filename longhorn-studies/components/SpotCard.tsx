@@ -1,5 +1,6 @@
 import { Entypo, FontAwesome } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Link } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Text, View, Pressable, Image } from 'react-native';
 import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
@@ -110,68 +111,77 @@ const SpotCard = ({
   }
 
   return (
-    <Pressable className="my-2 flex-row items-center gap-4 rounded-xl border border-gray-200 bg-white px-5 py-3">
-      {/* Spot Image Preview */}
-      {spot.media ? (
-        <View>
-          {/* Loading shimmer placeholder */}
-          {isLoading ? (
-            <ShimmerPlaceHolder
-              LinearGradient={LinearGradient}
-              style={{ height: 80, width: 80, borderRadius: 12 }}
-            />
-          ) : // Display the image if available
-          image ? (
-            <Image
-              style={{ height: 80, width: 80 }}
-              source={{ uri: image }}
-              className="rounded-xl"
-            />
-          ) : (
-            <View
-              style={{ height: 80, width: 80 }}
-              className="items-center justify-center rounded-xl bg-gray-200">
-              <Entypo name="image" size={18} />
+    <Link
+      href={{
+        pathname: '/spot/[id]',
+        params: { id: spot.id as string },
+      }}
+      className="mb-4">
+      <View className="my-2 flex-row items-center gap-4 rounded-xl border border-gray-200 bg-white px-5 py-3">
+        {/* Favorite Button */}
+        <Pressable onPress={toggleFavorited} className="absolute right-4 top-4">
+          <FontAwesome
+            name={isFavorited ? 'star' : 'star-o'}
+            size={22}
+            color={isFavorited ? '#d97706' : '#6b7280'}
+          />
+        </Pressable>
+
+        {/* Spot Image Preview */}
+        {spot.media ? (
+          <View>
+            {/* Loading shimmer placeholder */}
+            {isLoading ? (
+              <ShimmerPlaceHolder
+                LinearGradient={LinearGradient}
+                style={{ height: 80, width: 80, borderRadius: 12 }}
+              />
+            ) : // Display the image if available
+            image ? (
+              <Image
+                style={{ height: 80, width: 80 }}
+                source={{ uri: image }}
+                className="rounded-xl"
+              />
+            ) : (
+              <View
+                style={{ height: 80, width: 80 }}
+                className="items-center justify-center rounded-xl bg-gray-200">
+                <Entypo name="image" size={18} />
+              </View>
+            )}
+          </View>
+        ) : (
+          <View className="h-20 w-20 items-center justify-center rounded-xl bg-gray-200" />
+        )}
+
+        {/* Spot Details */}
+        <View className="flex-1">
+          {/* Title row with favorite button */}
+          <View className="flex-row items-center justify-between">
+            <Text className="text-lg font-bold text-gray-900">{spot.title}</Text>
+          </View>
+
+          {/* Spot Body */}
+          {spot.body && (
+            <Text className="mt-1 text-gray-600" numberOfLines={2}>
+              {spot.body}
+            </Text>
+          )}
+
+          {/* Tags */}
+          {tags && tags.length > 0 && (
+            <View className="mt-3 flex-row flex-wrap gap-2">
+              {tags.map((tag) => (
+                <View key={tag.id} className="rounded-full bg-amber-600 px-3 py-1">
+                  <Text className="text-xs font-medium text-white">{tag.label}</Text>
+                </View>
+              ))}
             </View>
           )}
         </View>
-      ) : (
-        <View className="h-20 w-20 items-center justify-center rounded-xl bg-gray-200" />
-      )}
-
-      {/* Spot Details */}
-      <View className="flex-1">
-        {/* Title row with favorite button */}
-        <View className="flex-row items-center justify-between">
-          <Text className="text-lg font-bold text-gray-900">{spot.title}</Text>
-          <Pressable onPress={toggleFavorited} className="p-2">
-            <FontAwesome
-              name={isFavorited ? 'star' : 'star-o'}
-              size={22}
-              color={isFavorited ? '#d97706' : '#6b7280'}
-            />
-          </Pressable>
-        </View>
-
-        {/* Spot Body */}
-        {spot.body && (
-          <Text className="mt-1 text-gray-600" numberOfLines={2}>
-            {spot.body}
-          </Text>
-        )}
-
-        {/* Tags */}
-        {tags && tags.length > 0 && (
-          <View className="mt-3 flex-row flex-wrap gap-2">
-            {tags.map((tag) => (
-              <View key={tag.id} className="rounded-full bg-amber-600 px-3 py-1">
-                <Text className="text-xs font-medium text-white">{tag.label}</Text>
-              </View>
-            ))}
-          </View>
-        )}
       </View>
-    </Pressable>
+    </Link>
   );
 };
 
