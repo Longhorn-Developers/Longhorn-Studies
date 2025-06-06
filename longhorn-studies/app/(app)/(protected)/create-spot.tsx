@@ -59,7 +59,6 @@ const CreateSpot = () => {
     resolver: zodResolver(publicSpotsInsertSchemaSchema),
   });
 
-  // Fetch common tags on component mount
   useEffect(() => {
     // Reset tags when component unmounts
     return () => resetTags();

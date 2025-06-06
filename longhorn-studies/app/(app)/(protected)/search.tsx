@@ -10,9 +10,10 @@ import TagSearch from '~/components/TagSearch';
 import { useTagStore } from '~/store/TagStore';
 import { PublicSpotsWithDetailsRowSchema } from '~/supabase/functions/new-spot/types/schemas_infer';
 import { supabase } from '~/utils/supabase';
+
 const Search = () => {
   const router = useRouter();
-  const { searchQuery } = useTagStore();
+  const { searchQuery, selectedTags } = useTagStore();
 
   const [spots, setSpots] = useState<PublicSpotsWithDetailsRowSchema[]>();
   const [spotsLoading, setSpotsLoading] = useState(true);
@@ -25,6 +26,7 @@ const Search = () => {
       const { data: spots_data, error: spots_error } = await supabase
         .from('spots_with_details')
         .select()
+        .contains('tags', JSON.stringify(selectedTags))
         .or(`title.ilike.%${searchQuery}%, body.ilike.%${searchQuery}%`)
         .limit(10);
 
@@ -45,14 +47,14 @@ const Search = () => {
   // Debounce the search query to avoid too many updates
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (searchQuery.length <= 0) {
+      if (searchQuery.length <= 0 && selectedTags.length <= 0) {
         return;
       }
       fetchSpots();
     }, 300); // Adjust the debounce time as needed
 
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchQuery, selectedTags]);
 
   return (
     <Container>
@@ -69,10 +71,11 @@ const Search = () => {
           }
           placeholder="Search for spots, tags, or location..."
           addTagEnabled={false}
+          autoFocus
         />
 
         {/* Spots Lists */}
-        {searchQuery.length <= 0 ? (
+        {searchQuery.length <= 0 && selectedTags.length <= 0 ? (
           // Popular Spots
           <View className="mb-2 flex-row items-center gap-2">
             <Ionicons name="stats-chart" size={16} color="gray" />

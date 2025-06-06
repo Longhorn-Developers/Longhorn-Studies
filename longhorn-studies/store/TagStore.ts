@@ -1,9 +1,6 @@
 import { createWithEqualityFn } from 'zustand/traditional';
 
-import {
-  PublicTagsInsertSchema,
-  PublicTagsRowSchema,
-} from '~/supabase/functions/new-spot/types/schemas_infer';
+import { PublicTagsRowSchema } from '~/supabase/functions/new-spot/types/schemas_infer';
 import { supabase } from '~/utils/supabase';
 
 type TagState = {
@@ -16,7 +13,7 @@ type TagState = {
   // Actions
   setSearchQuery: (query: string) => void;
   searchTags: () => Promise<void>;
-  addTag: (tag: PublicTagsInsertSchema) => void;
+  addTag: (tag: PublicTagsRowSchema) => void;
   removeTag: (tag: PublicTagsRowSchema) => void;
   toggleTag: (tag: PublicTagsRowSchema) => void;
   resetTags: () => void;
@@ -60,47 +57,29 @@ export const useTagStore = createWithEqualityFn<TagState>((set, get) => ({
     }
   },
 
-  addTag: (tag: PublicTagsInsertSchema) => {
+  addTag: (tag: PublicTagsRowSchema) => {
     const { selectedTags } = get();
-    if (!selectedTags.some((t) => t.label.toLowerCase() === tag.label.toLowerCase())) {
-      // Ensure the tag has all required properties for PublicTagsRowSchema
-      const newTag: PublicTagsRowSchema = {
-        id: 'id' in tag ? tag.id! : 0,
-        label: tag.label,
-        slug: tag.slug,
-        created_by: tag.created_by ?? null,
-        is_system: tag.is_system ?? null,
-      };
-      set({ selectedTags: [...selectedTags, newTag] });
+    if (!selectedTags.some((t) => t.slug === tag.slug)) {
+      set({ selectedTags: [...selectedTags, tag] });
     }
   },
 
   removeTag: (tag: PublicTagsRowSchema) => {
     const { selectedTags } = get();
     set({
-      selectedTags: selectedTags.filter((t) =>
-        t.id ? t.id !== tag.id : t.label.toLowerCase() !== tag.label.toLowerCase()
-      ),
+      selectedTags: selectedTags.filter((t) => t.slug !== tag.slug),
     });
   },
 
   toggleTag: (tag: PublicTagsRowSchema) => {
     const { selectedTags } = get();
-    const isSelected = selectedTags.some((t) =>
-      t.id ? t.id === tag.id : t.label.toLowerCase() === tag.label?.toLowerCase()
-    );
+    const isSelected = selectedTags.some((t) => t.slug === tag.slug);
 
     if (isSelected) {
       get().removeTag(tag);
     } else {
       // Convert to PublicTagsInsertSchema compatible object
-      const insertTag: PublicTagsInsertSchema = {
-        label: tag.label,
-        slug: tag.slug,
-        created_by: tag.created_by,
-        is_system: tag.is_system,
-      };
-      get().addTag(insertTag);
+      get().addTag(tag);
     }
   },
 

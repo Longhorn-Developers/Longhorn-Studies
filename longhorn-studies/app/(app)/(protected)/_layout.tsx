@@ -27,13 +27,10 @@ export default function ProtectedLayout() {
         headerTitleStyle: { color: 'black' },
         headerShadowVisible: false,
       }}>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="(tabs)" options={{ headerTitle: 'Explore', headerShown: false }} />
 
       {/* Stacks */}
-      <Stack.Screen
-        name="favorites"
-        options={{ headerTitle: 'Favorites', headerBackTitle: 'Explore' }}
-      />
+      <Stack.Screen name="favorites" options={{ headerTitle: 'Favorites' }} />
       <Stack.Screen
         name="search"
         options={{ headerShown: false, presentation: 'transparentModal', animation: 'fade' }}
