@@ -13,7 +13,7 @@ import { supabase } from '~/utils/supabase';
 
 const Search = () => {
   const router = useRouter();
-  const { searchQuery, selectedTags } = useTagStore();
+  const { searchQuery, selectedTags, resetTags } = useTagStore();
 
   const [spots, setSpots] = useState<PublicSpotsWithDetailsRowSchema[]>();
   const [spotsLoading, setSpotsLoading] = useState(true);
@@ -55,6 +55,10 @@ const Search = () => {
 
     return () => clearTimeout(timer);
   }, [searchQuery, selectedTags]);
+
+  useEffect(() => {
+    return () => resetTags();
+  }, []);
 
   return (
     <Container>
