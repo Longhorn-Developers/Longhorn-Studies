@@ -1,8 +1,14 @@
 import { AppleMaps, GoogleMaps } from 'expo-maps';
 import { AppleMapsMarker } from 'expo-maps/build/apple/AppleMaps.types';
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
-import { Platform, View, StyleSheet } from 'react-native';
+import { useCallback, useState, useEffect } from 'react';
+import { Platform, View } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 
 import SpotCard from '~/components/SpotCard';
 import { PublicSpotsWithDetailsRowSchema } from '~/supabase/functions/new-spot/types/schemas_infer';
@@ -11,6 +17,9 @@ import { supabase } from '~/utils/supabase';
 export default function Home() {
   const [spots, setSpots] = useState<PublicSpotsWithDetailsRowSchema[] | null>(null);
   const [selectedSpot, setSelectedSpot] = useState<PublicSpotsWithDetailsRowSchema | null>(null);
+
+  // Animation values
+  const translateY = useSharedValue(300);
 
   // Fetch spots from Supabase whenever the screen comes into focus
   useFocusEffect(
@@ -37,8 +46,27 @@ export default function Home() {
     const spot = spots?.find((s) => s.id === marker.id);
     if (spot) {
       setSelectedSpot(spot);
+      translateY.value = withSpring(0, {
+        damping: 15,
+        stiffness: 100,
+      });
     }
   };
+
+  const handleMapClick = () => {
+    // Clear selectedspot
+    translateY.value = withTiming(300, { duration: 250 });
+  };
+
+  useEffect(() => {
+    if (!selectedSpot) {
+      translateY.value = 300;
+    }
+  }, [selectedSpot]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
 
   return (
     <View style={{ flex: 1 }}>
@@ -61,17 +89,17 @@ export default function Home() {
               : undefined
           }
           onMarkerClick={handleMarkerClick}
-          onMapClick={() => setSelectedSpot(null)}
+          onMapClick={handleMapClick}
         />
       ) : (
         <GoogleMaps.View style={{ flex: 1 }} />
       )}
 
-      {/* Spot Card Overlay */}
+      {/* Animated Spot Card Overlay */}
       {selectedSpot && (
-        <View className="absolute bottom-2 left-8 right-8 shadow-lg">
+        <Animated.View className="absolute bottom-2 left-8 right-8 shadow-lg" style={animatedStyle}>
           <SpotCard spot={selectedSpot} favorited={false} />
-        </View>
+        </Animated.View>
       )}
     </View>
   );
