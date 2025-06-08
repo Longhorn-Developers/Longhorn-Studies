@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity } from 'react-native';
 
 import { useTagStore, PublicTagsRow } from '~/store/TagStore';
 
-const TagSelector = ({ tags }: { tags?: PublicTagsRow[] }) => {
+const TagSelector = ({ tags }: { tags: PublicTagsRow[] }) => {
   const { selectedTags, toggleTag } = useTagStore();
 
   return (
