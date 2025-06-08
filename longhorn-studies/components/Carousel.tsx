@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react';
-import { FlatList, Image, View, Text, ActivityIndicator, Dimensions } from 'react-native';
+import { FlatList, Image, View, Text, ActivityIndicator } from 'react-native';
 
 import {
   PublicMediaRowSchema,
   PublicSpotsWithDetailsRowSchema,
 } from '~/supabase/functions/new-spot/types/schemas_infer';
 import { supabase } from '~/utils/supabase';
-
-const { width: screenWidth } = Dimensions.get('window');
 
 interface CarouselProps {
   spot: PublicSpotsWithDetailsRowSchema;
@@ -68,7 +66,6 @@ const Carousel = ({ spot, height = 300 }: CarouselProps) => {
         const validImages = downloadedImages.filter((img): img is string => img !== null);
 
         setImages(validImages);
-        console.log('Fetched images:', validImages[0].slice(0, 50), '...'); // Log first 50 characters of the first image
       } catch (error) {
         console.error('Error processing images:', error);
       } finally {
@@ -79,19 +76,11 @@ const Carousel = ({ spot, height = 300 }: CarouselProps) => {
     fetchImages();
   }, [spot.media]);
 
-  const renderImage = ({ item, index }: { item: string; index: number }) => (
-    <View style={{ width: screenWidth }}>
-      <Image
-        source={{ uri: item }}
-        style={{
-          width: screenWidth,
-          height,
-          resizeMode: 'cover',
-        }}
-      />
-    </View>
+  const renderImage = ({ item }: { item: string }) => (
+    <Image source={{ uri: item }} style={{ height }} className="w-screen" />
   );
 
+  // Render pagination indicators (dots)
   const renderPagination = () => (
     <View className="absolute bottom-3 left-0 right-0 flex-row justify-center">
       {images.map((_, index) => (
@@ -117,7 +106,7 @@ const Carousel = ({ spot, height = 300 }: CarouselProps) => {
   }
 
   return (
-    <View style={{ height }}>
+    <View>
       <FlatList
         data={images}
         renderItem={renderImage}
