@@ -1,5 +1,6 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState } from 'react';
-import { FlatList, Image, View, Text, ActivityIndicator } from 'react-native';
+import { FlatList, Image, View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 
 import {
   PublicMediaRowSchema,
@@ -77,7 +78,13 @@ const Carousel = ({ spot, height = 300 }: CarouselProps) => {
   }, [spot.media]);
 
   const renderImage = ({ item }: { item: string }) => (
-    <Image source={{ uri: item }} style={{ height }} className="w-screen" />
+    <>
+      <Image source={{ uri: item }} style={{ height }} className="w-screen" />
+      <LinearGradient
+        colors={['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.3)']}
+        style={StyleSheet.absoluteFill}
+      />
+    </>
   );
 
   // Render pagination indicators (dots)
@@ -114,6 +121,7 @@ const Carousel = ({ spot, height = 300 }: CarouselProps) => {
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
+        bounces={false}
         snapToAlignment="center"
         decelerationRate="fast"
       />

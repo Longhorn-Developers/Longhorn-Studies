@@ -35,7 +35,13 @@ export default function ProtectedLayout() {
         name="search"
         options={{ headerShown: false, presentation: 'transparentModal', animation: 'fade' }}
       />
-      <Stack.Screen name="spot/[id]" options={{ headerTitle: '', headerTransparent: true }} />
+      <Stack.Screen
+        name="spot/[id]"
+        options={{
+          headerTitle: '',
+          headerTransparent: true,
+        }}
+      />
 
       {/* Modals */}
       <Stack.Screen
