@@ -115,14 +115,10 @@ export default function Explore() {
               renderItem={({ item }: { item: any }) => {
                 if (item.id === 'add-button') {
                   return (
-                    <Link
-                      href="/search"
-                      className="mr-4 h-20 w-20 items-center justify-center rounded-xl border-2 border-dashed border-gray-300"
-                      asChild>
-                      {/* <Entypo name="plus" size={28} color="#9CA3AF" /> */}
-                      <View>
-                        <Entypo name="plus" size={28} color="#9CA3AF" />
-                      </View>
+                    <Link href="/search" asChild>
+                      <Pressable className="mr-4 h-20 w-20 items-center justify-center rounded-xl border-2 border-dashed border-gray-300">
+                        <Entypo name="plus" size={24} color="gray" />
+                      </Pressable>
                     </Link>
                   );
                 }
