@@ -5,7 +5,7 @@ export const Container = ({
   className,
 }: {
   children: React.ReactNode;
-  className: string;
+  className?: string;
 }) => {
   return (
     <View className="flex-1 bg-white">

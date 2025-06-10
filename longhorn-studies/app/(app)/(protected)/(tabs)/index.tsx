@@ -56,7 +56,8 @@ export default function Explore() {
       const { data: spots_data, error: spots_error } = await supabase
         .from('spots_with_details')
         .select()
-        .limit(20);
+        .limit(20)
+        .order('created_at', { ascending: true });
 
       if (spots_error) {
         console.error('Error fetching spots:', spots_error);
@@ -111,18 +112,22 @@ export default function Explore() {
               showsVerticalScrollIndicator={false}
               data={[{ id: 'add-button' }, ...favorites]}
               estimatedItemSize={10}
-              renderItem={({ item }: { item: PublicSpotsWithDetailsRowSchema }) => {
+              renderItem={({ item }: { item: any }) => {
                 if (item.id === 'add-button') {
                   return (
-                    // <Link href="/favorites/add" asChild>
-                    <View className="mr-4 h-20 w-20 items-center justify-center rounded-xl border-2 border-dashed border-gray-300">
-                      <Entypo name="plus" size={28} color="#9CA3AF" />
-                    </View>
-                    // </Link>
+                    <Link
+                      href="/search"
+                      className="mr-4 h-20 w-20 items-center justify-center rounded-xl border-2 border-dashed border-gray-300"
+                      asChild>
+                      {/* <Entypo name="plus" size={28} color="#9CA3AF" /> */}
+                      <View>
+                        <Entypo name="plus" size={28} color="#9CA3AF" />
+                      </View>
+                    </Link>
                   );
                 }
 
-                return <SpotIcon spot={item} />;
+                return <SpotIcon spot={item as PublicSpotsWithDetailsRowSchema} />;
               }}
               onRefresh={fetchFavorites}
               refreshing={favoritesLoading}

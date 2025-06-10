@@ -1,6 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
+import { Link } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { View, Pressable, Text, ImageBackground } from 'react-native';
+import { View, Text, ImageBackground } from 'react-native';
 import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
 
 import {
@@ -57,7 +58,12 @@ const SpotIcon = ({ spot }: { spot: PublicSpotsWithDetailsRowSchema }) => {
   }, []);
 
   return (
-    <Pressable className="mr-4 rounded-xl">
+    <Link
+      href={{
+        pathname: '/spot/[id]',
+        params: { id: spot.id as string },
+      }}
+      className="mr-4 rounded-xl">
       {/* Spot Image Preview */}
       {isLoading ? (
         // Loading shimmer placeholder
@@ -81,7 +87,7 @@ const SpotIcon = ({ spot }: { spot: PublicSpotsWithDetailsRowSchema }) => {
           </ImageBackground>
         </View>
       )}
-    </Pressable>
+    </Link>
   );
 };
 
