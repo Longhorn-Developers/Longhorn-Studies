@@ -11,6 +11,7 @@ import {
   StyleSheet,
   Text,
   View,
+  Share,
 } from 'react-native';
 
 import Carousel from '~/components/Carousel';
@@ -53,6 +54,16 @@ const Spot = () => {
 
     fetchSpot();
   }, [id]);
+
+  const shareSpot = async () => {
+    try {
+      await Share.share({
+        message: Linking.createURL(`/spot/${id}`),
+      });
+    } catch (error) {
+      console.error('Error sharing:', error);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -108,7 +119,7 @@ const Spot = () => {
               </Pressable>
 
               {/* Share Button */}
-              <Pressable>
+              <Pressable onPress={shareSpot}>
                 <Ionicons name="share-outline" size={24} color="#d97706" />
               </Pressable>
             </View>
@@ -169,6 +180,14 @@ const Spot = () => {
               )}
             </View>
           </Pressable>
+        </View>
+
+        {/* Ratings */}
+        <View>
+          <Text className="text-lg font-semibold text-gray-800">Ratings</Text>
+          <Text className="text-sm font-medium text-gray-400">
+            <Text className="italic text-gray-500">No ratings yet. Be the first!</Text>
+          </Text>
         </View>
       </View>
     </ScrollView>
