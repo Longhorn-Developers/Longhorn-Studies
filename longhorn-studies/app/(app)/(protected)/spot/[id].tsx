@@ -1,9 +1,17 @@
+import * as Linking from 'expo-linking';
 import { AppleMaps, GoogleMaps } from 'expo-maps';
 import { useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
-import { ActivityIndicator, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
-import { Button } from '~/components/Button';
 import Carousel from '~/components/Carousel';
 import {
   PublicSpotsWithDetailsRowSchema,
@@ -107,32 +115,42 @@ const Spot = () => {
         <View>
           <Text className="text-lg font-semibold text-gray-800">Location</Text>
           <Text className="mb-2 text-sm font-medium text-gray-400">Press to get directions</Text>
-          <View className="flex h-64 items-center justify-center rounded-xl">
-            {Platform.OS === 'ios' ? (
-              <AppleMaps.View
-                style={[StyleSheet.absoluteFill, { overflow: 'hidden', borderRadius: 16 }]}
-                cameraPosition={{
-                  // Default coordinates for UT
-                  coordinates: {
-                    latitude: spot.latitude!,
-                    longitude: spot.longitude!,
-                  },
-                  zoom: 18,
-                }}
-                uiSettings={{
-                  myLocationButtonEnabled: false,
-                  compassEnabled: false,
-                  scaleBarEnabled: false,
-                  togglePitchEnabled: false,
-                }}
-              />
-            ) : (
-              <GoogleMaps.View style={{ flex: 1 }} />
-            )}
-          </View>
+          <Pressable
+            onPress={() => {
+              // Handle navigation to maps or directions
+              Linking.openURL(
+                Platform.select({
+                  ios: `maps://?q=${spot.latitude},${spot.longitude}`,
+                  android: `geo:${spot.latitude},${spot.longitude}?q=${spot.latitude},${spot.longitude}`,
+                }) || ''
+              );
+            }}>
+            {/* Uninteractable map */}
+            <View className="flex h-64 items-center justify-center rounded-xl" pointerEvents="none">
+              {Platform.OS === 'ios' ? (
+                <AppleMaps.View
+                  style={[StyleSheet.absoluteFill, { overflow: 'hidden', borderRadius: 16 }]}
+                  cameraPosition={{
+                    // Default coordinates for UT
+                    coordinates: {
+                      latitude: spot.latitude!,
+                      longitude: spot.longitude!,
+                    },
+                    zoom: 18,
+                  }}
+                  uiSettings={{
+                    myLocationButtonEnabled: false,
+                    compassEnabled: false,
+                    scaleBarEnabled: false,
+                    togglePitchEnabled: false,
+                  }}
+                />
+              ) : (
+                <GoogleMaps.View style={{ flex: 1 }} />
+              )}
+            </View>
+          </Pressable>
         </View>
-
-        <Button title="Get Directions" />
       </View>
     </ScrollView>
   );
