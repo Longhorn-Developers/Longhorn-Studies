@@ -1,11 +1,12 @@
+import { AppleMaps, GoogleMaps } from 'expo-maps';
 import { useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
-import { Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
+import { Button } from '~/components/Button';
 
 import Carousel from '~/components/Carousel';
 import { Container } from '~/components/Container';
 import {
-  PublicMediaRowSchema,
   PublicSpotsWithDetailsRowSchema,
   PublicTagsRowSchema,
 } from '~/supabase/functions/new-spot/types/schemas_infer';
@@ -76,21 +77,53 @@ const Spot = () => {
         </View>
       </View>
 
-      <Container>
-        {/* Description */}
-        <Text style={{ marginVertical: 10 }}>{spot.body}</Text>
+      <Container className="justify-between">
+        {/* Main body of items */}
+        <View className="gap-8">
+          {/* Description */}
+          <View>
+            <Text className="text-lg font-semibold text-gray-800">Description</Text>
+            <Text className="text-sm font-medium text-gray-400">
+              {spot.body ? (
+                spot.body
+              ) : (
+                <Text className="italic text-gray-500">No description provided</Text>
+              )}
+            </Text>
+          </View>
 
-        {/* Other info */}
-        <Text>Latitude: {spot.latitude}</Text>
-        <Text>Longitude: {spot.longitude}</Text>
-        <Text>Created at: {new Date(spot.created_at!).toLocaleDateString()}</Text>
-        <Text>Updated at: {new Date(spot.updated_at!).toLocaleDateString()}</Text>
-        <Text>
-          Media:{' '}
-          {spot.media
-            ? (spot.media as PublicMediaRowSchema[]).map((m) => m.storage_key).join(', ')
-            : 'No media'}
-        </Text>
+          {/* Spot Location */}
+          <View>
+            <Text className="text-lg font-semibold text-gray-800">Location</Text>
+            <Text className="mb-2 text-sm font-medium text-gray-400">Press to get directions</Text>
+            <View className="flex h-64 items-center justify-center rounded-xl">
+              {Platform.OS === 'ios' ? (
+                <AppleMaps.View
+                  style={[StyleSheet.absoluteFill, { overflow: 'hidden', borderRadius: 16 }]}
+                  cameraPosition={{
+                    // Default coordinates for UT
+                    coordinates: {
+                      latitude: spot.latitude!,
+                      longitude: spot.longitude!,
+                    },
+                    zoom: 18,
+                  }}
+                  uiSettings={{
+                    myLocationButtonEnabled: false,
+                    compassEnabled: false,
+                    scaleBarEnabled: false,
+                    togglePitchEnabled: false,
+                  }}
+                />
+              ) : (
+                <GoogleMaps.View style={{ flex: 1 }} />
+              )}
+            </View>
+          </View>
+        </View>
+
+        {/* Action Buttons at bottom */}
+        <Button title="Get Directions" />
       </Container>
     </>
   );
