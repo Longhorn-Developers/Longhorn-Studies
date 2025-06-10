@@ -1,3 +1,4 @@
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
 import { AppleMaps, GoogleMaps } from 'expo-maps';
 import { useLocalSearchParams } from 'expo-router';
@@ -80,20 +81,38 @@ const Spot = () => {
         {/* Carousel */}
         <Carousel spot={spot} />
 
-        <View className="absolute bottom-4 left-2 p-4">
+        {/* Title and Tags */}
+        <View className="absolute bottom-0 left-2 p-4">
           {/* Title */}
           <Text className="text-4xl font-bold text-white">{spot.title}</Text>
 
-          {/* Tags */}
-          {spot.tags && (
-            <View className="mt-3 flex-row flex-wrap gap-2">
-              {(spot.tags as PublicTagsRowSchema[]).map((tag) => (
-                <View key={tag.id} className="rounded-full bg-amber-600 px-3 py-1">
-                  <Text className="text-xs font-medium text-white">{tag.label}</Text>
-                </View>
-              ))}
+          {/* Tags and Action Buttons */}
+          <View className="mt-2 w-full flex-row flex-wrap items-center justify-between">
+            {/* Tags */}
+            {spot.tags && (
+              <View className="flex-row flex-wrap gap-2">
+                {(spot.tags as PublicTagsRowSchema[]).map((tag) => (
+                  <View key={tag.id} className="rounded-full bg-amber-600 px-3 py-1">
+                    <Text className="text-xs font-medium text-white">{tag.label}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Action Buttons */}
+            {/* #d97706 #6b7280 */}
+            <View className="flex-row items-center gap-2 pr-3">
+              {/* Favorite Button */}
+              <Pressable>
+                <FontAwesome name="star-o" size={24} color="#d97706" />
+              </Pressable>
+
+              {/* Share Button */}
+              <Pressable>
+                <Ionicons name="share-outline" size={24} color="#d97706" />
+              </Pressable>
             </View>
-          )}
+          </View>
         </View>
       </View>
 
