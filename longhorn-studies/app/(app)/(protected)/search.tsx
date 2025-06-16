@@ -61,7 +61,7 @@ const Search = () => {
           // Search Query Spot Results
           <FlashList
             data={searchResults}
-            renderItem={({ item }: any) => <SpotCard spot={item} favorited={false} />}
+            renderItem={({ item }: any) => <SpotCard spot={item} />}
             estimatedItemSize={10}
             showsVerticalScrollIndicator={false}
             refreshing={searchLoading}

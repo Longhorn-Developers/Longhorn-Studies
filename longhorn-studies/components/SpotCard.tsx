@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react';
 import { Text, View, Pressable, Image } from 'react-native';
 import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
 
+import { useAuth } from '~/store/AuthProvider';
+import { useSpotsStore } from '~/store/SpotsStore';
 import {
   PublicSpotsWithDetailsRowSchema,
   PublicTagsRowSchema,
@@ -12,15 +14,12 @@ import {
 } from '~/supabase/functions/new-spot/types/schemas_infer';
 import { supabase } from '~/utils/supabase';
 
-const SpotCard = ({
-  spot,
-  favorited,
-}: {
-  spot: PublicSpotsWithDetailsRowSchema;
-  favorited: boolean;
-}) => {
+const SpotCard = ({ spot }: { spot: PublicSpotsWithDetailsRowSchema }) => {
+  const { user } = useAuth();
+  const { favorites, addFavorite, removeFavorite, fetchFavorites } = useSpotsStore();
+
   const [image, setImage] = useState<string | null>(null);
-  const [isFavorited, setIsFavorited] = useState(favorited);
+  const [isFavorited, setIsFavorited] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   // Check if the spot has media and if so, fetch the first image
@@ -31,7 +30,7 @@ const SpotCard = ({
       try {
         media = spot.media as PublicMediaRowSchema[];
       } catch (error) {
-        console.error('Error casting media:', error);
+        console.error('Error casting media type:', error);
         setIsLoading(false);
         return;
       }
@@ -66,39 +65,23 @@ const SpotCard = ({
     fetchImage();
   }, []);
 
+  useEffect(() => {
+    setIsFavorited(favorites.some((favs) => favs.id === spot.id));
+  }, [favorites]);
+
   const toggleFavorited = async () => {
     if (!spot.id) return;
 
     if (!isFavorited) {
       // From unfavorited to favorite
-      // Add spot to favorites table
-      const { data, error } = await supabase
-        .from('favorites')
-        .insert({ spot_id: spot.id })
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error adding to favorites:', error);
-      }
-      console.log('Added spot to favorites:', data?.spot_id);
+      await addFavorite(spot.id);
     } else {
       // From favorite to unfavorited
-      // Remove spot from favorites table
-      const { data, error } = await supabase
-        .from('favorites')
-        .delete()
-        .eq('spot_id', spot.id)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error removing from favorites:', error);
-      }
-      console.log('Removed spot from favorites:', data?.spot_id);
+      await removeFavorite(spot.id);
     }
 
     setIsFavorited(!isFavorited);
+    fetchFavorites(user!.id);
   };
 
   // Check if the spot has tags

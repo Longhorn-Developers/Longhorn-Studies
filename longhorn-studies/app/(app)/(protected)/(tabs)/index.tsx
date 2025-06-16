@@ -82,9 +82,7 @@ export default function Explore() {
           {/* Spots List */}
           <FlashList
             data={spots}
-            renderItem={({ item }: any) => (
-              <SpotCard spot={item} favorited={favorites.some((fav) => fav.id === item.id)} />
-            )}
+            renderItem={({ item }: any) => <SpotCard spot={item} />}
             estimatedItemSize={20}
             showsVerticalScrollIndicator={false}
             className="mt-2"

@@ -24,7 +24,7 @@ const Favorites = () => {
         data={favorites}
         estimatedItemSize={10}
         renderItem={({ item }: { item: PublicSpotsWithDetailsRowSchema }) => {
-          return <SpotCard favorited spot={item} />;
+          return <SpotCard spot={item} />;
         }}
         onRefresh={() => fetchFavorites(user!.id)}
         refreshing={favoritesLoading}

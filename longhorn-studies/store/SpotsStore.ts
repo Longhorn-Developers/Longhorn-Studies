@@ -25,8 +25,13 @@ type SpotsState = {
 
   // Actions
   addSpot: (spot: PublicSpotsRowSchema) => void;
+
+  addFavorite: (id: string) => Promise<void>;
+  removeFavorite: (id: string) => Promise<void>;
+
   searchSpot: (selectedTags: PublicTagsRow[]) => Promise<void>;
   setSearchQuery: (query: string) => void;
+
   fetchSpot: (id: string) => Promise<void>;
   fetchSpots: () => Promise<void>;
   fetchFavorites: (user_id: string) => Promise<void>;
@@ -49,6 +54,37 @@ export const useSpotsStore = createWithEqualityFn<SpotsState>((set, get) => ({
   addSpot: (spot: PublicSpotsRowSchema) => {
     // const { selectedTags } = get();
     // set({ selectedTags: [...selectedTags, tag] });
+  },
+
+  addFavorite: async (id: string) => {
+    // Add spot to favorites table
+    const { data, error } = await supabase
+      .from('favorites')
+      .insert({ spot_id: id })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error adding to favorites:', error);
+    } else {
+      console.log('Added spot to favorites:', data?.spot_id);
+    }
+  },
+
+  removeFavorite: async (id: string) => {
+    // Remove spot from favorites table
+    const { data, error } = await supabase
+      .from('favorites')
+      .delete()
+      .eq('spot_id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error removing from favorites:', error);
+    } else {
+      console.log('Removed spot from favorites:', data?.spot_id);
+    }
   },
 
   setSearchQuery: (searchQuery: string) => set({ searchQuery }),

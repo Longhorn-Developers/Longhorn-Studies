@@ -84,7 +84,7 @@ export default function Map() {
       {/* Animated Spot Card Overlay */}
       {selectedSpot && (
         <Animated.View className="absolute bottom-2 left-8 right-8 shadow-lg" style={animatedStyle}>
-          <SpotCard spot={selectedSpot} favorited={false} />
+          <SpotCard spot={selectedSpot} />
         </Animated.View>
       )}
     </View>
