@@ -2,7 +2,7 @@ import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
 import { AppleMaps, GoogleMaps } from 'expo-maps';
 import { useLocalSearchParams } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import {
   ActivityIndicator,
   Platform,
@@ -15,44 +15,15 @@ import {
 } from 'react-native';
 
 import Carousel from '~/components/Carousel';
-import {
-  PublicSpotsWithDetailsRowSchema,
-  PublicTagsRowSchema,
-} from '~/supabase/functions/new-spot/types/schemas_infer';
-import { supabase } from '~/utils/supabase';
+import { useSpotsStore } from '~/store/SpotsStore';
+import { PublicTagsRowSchema } from '~/supabase/functions/new-spot/types/schemas_infer';
 
 const Spot = () => {
   const { id } = useLocalSearchParams();
-
-  const [spot, setSpot] = useState<PublicSpotsWithDetailsRowSchema | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { spot, fetchSpot, spotLoading } = useSpotsStore();
 
   useEffect(() => {
-    async function fetchSpot() {
-      setIsLoading(true);
-      try {
-        // Fetch the spot details from the database
-        const { data, error } = await supabase
-          .from('spots_with_details')
-          .select()
-          .eq('id', id as string)
-          .single();
-
-        if (error) {
-          console.error('Error fetching spot:', error);
-          return;
-        }
-
-        setSpot(data);
-        console.log('Fetched spot');
-      } catch (error) {
-        console.error('Error in fetchSpot:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchSpot();
+    fetchSpot(id as string);
   }, [id]);
 
   const shareSpot = async () => {
@@ -65,7 +36,7 @@ const Spot = () => {
     }
   };
 
-  if (isLoading) {
+  if (spotLoading) {
     return (
       <View className="flex-1 justify-center bg-white">
         <ActivityIndicator size="large" color="#ff7603" />

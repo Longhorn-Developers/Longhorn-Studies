@@ -8,6 +8,9 @@ import {
 import { supabase } from '~/utils/supabase';
 
 type SpotsState = {
+  spot: PublicSpotsWithDetailsRowSchema | null;
+  spotLoading: boolean;
+
   spots: PublicSpotsWithDetailsRowSchema[];
   spotsLoading: boolean;
 
@@ -16,11 +19,15 @@ type SpotsState = {
 
   // Actions
   addSpot: (spot: PublicSpotsRowSchema) => void;
+  fetchSpot: (id: string) => Promise<void>;
   fetchSpots: () => Promise<void>;
   fetchFavorites: (user_id: string) => Promise<void>;
 };
 
 export const useSpotsStore = createWithEqualityFn<SpotsState>((set, get) => ({
+  spot: null,
+  spotLoading: false,
+
   spots: [],
   spotsLoading: false,
 
@@ -30,6 +37,34 @@ export const useSpotsStore = createWithEqualityFn<SpotsState>((set, get) => ({
   addSpot: (spot: PublicSpotsRowSchema) => {
     // const { selectedTags } = get();
     // set({ selectedTags: [...selectedTags, tag] });
+  },
+
+  fetchSpot: async (id: string) => {
+    set({ spotLoading: true });
+    try {
+      // Fetch the spot details from the database
+      const { data: spot, error } = await supabase
+        .from('spots_with_details')
+        .select()
+        .eq('id', id as string)
+        .single();
+
+      // If Supabase returns an error or no data, throw an error
+      if (error || !spot) {
+        const errorMessage = error ? error.message : `Spot with id ${id} not found.`;
+        console.error('Error fetching spot:', errorMessage);
+        throw new Error(errorMessage);
+      }
+
+      console.log(`Fetched spot ${id}`);
+      set({ spot: spot as PublicSpotsWithDetailsRowSchema });
+    } catch (error) {
+      console.error('Error in fetchSpot:', error);
+      set({ spot: null });
+      throw error;
+    } finally {
+      set({ spotLoading: false });
+    }
   },
 
   fetchSpots: async () => {
