@@ -2,7 +2,7 @@ import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
 import { AppleMaps, GoogleMaps } from 'expo-maps';
 import { useLocalSearchParams } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Platform,
@@ -15,16 +15,43 @@ import {
 } from 'react-native';
 
 import Carousel from '~/components/Carousel';
+import { useAuth } from '~/store/AuthProvider';
 import { useSpotsStore } from '~/store/SpotsStore';
 import { PublicTagsRowSchema } from '~/supabase/functions/new-spot/types/schemas_infer';
 
 const Spot = () => {
   const { id } = useLocalSearchParams();
-  const { spot, fetchSpot, spotLoading } = useSpotsStore();
+
+  const { user } = useAuth();
+  const { spot, fetchSpot, spotLoading, favorites, addFavorite, removeFavorite, fetchFavorites } =
+    useSpotsStore();
+
+  const [isFavorited, setIsFavorited] = useState(false);
 
   useEffect(() => {
     fetchSpot(id as string);
   }, [id]);
+
+  useEffect(() => {
+    if (spot) {
+      setIsFavorited(favorites.some((favs) => favs.id === spot.id));
+    }
+  }, [favorites]);
+
+  const toggleFavorited = async () => {
+    if (!spot || !spot.id) return;
+
+    if (!isFavorited) {
+      // From unfavorited to favorite
+      await addFavorite(spot.id);
+    } else {
+      // From favorite to unfavorited
+      await removeFavorite(spot.id);
+    }
+
+    setIsFavorited(!isFavorited);
+    fetchFavorites(user!.id);
+  };
 
   const shareSpot = async () => {
     try {
@@ -85,8 +112,8 @@ const Spot = () => {
             {/* #d97706 #6b7280 */}
             <View className="flex-row items-center gap-2 pr-3">
               {/* Favorite Button */}
-              <Pressable>
-                <FontAwesome name="star-o" size={24} color="#d97706" />
+              <Pressable onPress={toggleFavorited}>
+                <FontAwesome name={isFavorited ? 'star' : 'star-o'} size={24} color="#d97706" />
               </Pressable>
 
               {/* Share Button */}
