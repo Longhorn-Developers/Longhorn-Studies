@@ -1,7 +1,7 @@
 import { Entypo, Ionicons } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
 import { Link } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 import { Button } from '~/components/Button';
@@ -9,72 +9,16 @@ import { Container } from '~/components/Container';
 import SpotCard from '~/components/SpotCard';
 import SpotIcon from '~/components/SpotIcon';
 import { useAuth } from '~/store/AuthProvider';
-import {
-  PublicSpotsWithDetailsRowSchema,
-  PublicSpotFavoritesRowSchema,
-} from '~/supabase/functions/new-spot/types/schemas_infer';
-import { supabase } from '~/utils/supabase';
+import { useSpotsStore } from '~/store/SpotsStore';
+import { PublicSpotsWithDetailsRowSchema } from '~/supabase/functions/new-spot/types/schemas_infer';
 
 export default function Explore() {
   const { user } = useAuth();
-
-  const [spots, setSpots] = useState<PublicSpotsWithDetailsRowSchema[]>([]);
-  const [favorites, setFavorites] = useState<PublicSpotFavoritesRowSchema[]>([]);
-
-  const [spotsLoading, setSpotsLoading] = useState(true);
-  const [favoritesLoading, setFavoritesLoading] = useState(true);
-
-  async function fetchFavorites() {
-    // Fetch favorites from the database
-    setFavoritesLoading(true);
-    try {
-      // Fetch favorites for the current user
-      const { data: favorites_data, error: favorites_error } = await supabase
-        .from('spot_favorites')
-        .select()
-        .eq('user_id', user!.id); // Ensure to filter by the current user
-
-      if (favorites_error) {
-        console.error('Error fetching favorites:', favorites_error);
-        return;
-      }
-
-      setFavorites(favorites_data);
-      console.log('Explore fetched favorites');
-    } catch (error) {
-      console.error('Error in fetchFavorites:', error);
-    } finally {
-      setFavoritesLoading(false);
-    }
-  }
-
-  async function fetchSpots() {
-    // Fetch spots from the database
-    setSpotsLoading(true);
-    try {
-      // Fetch spots with their tags and media
-      const { data: spots_data, error: spots_error } = await supabase
-        .from('spots_with_details')
-        .select()
-        .limit(20)
-        .order('created_at', { ascending: true });
-
-      if (spots_error) {
-        console.error('Error fetching spots:', spots_error);
-        return;
-      }
-
-      setSpots(spots_data);
-      console.log('Explore fetched spots');
-    } catch (error) {
-      console.error('Error in fetchSpots:', error);
-    } finally {
-      setSpotsLoading(false);
-    }
-  }
+  const { spots, fetchSpots, spotsLoading, favorites, fetchFavorites, favoritesLoading } =
+    useSpotsStore();
 
   useEffect(() => {
-    fetchFavorites();
+    fetchFavorites(user!.id);
     fetchSpots();
   }, []);
 
@@ -125,7 +69,7 @@ export default function Explore() {
 
                 return <SpotIcon spot={item as PublicSpotsWithDetailsRowSchema} />;
               }}
-              onRefresh={fetchFavorites}
+              onRefresh={() => fetchFavorites(user!.id)}
               refreshing={favoritesLoading}
             />
           </View>
