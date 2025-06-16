@@ -7,15 +7,13 @@ import { supabase } from '~/utils/supabase';
 export type PublicTagsRow = Omit<PublicTagsRowSchema, 'id'> & { id?: PublicTagsRowSchema['id'] };
 
 type TagState = {
-  searchQuery: string;
   isSearching: boolean;
   searchResults: PublicTagsRow[];
   selectedTags: PublicTagsRow[];
-  commonTags?: PublicTagsRow[];
+  commonTags: PublicTagsRow[];
 
   // Actions
-  setSearchQuery: (query: string) => void;
-  searchTags: () => Promise<void>;
+  searchTags: (searchQuery: string) => Promise<void>;
   addTag: (tag: PublicTagsRow) => void;
   removeTag: (tag: PublicTagsRow) => void;
   toggleTag: (tag: PublicTagsRow) => void;
@@ -24,16 +22,12 @@ type TagState = {
 };
 
 export const useTagStore = createWithEqualityFn<TagState>((set, get) => ({
-  searchQuery: '',
   isSearching: false,
   searchResults: [],
   selectedTags: [],
+  commonTags: [],
 
-  setSearchQuery: (query: string) => set({ searchQuery: query }),
-
-  searchTags: async () => {
-    const { searchQuery } = get();
-
+  searchTags: async (searchQuery: string) => {
     // Empty Search
     if (searchQuery.trim().length === 0) {
       set({ searchResults: [], isSearching: false });
@@ -81,7 +75,7 @@ export const useTagStore = createWithEqualityFn<TagState>((set, get) => ({
     }
   },
 
-  resetTags: () => set({ selectedTags: [], searchQuery: '', searchResults: [] }),
+  resetTags: () => set({ selectedTags: [], searchResults: [] }),
 
   fetchCommonTags: async () => {
     const { data, error } = await supabase

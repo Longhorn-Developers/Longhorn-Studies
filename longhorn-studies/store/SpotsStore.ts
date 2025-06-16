@@ -1,5 +1,7 @@
 import { createWithEqualityFn } from 'zustand/traditional';
 
+import { PublicTagsRow } from './TagStore';
+
 import {
   PublicSpotsRowSchema,
   PublicSpotsWithDetailsRowSchema,
@@ -17,8 +19,14 @@ type SpotsState = {
   favorites: PublicSpotFavoritesRowSchema[];
   favoritesLoading: boolean;
 
+  searchQuery: string;
+  searchResults: PublicSpotsWithDetailsRowSchema[];
+  searchLoading: boolean;
+
   // Actions
   addSpot: (spot: PublicSpotsRowSchema) => void;
+  searchSpot: (selectedTags: PublicTagsRow[]) => Promise<void>;
+  setSearchQuery: (query: string) => void;
   fetchSpot: (id: string) => Promise<void>;
   fetchSpots: () => Promise<void>;
   fetchFavorites: (user_id: string) => Promise<void>;
@@ -34,9 +42,43 @@ export const useSpotsStore = createWithEqualityFn<SpotsState>((set, get) => ({
   favorites: [],
   favoritesLoading: false,
 
+  searchQuery: '',
+  searchResults: [],
+  searchLoading: false,
+
   addSpot: (spot: PublicSpotsRowSchema) => {
     // const { selectedTags } = get();
     // set({ selectedTags: [...selectedTags, tag] });
+  },
+
+  setSearchQuery: (searchQuery: string) => set({ searchQuery }),
+
+  searchSpot: async (selectedTags: PublicTagsRow[]) => {
+    const { searchQuery } = get();
+
+    // Fetch spots from the database
+    set({ searchLoading: true });
+    try {
+      // Fetch spots with their tags and media
+      const { data: spots_data, error: spots_error } = await supabase
+        .from('spots_with_details')
+        .select()
+        .contains('tags', JSON.stringify(selectedTags))
+        .or(`title.ilike.%${searchQuery}%, body.ilike.%${searchQuery}%`)
+        .limit(10);
+
+      if (spots_error) {
+        console.error('Error searching spots:', spots_error);
+        return;
+      }
+
+      console.log('Search query fetched spots');
+      set({ searchResults: spots_data });
+    } catch (error) {
+      console.error('Error in searchSpot:', error);
+    } finally {
+      set({ searchLoading: false });
+    }
   },
 
   fetchSpot: async (id: string) => {

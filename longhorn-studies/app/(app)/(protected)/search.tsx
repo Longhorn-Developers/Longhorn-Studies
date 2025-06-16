@@ -1,48 +1,19 @@
 import { Ionicons } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Text, View } from 'react-native';
 
 import { Container } from '~/components/Container';
 import SpotCard from '~/components/SpotCard';
 import TagSearch from '~/components/TagSearch';
+import { useSpotsStore } from '~/store/SpotsStore';
 import { useTagStore } from '~/store/TagStore';
-import { PublicSpotsWithDetailsRowSchema } from '~/supabase/functions/new-spot/types/schemas_infer';
-import { supabase } from '~/utils/supabase';
 
 const Search = () => {
   const router = useRouter();
-  const { searchQuery, selectedTags, resetTags } = useTagStore();
-
-  const [spots, setSpots] = useState<PublicSpotsWithDetailsRowSchema[]>();
-  const [spotsLoading, setSpotsLoading] = useState(true);
-
-  async function fetchSpots() {
-    // Fetch spots from the database
-    setSpotsLoading(true);
-    try {
-      // Fetch spots with their tags and media
-      const { data: spots_data, error: spots_error } = await supabase
-        .from('spots_with_details')
-        .select()
-        .contains('tags', JSON.stringify(selectedTags))
-        .or(`title.ilike.%${searchQuery}%, body.ilike.%${searchQuery}%`)
-        .limit(10);
-
-      if (spots_error) {
-        console.error('Error fetching spots:', spots_error);
-        return;
-      }
-
-      setSpots(spots_data);
-      console.log('Search query fetched spots');
-    } catch (error) {
-      console.error('Error in fetchSpots:', error);
-    } finally {
-      setSpotsLoading(false);
-    }
-  }
+  const { searchQuery, searchLoading, searchResults, searchSpot } = useSpotsStore();
+  const { selectedTags, resetTags } = useTagStore();
 
   // Debounce the search query to avoid too many updates
   useEffect(() => {
@@ -50,7 +21,7 @@ const Search = () => {
       if (searchQuery.length <= 0 && selectedTags.length <= 0) {
         return;
       }
-      fetchSpots();
+      searchSpot(selectedTags);
     }, 300); // Adjust the debounce time as needed
 
     return () => clearTimeout(timer);
@@ -89,11 +60,11 @@ const Search = () => {
         ) : (
           // Search Query Spot Results
           <FlashList
-            data={spots}
+            data={searchResults}
             renderItem={({ item }: any) => <SpotCard spot={item} favorited={false} />}
             estimatedItemSize={10}
             showsVerticalScrollIndicator={false}
-            refreshing={spotsLoading}
+            refreshing={searchLoading}
             ListEmptyComponent={
               <View className="items-center justify-center">
                 <Text className="text-gray-500">No spots found</Text>

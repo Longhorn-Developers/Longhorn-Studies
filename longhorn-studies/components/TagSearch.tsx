@@ -4,6 +4,7 @@ import { Text, TextInput, TextInputProps, TouchableOpacity, View } from 'react-n
 
 import TagSelector from './TagSelector';
 
+import { useSpotsStore } from '~/store/SpotsStore';
 import { useTagStore } from '~/store/TagStore';
 
 export interface TagSearchProps extends TextInputProps {
@@ -18,13 +19,13 @@ const TagSearch: React.FC<TagSearchProps> = ({
   leftIcon,
   ...textInputProps
 }) => {
+  const { searchQuery, setSearchQuery } = useSpotsStore();
+
   const {
-    searchQuery,
     isSearching,
     searchResults,
     selectedTags,
     commonTags,
-    setSearchQuery,
     searchTags,
     addTag,
     fetchCommonTags,
@@ -38,7 +39,7 @@ const TagSearch: React.FC<TagSearchProps> = ({
   // Debounced search
   useEffect(() => {
     const debounceTimeout = setTimeout(() => {
-      searchTags();
+      searchTags(searchQuery);
     }, 300);
 
     return () => clearTimeout(debounceTimeout);
