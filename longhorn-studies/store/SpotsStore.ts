@@ -49,6 +49,7 @@ export const useSpotsStore = createWithEqualityFn<SpotsState>((set, get) => ({
       }
 
       set({ spots: spots_data });
+      console.log('Spots fetched');
     } catch (error) {
       console.error('Error in fetchSpots:', error);
     } finally {
@@ -72,6 +73,7 @@ export const useSpotsStore = createWithEqualityFn<SpotsState>((set, get) => ({
       }
 
       set({ favorites: favorites_data });
+      console.log('Favorites fetched');
     } catch (error) {
       console.error('Error in fetchFavorites:', error);
     } finally {

@@ -11,11 +11,11 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import SpotCard from '~/components/SpotCard';
+import { useSpotsStore } from '~/store/SpotsStore';
 import { PublicSpotsWithDetailsRowSchema } from '~/supabase/functions/new-spot/types/schemas_infer';
-import { supabase } from '~/utils/supabase';
 
-export default function Home() {
-  const [spots, setSpots] = useState<PublicSpotsWithDetailsRowSchema[] | null>(null);
+export default function Map() {
+  const { spots, fetchSpots } = useSpotsStore();
   const [selectedSpot, setSelectedSpot] = useState<PublicSpotsWithDetailsRowSchema | null>(null);
 
   // Animation values
@@ -24,20 +24,6 @@ export default function Home() {
   // Fetch spots from Supabase whenever the screen comes into focus
   useFocusEffect(
     useCallback(() => {
-      const fetchSpots = async () => {
-        const { data, error } = await supabase.from('spots_with_details').select();
-
-        if (error) {
-          console.error('Error fetching spots:', error);
-          return;
-        }
-
-        if (data) {
-          console.log('Map fetched spots');
-          setSpots(data);
-        }
-      };
-
       fetchSpots();
     }, [])
   );
