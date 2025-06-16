@@ -6,6 +6,7 @@ import {
   PublicSpotsRowSchema,
   PublicSpotsWithDetailsRowSchema,
   PublicSpotFavoritesRowSchema,
+  PublicSpotsInsertSchema,
 } from '~/supabase/functions/new-spot/types/schemas_infer';
 import { supabase } from '~/utils/supabase';
 
@@ -24,8 +25,6 @@ type SpotsState = {
   searchLoading: boolean;
 
   // Actions
-  addSpot: (spot: PublicSpotsRowSchema) => void;
-
   addFavorite: (id: string) => Promise<void>;
   removeFavorite: (id: string) => Promise<void>;
 
@@ -50,11 +49,6 @@ export const useSpotsStore = createWithEqualityFn<SpotsState>((set, get) => ({
   searchQuery: '',
   searchResults: [],
   searchLoading: false,
-
-  addSpot: (spot: PublicSpotsRowSchema) => {
-    // const { selectedTags } = get();
-    // set({ selectedTags: [...selectedTags, tag] });
-  },
 
   addFavorite: async (id: string) => {
     // Add spot to favorites table
