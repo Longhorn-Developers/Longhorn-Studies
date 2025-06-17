@@ -105,7 +105,7 @@ const SpotCard = ({ spot }: { spot: PublicSpotsWithDetailsRowSchema }) => {
         <Pressable onPress={toggleFavorited} className="absolute right-4 top-4">
           <FontAwesome
             name={isFavorited ? 'star' : 'star-o'}
-            size={22}
+            size={20}
             color={isFavorited ? '#d97706' : '#6b7280'}
           />
         </Pressable>
@@ -142,24 +142,27 @@ const SpotCard = ({ spot }: { spot: PublicSpotsWithDetailsRowSchema }) => {
         <View className="flex-1">
           {/* Title row with favorite button */}
           <View className="flex-row items-center justify-between">
-            <Text className="text-lg font-bold text-gray-900">{spot.title}</Text>
+            <Text className="mr-6 text-lg font-bold text-gray-900">{spot.title}</Text>
           </View>
 
           {/* Spot Body */}
           {spot.body && (
-            <Text className="mt-1 text-gray-600" numberOfLines={2}>
+            <Text className="mt-1 text-sm text-gray-600" numberOfLines={1}>
               {spot.body}
             </Text>
           )}
 
           {/* Tags */}
           {tags && tags.length > 0 && (
-            <View className="mt-3 flex-row flex-wrap gap-2">
-              {tags.map((tag) => (
+            <View className="mt-3 flex-row items-center gap-2 overflow-hidden">
+              {tags.slice(0, 3).map((tag) => (
                 <View key={tag.id} className="rounded-full bg-amber-600 px-3 py-1">
                   <Text className="text-xs font-medium text-white">{tag.label}</Text>
                 </View>
               ))}
+              {tags.length > 3 && (
+                <Text className="text-xs font-medium text-amber-600">+ {tags.length - 3} more</Text>
+              )}
             </View>
           )}
         </View>
