@@ -119,6 +119,17 @@ export default function Map() {
         <GoogleMaps.View style={{ flex: 1 }} />
       )}
 
+      {/*  3 dots loading while Fetching */}
+      {spotsInRegionLoading && (
+        <View className="absolute left-1/2 top-24 -translate-x-1/2 transform rounded-full bg-white p-4 shadow-lg">
+          <View className="mt-2 flex-row gap-1 space-x-2">
+            <View className="h-3 w-3 animate-bounce rounded-full bg-amber-600" />
+            <View className="h-3 w-3 animate-bounce rounded-full bg-amber-600 delay-200" />
+            <View className="delay-400 h-3 w-3 animate-bounce rounded-full bg-amber-600" />
+          </View>
+        </View>
+      )}
+
       {/* Animated Spot Card Overlay */}
       {selectedSpot && (
         <Animated.View className="absolute bottom-2 left-8 right-8 shadow-lg" style={animatedStyle}>
