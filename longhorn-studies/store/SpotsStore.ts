@@ -22,6 +22,9 @@ type SpotsState = {
   searchResults: PublicSpotsWithDetailsRowSchema[];
   searchLoading: boolean;
 
+  spotsInRegion: PublicSpotsWithDetailsRowSchema[] | null;
+  spotsInRegionLoading: boolean;
+
   // Actions
   addFavorite: (id: string) => Promise<void>;
   removeFavorite: (id: string) => Promise<void>;
@@ -32,6 +35,12 @@ type SpotsState = {
   fetchSpot: (id: string) => Promise<void>;
   fetchSpots: () => Promise<void>;
   fetchFavorites: (user_id: string) => Promise<void>;
+  fetchSpotsInRegion: (bounds: {
+    north: number;
+    south: number;
+    east: number;
+    west: number;
+  }) => Promise<void>;
 };
 
 export const useSpotsStore = createWithEqualityFn<SpotsState>((set, get) => ({
@@ -47,6 +56,9 @@ export const useSpotsStore = createWithEqualityFn<SpotsState>((set, get) => ({
   searchQuery: '',
   searchResults: [],
   searchLoading: false,
+
+  spotsInRegion: null,
+  spotsInRegionLoading: false,
 
   addFavorite: async (id: string) => {
     // Add spot to favorites table
@@ -178,11 +190,40 @@ export const useSpotsStore = createWithEqualityFn<SpotsState>((set, get) => ({
       }
 
       set({ favorites: favorites_data });
-      console.log('Fetched favorites', user_id);
+      console.log('Fetched favorites');
     } catch (error) {
       console.error('Error in fetchFavorites:', error);
     } finally {
       set({ favoritesLoading: false });
+    }
+  },
+
+  fetchSpotsInRegion: async (bounds: {
+    north: number;
+    south: number;
+    east: number;
+    west: number;
+  }) => {
+    set({ spotsInRegionLoading: true });
+    try {
+      const { data: spotsData, error } = await supabase.rpc('spots_in_view', {
+        min_lat: bounds.south,
+        max_lat: bounds.north,
+        min_long: bounds.west,
+        max_long: bounds.east,
+      });
+
+      if (error) {
+        console.error('Error fetching spots in region:', error);
+        return;
+      }
+
+      set({ spotsInRegion: spotsData });
+      console.log('Fetched spots in region');
+    } catch (error) {
+      console.error('Error in fetchSpotsInRegion:', error);
+    } finally {
+      set({ spotsInRegionLoading: false });
     }
   },
 }));

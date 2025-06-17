@@ -246,6 +246,7 @@ export type Database = {
           body: string | null
           created_at: string | null
           favorited_at: string | null
+          favorited_by_user_id: string | null
           id: string | null
           latitude: number | null
           location: unknown | null
@@ -279,6 +280,27 @@ export type Database = {
       slugify: {
         Args: { txt: string }
         Returns: string
+      }
+      spots_in_view: {
+        Args: {
+          min_lat: number
+          min_long: number
+          max_lat: number
+          max_long: number
+        }
+        Returns: {
+          body: string | null
+          created_at: string | null
+          id: string | null
+          latitude: number | null
+          location: unknown | null
+          longitude: number | null
+          media: Json | null
+          tags: Json | null
+          title: string | null
+          updated_at: string | null
+          user_id: string | null
+        }[]
       }
       upsert_tags: {
         Args: { label_list: string[] }

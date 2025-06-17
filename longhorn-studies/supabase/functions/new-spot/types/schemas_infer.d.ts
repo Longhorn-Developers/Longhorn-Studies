@@ -88,6 +88,12 @@ export type PublicSlugifyArgsSchema = z.infer<
 export type PublicSlugifyReturnsSchema = z.infer<
   typeof generated.publicSlugifyReturnsSchemaSchema
 >;
+export type PublicSpotsInViewArgsSchema = z.infer<
+  typeof generated.publicSpotsInViewArgsSchemaSchema
+>;
+export type PublicSpotsInViewReturnsSchema = z.infer<
+  typeof generated.publicSpotsInViewReturnsSchemaSchema
+>;
 export type PublicUpsertTagsArgsSchema = z.infer<
   typeof generated.publicUpsertTagsArgsSchemaSchema
 >;

@@ -243,6 +243,7 @@ export const publicSpotFavoritesRowSchemaSchema = z.object({
   body: z.string().nullable(),
   created_at: z.string().nullable(),
   favorited_at: z.string().nullable(),
+  favorited_by_user_id: z.string().nullable(),
   id: z.string().nullable(),
   latitude: z.number().nullable(),
   location: z.unknown().nullable(),
@@ -273,6 +274,29 @@ export const publicSlugifyArgsSchemaSchema = z.object({
 });
 
 export const publicSlugifyReturnsSchemaSchema = z.string();
+
+export const publicSpotsInViewArgsSchemaSchema = z.object({
+  min_lat: z.number(),
+  min_long: z.number(),
+  max_lat: z.number(),
+  max_long: z.number(),
+});
+
+export const publicSpotsInViewReturnsSchemaSchema = z.array(
+  z.object({
+    body: z.string().nullable(),
+    created_at: z.string().nullable(),
+    id: z.string().nullable(),
+    latitude: z.number().nullable(),
+    location: z.unknown().nullable(),
+    longitude: z.number().nullable(),
+    media: jsonSchema.nullable(),
+    tags: jsonSchema.nullable(),
+    title: z.string().nullable(),
+    updated_at: z.string().nullable(),
+    user_id: z.string().nullable(),
+  }),
+);
 
 export const publicUpsertTagsArgsSchemaSchema = z.object({
   label_list: z.array(z.string()),

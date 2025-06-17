@@ -14,9 +14,10 @@ import { useSpotsStore } from '~/store/SpotsStore';
 import { PublicSpotsWithDetailsRowSchema } from '~/supabase/functions/new-spot/types/schemas_infer';
 
 export default function Map() {
-  const { spots } = useSpotsStore();
+  const { spotsInRegion, spotsInRegionLoading, fetchSpotsInRegion } = useSpotsStore();
   const [selectedSpot, setSelectedSpot] = useState<PublicSpotsWithDetailsRowSchema | null>(null);
   const [currentRegion, setCurrentRegion] = useState({
+    // Default region centered on UT Austin
     latitude: 30.285,
     longitude: -97.739,
     zoom: 14.5,
@@ -25,26 +26,16 @@ export default function Map() {
   // Animation values
   const translateY = useSharedValue(300);
 
-  const fetchSpotsInRegion = async (bounds: {
-    north: number;
-    south: number;
-    east: number;
-    west: number;
-  }) => {
-    // min_longitude, min_latitude, max_longitude, max_latitude
-
-    // min_longitude: The westernmost longitude of your bounding box.
-    // min_latitude: The southernmost latitude of your bounding box.
-    // max_longitude: The easternmost longitude of your bounding box.
-    // max_latitude: The northernmost latitude of your bounding box.
-
-    // gis.ST_Point(min_long, min_lat), gis.ST_Point(max_long, max_lat)
-    console.log(
-      `gis.ST_Point(${bounds.west}, ${bounds.south}), gis.ST_Point(${bounds.east}, ${bounds.north})`
-    );
+  const handleCameraMove = (event: any) => {
+    setCurrentRegion({
+      latitude: event.coordinates.latitude,
+      longitude: event.coordinates.longitude,
+      zoom: event.zoom,
+    });
   };
 
-  const fetchSpotsInCurrentRegion = () => {
+  // Convert current region to bounding box and fetch spots
+  useEffect(() => {
     // Calculate bounding box based on current region and zoom
     const { latitude, longitude, zoom } = currentRegion;
 
@@ -66,19 +57,10 @@ export default function Map() {
     };
 
     fetchSpotsInRegion(bounds);
-  };
-
-  const handleCameraMove = (event: any) => {
-    setCurrentRegion({
-      latitude: event.coordinates.latitude,
-      longitude: event.coordinates.longitude,
-      zoom: event.zoom || currentRegion.zoom,
-    });
-    fetchSpotsInCurrentRegion();
-  };
+  }, [currentRegion]);
 
   const handleMarkerClick = (marker: AppleMapsMarker) => {
-    const spot = spots?.find((s) => s.id === marker.id);
+    const spot = spotsInRegion?.find((s) => s.id === marker.id);
     if (spot) {
       setSelectedSpot(spot);
       translateY.value = withSpring(0, {
@@ -116,8 +98,8 @@ export default function Map() {
             zoom: currentRegion.zoom,
           }}
           markers={
-            spots
-              ? spots.map<AppleMapsMarker>((spot) => ({
+            spotsInRegion && !spotsInRegionLoading
+              ? spotsInRegion.map<AppleMapsMarker>((spot) => ({
                   id: spot.id ?? '',
                   title: spot.title ?? '',
                   tintColor: '#ff7603',
