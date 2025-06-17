@@ -27,6 +27,7 @@ const Spot = () => {
     useSpotsStore();
 
   const [isFavorited, setIsFavorited] = useState(false);
+  const [isMediaEmpty, setIsMediaEmpty] = useState(false);
 
   useEffect(() => {
     fetchSpot(id as string);
@@ -36,7 +37,15 @@ const Spot = () => {
     if (spot) {
       setIsFavorited(favorites.some((favs) => favs.id === spot.id));
     }
-  }, [favorites]);
+  }, [spot, favorites]);
+
+  useEffect(() => {
+    if (spot && spot.media && Array.isArray(spot.media) && spot.media.length === 0) {
+      setIsMediaEmpty(spot && spot.media && Array.isArray(spot.media) && spot.media.length === 0);
+    } else {
+      setIsMediaEmpty(false);
+    }
+  }, [spot]);
 
   const toggleFavorited = async () => {
     if (!spot || !spot.id) return;
@@ -107,9 +116,15 @@ const Spot = () => {
         contentContainerStyle={{ paddingBottom: 20, justifyContent: 'space-between' }}>
         {/* Rest of your existing content */}
         <View>
-          <Carousel spot={spot} />
+          {!isMediaEmpty ? (
+            <Carousel spot={spot} />
+          ) : (
+            <View className="flex h-64 items-center justify-center bg-white" />
+          )}
           <View className="absolute bottom-0 left-2 p-4">
-            <Text className="text-4xl font-bold text-white">{spot.title}</Text>
+            <Text className={`text-4xl font-bold ${!isMediaEmpty ? 'text-white' : null}`}>
+              {spot.title}
+            </Text>
             <View className="mt-2 w-full flex-row flex-wrap items-center justify-between">
               {spot.tags && (
                 <View className="flex-row flex-wrap gap-2">
