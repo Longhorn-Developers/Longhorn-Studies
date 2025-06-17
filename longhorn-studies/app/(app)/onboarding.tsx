@@ -14,7 +14,7 @@ export default function Onboarding() {
     <Container>
       <ScreenContent title="Longhorn Studies" />
       <View className="gap-3">
-        <Link href={{ pathname: '/signup' }} asChild>
+        <Link href="/signup" asChild>
           <Button title="Sign Up" />
         </Link>
         <Button
@@ -31,7 +31,7 @@ export default function Onboarding() {
             }
           }}
         />
-        <Link href={{ pathname: '/login' }} asChild>
+        <Link href="/login" asChild>
           <Button variant="link" title="Log In" />
         </Link>
       </View>

@@ -94,12 +94,7 @@ const SpotCard = ({ spot }: { spot: PublicSpotsWithDetailsRowSchema }) => {
   }
 
   return (
-    <Link
-      href={{
-        pathname: '/spot/[id]',
-        params: { id: spot.id as string },
-      }}
-      className="mb-4">
+    <Link href={`/spot/${spot.id}`} className="mb-4">
       <View className="my-2 flex-row items-center gap-4 rounded-xl border border-gray-200 bg-white px-5 py-3">
         {/* Favorite Button */}
         <Pressable onPress={toggleFavorited} className="absolute right-4 top-4">

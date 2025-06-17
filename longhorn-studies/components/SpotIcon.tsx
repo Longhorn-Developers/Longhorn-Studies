@@ -58,12 +58,7 @@ const SpotIcon = ({ spot }: { spot: PublicSpotsWithDetailsRowSchema }) => {
   }, []);
 
   return (
-    <Link
-      href={{
-        pathname: '/spot/[id]',
-        params: { id: spot.id as string },
-      }}
-      className="mr-4 rounded-xl">
+    <Link href={`/spot/${spot.id}`} className="mr-4 rounded-xl">
       {/* Spot Image Preview */}
       {isLoading ? (
         // Loading shimmer placeholder
