@@ -41,7 +41,7 @@ export default function Explore() {
               <Ionicons name="search" size={20} color="gray" />
               <Text className="flex-1 p-4 text-gray-300">Explore study spots</Text>
             </View>
-            <TagSelector tags={commonTags} onPress={() => router.push('/search')} />
+            <TagSelector tags={commonTags} scrollable onPress={() => router.push('/search')} />
           </Pressable>
         </Link>
 
