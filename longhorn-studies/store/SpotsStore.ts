@@ -3,10 +3,8 @@ import { createWithEqualityFn } from 'zustand/traditional';
 import { PublicTagsRow } from './TagStore';
 
 import {
-  PublicSpotsRowSchema,
   PublicSpotsWithDetailsRowSchema,
   PublicSpotFavoritesRowSchema,
-  PublicSpotsInsertSchema,
 } from '~/supabase/functions/new-spot/types/schemas_infer';
 import { supabase } from '~/utils/supabase';
 
@@ -102,7 +100,7 @@ export const useSpotsStore = createWithEqualityFn<SpotsState>((set, get) => ({
         return;
       }
 
-      console.log('Search query fetched spots');
+      console.log('Fetched search query spots');
       set({ searchResults: spots_data });
     } catch (error) {
       console.error('Error in searchSpot:', error);
@@ -156,7 +154,7 @@ export const useSpotsStore = createWithEqualityFn<SpotsState>((set, get) => ({
       }
 
       set({ spots: spots_data });
-      console.log('Spots fetched');
+      console.log('Fetched popular spots');
     } catch (error) {
       console.error('Error in fetchSpots:', error);
     } finally {
@@ -172,7 +170,7 @@ export const useSpotsStore = createWithEqualityFn<SpotsState>((set, get) => ({
       const { data: favorites_data, error: favorites_error } = await supabase
         .from('spot_favorites')
         .select()
-        .eq('user_id', user_id); // Ensure to filter by the current user
+        .eq('favorited_by_user_id', user_id); // Ensure to filter by the current user
 
       if (favorites_error) {
         console.error('Error fetching favorites:', favorites_error);
@@ -180,7 +178,7 @@ export const useSpotsStore = createWithEqualityFn<SpotsState>((set, get) => ({
       }
 
       set({ favorites: favorites_data });
-      console.log('Favorites fetched');
+      console.log('Fetched favorites', user_id);
     } catch (error) {
       console.error('Error in fetchFavorites:', error);
     } finally {

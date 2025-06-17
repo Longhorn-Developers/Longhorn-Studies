@@ -18,6 +18,7 @@ select
   s.user_id,
   s.created_at,
   s.updated_at,
+  s.location,
   -- Extract coordinates from PostGIS geography point
   gis.st_y(s.location::gis.geometry)::float8 as latitude,
   gis.st_x(s.location::gis.geometry)::float8 as longitude,

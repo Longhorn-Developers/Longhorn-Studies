@@ -248,6 +248,7 @@ export type Database = {
           favorited_at: string | null
           id: string | null
           latitude: number | null
+          location: unknown | null
           longitude: number | null
           media: Json | null
           tags: Json | null
@@ -263,6 +264,7 @@ export type Database = {
           created_at: string | null
           id: string | null
           latitude: number | null
+          location: unknown | null
           longitude: number | null
           media: Json | null
           tags: Json | null

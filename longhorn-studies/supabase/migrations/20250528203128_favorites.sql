@@ -19,8 +19,9 @@ create policy "Users can manage their favorites" on public.favorites
 -- Create view to join favorites with spot details for easier querying
 create or replace view public.spot_favorites as
 select 
+  s.*,
   f.created_at as favorited_at,
-  s.*
+  f.user_id as favorited_by_user_id
 from 
   public.favorites f
 join 
