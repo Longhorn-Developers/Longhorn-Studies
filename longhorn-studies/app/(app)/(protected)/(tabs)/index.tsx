@@ -1,6 +1,6 @@
 import { Entypo, Ionicons } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
@@ -8,18 +8,24 @@ import { Button } from '~/components/Button';
 import { Container } from '~/components/Container';
 import SpotCard from '~/components/SpotCard';
 import SpotIcon from '~/components/SpotIcon';
+import TagSelector from '~/components/TagSelector';
 import { useAuth } from '~/store/AuthProvider';
 import { useSpotsStore } from '~/store/SpotsStore';
+import { useTagStore } from '~/store/TagStore';
 import { PublicSpotsWithDetailsRowSchema } from '~/supabase/functions/new-spot/types/schemas_infer';
 
 export default function Explore() {
   const { user } = useAuth();
+  const router = useRouter();
   const { spots, fetchSpots, spotsLoading, favorites, fetchFavorites, favoritesLoading } =
     useSpotsStore();
+
+  const { commonTags, fetchCommonTags } = useTagStore();
 
   useEffect(() => {
     fetchFavorites(user!.id);
     fetchSpots();
+    fetchCommonTags();
   }, []);
 
   return (
@@ -28,13 +34,14 @@ export default function Explore() {
       <View className="flex-1 gap-4">
         {/* Search box placeholder transition */}
         <Link href="/search" asChild>
-          <Pressable>
+          <Pressable className="gap-2">
             <View
               // sharedTransitionTag="explore-search"
               className="flex-row items-center rounded-xl border border-gray-300 px-3">
               <Ionicons name="search" size={20} color="gray" />
               <Text className="flex-1 p-4 text-gray-300">Explore study spots</Text>
             </View>
+            <TagSelector tags={commonTags} onPress={() => router.push('/search')} />
           </Pressable>
         </Link>
 
@@ -78,7 +85,7 @@ export default function Explore() {
         {/* Spots List */}
         <View className="flex-1">
           {/* Header */}
-          <Text className="text-2xl font-bold text-gray-800">Spots For You</Text>
+          <Text className="text-2xl font-bold text-gray-800">Popular Spots</Text>
           {/* Spots List */}
           <FlashList
             data={spots}
