@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Longhorn Studies",
+    "name": "LH Studies",
     "slug": "longhorn-studies",
     "owner": "longhorn-developers",
     "version": "1.0.0",
@@ -30,7 +30,13 @@
           "requestLocationPermission": "true"
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos."
+        }
+      ]
     ],
     "newArchEnabled": true,
     "experiments": {
@@ -45,17 +51,27 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.longhorndevelopers.longhornstudies"
+      "bundleIdentifier": "com.longhorndevelopers.longhornstudies",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.longhorndevelopers.longhornstudies"
+      "package": "com.longhorndevelopers.longhornstudies",
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "extra": {
       "router": {

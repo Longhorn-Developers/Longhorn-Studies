@@ -1,4 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  FunctionsHttpError,
+  FunctionsRelayError,
+  FunctionsFetchError,
+} from '@supabase/supabase-js';
 import * as FileSystem from 'expo-file-system';
 import { ImagePickerAsset } from 'expo-image-picker';
 import { AppleMaps, Coordinates, GoogleMaps } from 'expo-maps';
@@ -24,6 +29,7 @@ import { useTagStore } from '~/store/TagStore';
 import { TablesInsert } from '~/supabase/functions/new-spot/types/database';
 import { publicSpotsInsertSchemaSchema } from '~/supabase/functions/new-spot/types/schemas';
 import { PublicSpotsInsertSchema } from '~/supabase/functions/new-spot/types/schemas_infer';
+import { supabase } from '~/utils/supabase';
 
 type Spot = TablesInsert<'spots'> & {
   selectedTags: { id: number; label: string }[];
@@ -135,24 +141,28 @@ const CreateSpot = () => {
         images: processedImages,
       } as Spot;
 
-      // Send POST request to create new spot
-      const response = await fetch('http://127.0.0.1:54321/functions/v1/new-spot', {
-        method: 'POST',
+      // Call supabase edge function to create the spot
+      const { data, error } = await supabase.functions.invoke('new-spot', {
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${session?.access_token}`,
         },
-        body: JSON.stringify(spotData),
+        body: spotData,
       });
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to create spot');
+      if (error instanceof FunctionsHttpError) {
+        const errorMessage = await error.context.json();
+        console.log('Function returned an error', errorMessage);
+      } else if (error instanceof FunctionsRelayError) {
+        console.log('Relay error:', error.message);
+      } else if (error instanceof FunctionsFetchError) {
+        console.log('Fetch error:', error.message);
       }
 
-      console.log('Spot created successfully:', result);
+      if (!data) {
+        throw new Error(data.error || 'Failed to create spot');
+      }
 
+      console.log('Spot created successfully:', data);
       router.back();
     } catch (error) {
       Alert.alert('Error', error instanceof Error ? error.message : 'An unexpected error occurred');
