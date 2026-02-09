@@ -1,2 +1,0 @@
-# Placeholder for splash.png
-# Use a 2048x2048 PNG image for the splash screen
