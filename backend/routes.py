@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from database import db
-from models import Item, User
+from models import StudySpot
 from datetime import datetime
 import logging
 
@@ -50,153 +50,141 @@ def health_check():
     }), 200
 
 
-# Item endpoints
-@api_bp.route('/items', methods=['GET'])
-def get_items():
+# Required fields for create
+STUDY_SPOT_REQUIRED = {
+    'abbreviation', 'study_spot_name', 'address', 'noise_level',
+    'capacity', 'spot_type', 'access_hours', 'near_food', 'reservable', 'description'
+}
+
+
+def _study_spot_from_json(data, spot=None):
+    """Build or update StudySpot from request JSON. Returns (StudySpot, error_response)."""
+    if spot is None:
+        spot = StudySpot()
+    # Required fields
+    if 'abbreviation' in data:
+        spot.abbreviation = data['abbreviation']
+    if 'study_spot_name' in data:
+        spot.study_spot_name = data['study_spot_name']
+    if 'address' in data:
+        spot.address = data['address']
+    if 'noise_level' in data:
+        spot.noise_level = data['noise_level']
+    if 'capacity' in data:
+        spot.capacity = int(data['capacity'])
+    if 'spot_type' in data:
+        spot.spot_type = list(data['spot_type']) if data['spot_type'] is not None else []
+    if 'access_hours' in data:
+        spot.access_hours = data['access_hours']
+    if 'near_food' in data:
+        spot.near_food = bool(data['near_food'])
+    if 'reservable' in data:
+        spot.reservable = bool(data['reservable'])
+    if 'description' in data:
+        spot.description = data['description']
+    # Optional
+    if 'building_name' in data:
+        spot.building_name = data['building_name'] if data['building_name'] else None
+    if 'floor' in data:
+        spot.floor = data['floor'] if data['floor'] is not None else None
+    if 'tags' in data:
+        spot.tags = list(data['tags']) if data['tags'] is not None else []
+    if 'additional_properties' in data:
+        spot.additional_properties = data['additional_properties'] if data['additional_properties'] else None
+    return spot, None
+
+
+# Study spot endpoints
+@api_bp.route('/study_spots', methods=['GET'])
+def get_study_spots():
     """
-    Get all items from the database.
+    Get all study spots.
     """
     try:
-        items = Item.query.all()
-        return jsonify([item.to_dict() for item in items]), 200
+        spots = StudySpot.query.all()
+        return jsonify([s.to_dict() for s in spots]), 200
     except Exception as e:
-        logger.error(f"Error fetching items: {str(e)}")
-        return jsonify({'error': 'Failed to fetch items'}), 500
+        logger.error(f"Error fetching study spots: {str(e)}")
+        return jsonify({'error': 'Failed to fetch study spots'}), 500
 
 
-@api_bp.route('/items/<int:item_id>', methods=['GET'])
-def get_item(item_id):
+@api_bp.route('/study_spots/<int:spot_id>', methods=['GET'])
+def get_study_spot(spot_id):
     """
-    Get a specific item by ID.
+    Get a single study spot by ID.
     """
     try:
-        item = Item.query.get_or_404(item_id)
-        return jsonify(item.to_dict()), 200
+        spot = StudySpot.query.get_or_404(spot_id)
+        return jsonify(spot.to_dict()), 200
     except Exception as e:
-        logger.error(f"Error fetching item {item_id}: {str(e)}")
-        return jsonify({'error': 'Item not found'}), 404
+        logger.error(f"Error fetching study spot {spot_id}: {str(e)}")
+        return jsonify({'error': 'Study spot not found'}), 404
 
 
-@api_bp.route('/items', methods=['POST'])
-def create_item():
+@api_bp.route('/study_spots', methods=['POST'])
+def create_study_spot():
     """
-    Create a new item.
-    Expected JSON: { "name": "Item name", "description": "Optional description" }
+    Create a new study spot.
+    JSON body must include: abbreviation, study_spot_name, address, noise_level,
+    capacity, spot_type, access_hours, near_food, reservable, description.
+    Optional: building_name, floor, tags, additional_properties.
     """
     try:
         data = request.get_json()
-        
-        if not data or 'name' not in data:
-            return jsonify({'error': 'Name is required'}), 400
-        
-        item = Item(
-            name=data['name'],
-            description=data.get('description', '')
-        )
-        
-        db.session.add(item)
-        db.session.commit()
-        
-        logger.info(f"Created item: {item.name} (ID: {item.id})")
-        return jsonify(item.to_dict()), 201
-    except Exception as e:
-        db.session.rollback()
-        logger.error(f"Error creating item: {str(e)}")
-        return jsonify({'error': 'Failed to create item'}), 500
-
-
-@api_bp.route('/items/<int:item_id>', methods=['PUT'])
-def update_item(item_id):
-    """
-    Update an existing item.
-    Expected JSON: { "name": "New name", "description": "New description" }
-    """
-    try:
-        item = Item.query.get_or_404(item_id)
-        data = request.get_json()
-        
         if not data:
             return jsonify({'error': 'No data provided'}), 400
-        
-        if 'name' in data:
-            item.name = data['name']
-        if 'description' in data:
-            item.description = data['description']
-        
-        item.updated_at = datetime.utcnow()
+        missing = STUDY_SPOT_REQUIRED - set(data.keys())
+        if missing:
+            return jsonify({'error': f'Missing required fields: {sorted(missing)}'}), 400
+
+        spot, err = _study_spot_from_json(data)
+        if err:
+            return err
+        db.session.add(spot)
         db.session.commit()
-        
-        logger.info(f"Updated item: {item.name} (ID: {item.id})")
-        return jsonify(item.to_dict()), 200
+        logger.info(f"Created study spot: {spot.study_spot_name} (ID: {spot.id})")
+        return jsonify(spot.to_dict()), 201
     except Exception as e:
         db.session.rollback()
-        logger.error(f"Error updating item {item_id}: {str(e)}")
-        return jsonify({'error': 'Failed to update item'}), 500
+        logger.error(f"Error creating study spot: {str(e)}")
+        return jsonify({'error': 'Failed to create study spot'}), 500
 
 
-@api_bp.route('/items/<int:item_id>', methods=['DELETE'])
-def delete_item(item_id):
+@api_bp.route('/study_spots/<int:spot_id>', methods=['PUT'])
+def update_study_spot(spot_id):
     """
-    Delete an item by ID.
-    """
-    try:
-        item = Item.query.get_or_404(item_id)
-        item_name = item.name
-        db.session.delete(item)
-        db.session.commit()
-        
-        logger.info(f"Deleted item: {item_name} (ID: {item_id})")
-        return jsonify({'message': 'Item deleted successfully'}), 200
-    except Exception as e:
-        db.session.rollback()
-        logger.error(f"Error deleting item {item_id}: {str(e)}")
-        return jsonify({'error': 'Failed to delete item'}), 500
-
-
-# User endpoints
-@api_bp.route('/users', methods=['GET'])
-def get_users():
-    """
-    Get all users from the database.
+    Update an existing study spot. Send only fields to update.
     """
     try:
-        users = User.query.all()
-        return jsonify([user.to_dict() for user in users]), 200
-    except Exception as e:
-        logger.error(f"Error fetching users: {str(e)}")
-        return jsonify({'error': 'Failed to fetch users'}), 500
-
-
-@api_bp.route('/users', methods=['POST'])
-def create_user():
-    """
-    Create a new user.
-    Expected JSON: { "username": "username", "email": "email@example.com" }
-    """
-    try:
+        spot = StudySpot.query.get_or_404(spot_id)
         data = request.get_json()
-        
-        if not data or 'username' not in data or 'email' not in data:
-            return jsonify({'error': 'Username and email are required'}), 400
-        
-        # Check if user already exists
-        if User.query.filter_by(username=data['username']).first():
-            return jsonify({'error': 'Username already exists'}), 400
-        
-        if User.query.filter_by(email=data['email']).first():
-            return jsonify({'error': 'Email already exists'}), 400
-        
-        user = User(
-            username=data['username'],
-            email=data['email']
-        )
-        
-        db.session.add(user)
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        spot, err = _study_spot_from_json(data, spot=spot)
+        if err:
+            return err
         db.session.commit()
-        
-        logger.info(f"Created user: {user.username} (ID: {user.id})")
-        return jsonify(user.to_dict()), 201
+        logger.info(f"Updated study spot: {spot.study_spot_name} (ID: {spot.id})")
+        return jsonify(spot.to_dict()), 200
     except Exception as e:
         db.session.rollback()
-        logger.error(f"Error creating user: {str(e)}")
-        return jsonify({'error': 'Failed to create user'}), 500
+        logger.error(f"Error updating study spot {spot_id}: {str(e)}")
+        return jsonify({'error': 'Failed to update study spot'}), 500
+
+
+@api_bp.route('/study_spots/<int:spot_id>', methods=['DELETE'])
+def delete_study_spot(spot_id):
+    """
+    Delete a study spot by ID.
+    """
+    try:
+        spot = StudySpot.query.get_or_404(spot_id)
+        name = spot.study_spot_name
+        db.session.delete(spot)
+        db.session.commit()
+        logger.info(f"Deleted study spot: {name} (ID: {spot_id})")
+        return jsonify({'message': 'Study spot deleted successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error deleting study spot {spot_id}: {str(e)}")
+        return jsonify({'error': 'Failed to delete study spot'}), 500

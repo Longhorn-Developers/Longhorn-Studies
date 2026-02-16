@@ -28,6 +28,7 @@ venv.bak/
 *.db
 *.sqlite
 *.sqlite3
+!instance/longhorn_studies.db
 .pytest_cache/
 .coverage
 htmlcov/
