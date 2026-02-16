@@ -120,6 +120,7 @@ The backend will be available at `http://localhost:8000`
 - additional_properties (Text, Optional)
 - reservable (Boolean, Required)
 - description (Text, Required)
+- pictures (JSON array of strings, Required)
 
 ## Development
 

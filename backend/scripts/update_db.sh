@@ -18,6 +18,7 @@ RESP=$(curl -s -X POST "${BASE}/study_spots" \
     "address": "TEST",
     "floor": null,
     "tags": ["TEST"],
+    "pictures": [],
     "noise_level": "TEST",
     "capacity": 0,
     "spot_type": ["TEST"],

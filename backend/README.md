@@ -51,7 +51,7 @@ The server will start on `http://localhost:8000`
 ### Study Spots
 - **GET** `/api/study_spots` - Get all study spots
 - **GET** `/api/study_spots/<id>` - Get a specific study spot
-- **POST** `/api/study_spots` - Create a new study spot (requires: abbreviation, study_spot_name, address, noise_level, capacity, spot_type, access_hours, near_food, reservable, description)
+- **POST** `/api/study_spots` - Create a new study spot (requires: abbreviation, study_spot_name, address, noise_level, capacity, spot_type, access_hours, near_food, reservable, description, pictures)
   ```json
   {
     "abbreviation": "PCL",
@@ -60,6 +60,7 @@ The server will start on `http://localhost:8000`
     "address": "101 E 21st St",
     "floor": 3,
     "tags": ["quiet", "wifi"],
+    "pictures": ["https://example.com/pcl1.jpg"],
     "noise_level": "Low",
     "capacity": 100,
     "spot_type": ["Open Area", "Library"],
@@ -89,6 +90,7 @@ backend/
 ├── scripts/            # Utility scripts
 │   ├── update_db.sh    # POST one study spot
 │   ├── delete_db.sh    # DELETE a study spot by ID
+│   ├── update_fields.sh # PUT partial update
 ├── requirements.txt   # Python dependencies
 ├── .env.example       # Environment variables template
 ├── .gitignore         # Git ignore rules

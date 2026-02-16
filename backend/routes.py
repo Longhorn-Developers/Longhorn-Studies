@@ -53,7 +53,7 @@ def health_check():
 # Required fields for create
 STUDY_SPOT_REQUIRED = {
     'abbreviation', 'study_spot_name', 'address', 'noise_level',
-    'capacity', 'spot_type', 'access_hours', 'near_food', 'reservable', 'description'
+    'capacity', 'spot_type', 'access_hours', 'near_food', 'reservable', 'description', 'pictures'
 }
 
 
@@ -82,6 +82,8 @@ def _study_spot_from_json(data, spot=None):
         spot.reservable = bool(data['reservable'])
     if 'description' in data:
         spot.description = data['description']
+    if 'pictures' in data:
+        spot.pictures = list(data['pictures']) if data['pictures'] is not None else []
     # Optional
     if 'building_name' in data:
         spot.building_name = data['building_name'] if data['building_name'] else None
@@ -126,7 +128,7 @@ def create_study_spot():
     """
     Create a new study spot.
     JSON body must include: abbreviation, study_spot_name, address, noise_level,
-    capacity, spot_type, access_hours, near_food, reservable, description.
+    capacity, spot_type, access_hours, near_food, reservable, description, pictures.
     Optional: building_name, floor, tags, additional_properties.
     """
     try:
