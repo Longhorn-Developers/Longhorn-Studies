@@ -3,6 +3,7 @@ from database import db
 from models import StudySpot
 from datetime import datetime
 import logging
+import re
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -56,6 +57,29 @@ STUDY_SPOT_REQUIRED = {
     'capacity', 'spot_type', 'access_hours', 'near_food', 'reservable', 'description', 'pictures'
 }
 
+TIME_PATTERN = re.compile(r'^([01]\d|2[0-3]):([0-5]\d)$')
+
+
+def _normalize_access_hours(value):
+    """
+    Validate and normalize access_hours into a 7-day list:
+    [["HH:MM", "HH:MM"], ...] where index 0=Monday ... 6=Sunday.
+    """
+    if not isinstance(value, list) or len(value) != 7:
+        raise ValueError("access_hours must be an array with 7 elements")
+
+    normalized = []
+    for day in value:
+        if not isinstance(day, list) or len(day) != 2:
+            raise ValueError("Each access_hours day must be a 2-item array: [open, close]")
+        open_time, close_time = day
+        if not isinstance(open_time, str) or not isinstance(close_time, str):
+            raise ValueError("Open/close times must be strings in HH:MM format")
+        if not TIME_PATTERN.match(open_time) or not TIME_PATTERN.match(close_time):
+            raise ValueError("Open/close times must be in HH:MM (24-hour) format")
+        normalized.append([open_time, close_time])
+    return normalized
+
 
 def _study_spot_from_json(data, spot=None):
     """Build or update StudySpot from request JSON. Returns (StudySpot, error_response)."""
@@ -75,7 +99,7 @@ def _study_spot_from_json(data, spot=None):
     if 'spot_type' in data:
         spot.spot_type = list(data['spot_type']) if data['spot_type'] is not None else []
     if 'access_hours' in data:
-        spot.access_hours = data['access_hours']
+        spot.access_hours = _normalize_access_hours(data['access_hours'])
     if 'near_food' in data:
         spot.near_food = bool(data['near_food'])
     if 'reservable' in data:
@@ -129,6 +153,8 @@ def create_study_spot():
     Create a new study spot.
     JSON body must include: abbreviation, study_spot_name, address, noise_level,
     capacity, spot_type, access_hours, near_food, reservable, description, pictures.
+    access_hours format:
+    [["HH:MM", "HH:MM"], ...] for Monday->Sunday.
     Optional: building_name, floor, tags, additional_properties.
     """
     try:
@@ -146,6 +172,9 @@ def create_study_spot():
         db.session.commit()
         logger.info(f"Created study spot: {spot.study_spot_name} (ID: {spot.id})")
         return jsonify(spot.to_dict()), 201
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
     except Exception as e:
         db.session.rollback()
         logger.error(f"Error creating study spot: {str(e)}")
@@ -168,6 +197,9 @@ def update_study_spot(spot_id):
         db.session.commit()
         logger.info(f"Updated study spot: {spot.study_spot_name} (ID: {spot.id})")
         return jsonify(spot.to_dict()), 200
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
     except Exception as e:
         db.session.rollback()
         logger.error(f"Error updating study spot {spot_id}: {str(e)}")

@@ -2,6 +2,11 @@ from database import db
 from datetime import datetime
 
 
+def default_access_hours():
+    """Default 7-day schedule: closed all days."""
+    return [["00:00", "00:00"] for _ in range(7)]
+
+
 class StudySpot(db.Model):
     """
     Study spot model: locations for studying with metadata and amenities.
@@ -19,7 +24,7 @@ class StudySpot(db.Model):
     noise_level = db.Column(db.String(50), nullable=False)
     capacity = db.Column(db.Integer, nullable=False)
     spot_type = db.Column(db.JSON, nullable=False, default=lambda: [])
-    access_hours = db.Column(db.String(200), nullable=False)
+    access_hours = db.Column(db.JSON, nullable=False, default=default_access_hours)
     near_food = db.Column(db.Boolean, nullable=False, default=False)
     additional_properties = db.Column(db.Text, nullable=True)
     reservable = db.Column(db.Boolean, nullable=False, default=False)

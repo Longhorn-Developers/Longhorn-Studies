@@ -64,7 +64,15 @@ The server will start on `http://localhost:8000`
     "noise_level": "Low",
     "capacity": 100,
     "spot_type": ["Open Area", "Library"],
-    "access_hours": "24/7 during finals",
+    "access_hours": [
+      ["08:00", "22:00"],
+      ["08:00", "22:00"],
+      ["08:00", "22:00"],
+      ["08:00", "22:00"],
+      ["08:00", "18:00"],
+      ["10:00", "16:00"],
+      ["00:00", "00:00"]
+    ],
     "near_food": true,
     "additional_properties": null,
     "reservable": false,
@@ -91,6 +99,8 @@ backend/
 │   ├── update_db.sh    # POST one study spot
 │   ├── delete_db.sh    # DELETE a study spot by ID
 │   ├── update_fields.sh # PUT partial update
+│   ├── test_crud_db.sh # End-to-end CRUD verification
+│   ├── migrate_access_hours.py # Convert legacy access_hours strings to 7-day arrays
 ├── requirements.txt   # Python dependencies
 ├── .env.example       # Environment variables template
 ├── .gitignore         # Git ignore rules

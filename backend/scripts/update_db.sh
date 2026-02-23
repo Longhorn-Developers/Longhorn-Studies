@@ -22,7 +22,15 @@ RESP=$(curl -s -X POST "${BASE}/study_spots" \
     "noise_level": "TEST",
     "capacity": 0,
     "spot_type": ["TEST"],
-    "access_hours": "TEST",
+    "access_hours": [
+      ["08:00", "17:00"],
+      ["08:00", "17:00"],
+      ["08:00", "17:00"],
+      ["08:00", "17:00"],
+      ["08:00", "17:00"],
+      ["00:00", "00:00"],
+      ["00:00", "00:00"]
+    ],
     "near_food": true,
     "additional_properties": "TEST",
     "reservable": true,

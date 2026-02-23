@@ -115,7 +115,7 @@ The backend will be available at `http://localhost:8000`
 - noise_level (String, Required)
 - capacity (Integer, Required)
 - spot_type (JSON array of strings, Required)
-- access_hours (String, Required)
+- access_hours (JSON array of 7 `[open, close]` pairs in `HH:MM`, Monday-Sunday, Required)
 - near_food (Boolean, Required)
 - additional_properties (Text, Optional)
 - reservable (Boolean, Required)
