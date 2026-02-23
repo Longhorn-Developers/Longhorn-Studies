@@ -10,7 +10,7 @@ export default function OpenStatus({ openStatus, hours }: OpenStatusType) {
   const color = `text-status-${openStatus}`;
   return (
     <View className="flex flex-row items-center gap-1">
-      <Text className="text-status-open text-status-closing text-status-closed hidden"/> {/** ENSURES COLORS LOAD PROPERLY */}
+      <Text className="text-status-open text-status-closing text-status-closed hidden">{/** ENSURES COLORS LOAD PROPERLY */}</Text>
       <ClockIcon
         size={16}
         className={`${color}`}
