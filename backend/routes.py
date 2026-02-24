@@ -85,41 +85,57 @@ def _study_spot_from_json(data, spot=None):
     """Build or update StudySpot from request JSON. Returns (StudySpot, error_response)."""
     if spot is None:
         spot = StudySpot()
-    # Required fields
-    if 'abbreviation' in data:
-        spot.abbreviation = data['abbreviation']
-    if 'study_spot_name' in data:
-        spot.study_spot_name = data['study_spot_name']
-    if 'address' in data:
-        spot.address = data['address']
-    if 'noise_level' in data:
-        spot.noise_level = data['noise_level']
-    if 'capacity' in data:
-        try:
+    """
+    Build or update StudySpot from request JSON.
+
+    Returns:
+        tuple[StudySpot | None, tuple | None]: (spot, error_response)
+        Exactly one element of the tuple will be non-None:
+        - On success: (StudySpot instance, None)
+        - On validation error: (None, (json_response, status_code))
+    """
+    if spot is None:
+        spot = StudySpot()
+    try:
+        # Required fields
+        if 'abbreviation' in data:
+            spot.abbreviation = data['abbreviation']
+        if 'study_spot_name' in data:
+            spot.study_spot_name = data['study_spot_name']
+        if 'address' in data:
+            spot.address = data['address']
+        if 'noise_level' in data:
+            spot.noise_level = data['noise_level']
+        if 'capacity' in data:
             spot.capacity = int(data['capacity'])
-        except (TypeError, ValueError):
-            raise ValueError("Invalid capacity: must be an integer")
-    if 'spot_type' in data:
-        spot.spot_type = list(data['spot_type']) if data['spot_type'] is not None else []
-    if 'access_hours' in data:
-        spot.access_hours = _normalize_access_hours(data['access_hours'])
-    if 'near_food' in data:
-        spot.near_food = bool(data['near_food'])
-    if 'reservable' in data:
-        spot.reservable = bool(data['reservable'])
-    if 'description' in data:
-        spot.description = data['description']
-    if 'pictures' in data:
-        spot.pictures = list(data['pictures']) if data['pictures'] is not None else []
-    # Optional
-    if 'building_name' in data:
-        spot.building_name = data['building_name'] if data['building_name'] else None
-    if 'floor' in data:
-        spot.floor = int(data['floor']) if data['floor'] is not None else None
-    if 'tags' in data:
-        spot.tags = list(data['tags']) if data['tags'] is not None else []
-    if 'additional_properties' in data:
-        spot.additional_properties = data['additional_properties'] if data['additional_properties'] else None
+        if 'spot_type' in data:
+            spot.spot_type = list(data['spot_type']) if data['spot_type'] is not None else []
+        if 'access_hours' in data:
+            spot.access_hours = _normalize_access_hours(data['access_hours'])
+        if 'near_food' in data:
+            spot.near_food = bool(data['near_food'])
+        if 'reservable' in data:
+            spot.reservable = bool(data['reservable'])
+        if 'description' in data:
+            spot.description = data['description']
+        if 'pictures' in data:
+            spot.pictures = list(data['pictures']) if data['pictures'] is not None else []
+        # Optional
+        if 'building_name' in data:
+            spot.building_name = data['building_name'] if data['building_name'] else None
+        if 'floor' in data:
+            spot.floor = data['floor'] if data['floor'] is not None else None
+        if 'tags' in data:
+            spot.tags = list(data['tags']) if data['tags'] is not None else []
+        if 'additional_properties' in data:
+            spot.additional_properties = data['additional_properties'] if data['additional_properties'] else None
+    except ValueError as exc:
+        logger.warning(f"Invalid study spot data: {exc}")
+        error_body = {
+            'error': 'Invalid study spot data',
+            'details': str(exc),
+        }
+        return None, (jsonify(error_body), 400)
     return spot, None
 
 
