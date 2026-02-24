@@ -9,7 +9,7 @@ ID="${1:?Usage: $0 <study_spot_id> [base_url] - JSON body read from stdin}"
 BASE="${2:-http://localhost:8000/api}"
 
 if [ -t 0 ]; then
-  echo "No JSON provided on stdin. Usage: echo '\"{...}\"' | $0 <id> [base_url]" >&2
+  echo "No JSON provided on stdin. Usage: echo '{\"...\"}' | $0 <id> [base_url]" >&2
   exit 1
 fi
 
