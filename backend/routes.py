@@ -95,7 +95,10 @@ def _study_spot_from_json(data, spot=None):
     if 'noise_level' in data:
         spot.noise_level = data['noise_level']
     if 'capacity' in data:
-        spot.capacity = int(data['capacity'])
+        try:
+            spot.capacity = int(data['capacity'])
+        except (TypeError, ValueError):
+            raise ValueError("Invalid capacity: must be an integer")
     if 'spot_type' in data:
         spot.spot_type = list(data['spot_type']) if data['spot_type'] is not None else []
     if 'access_hours' in data:
