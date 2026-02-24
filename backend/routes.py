@@ -54,7 +54,7 @@ def health_check():
 # Required fields for create
 STUDY_SPOT_REQUIRED = {
     'abbreviation', 'study_spot_name', 'address', 'noise_level',
-    'capacity', 'spot_type', 'access_hours', 'near_food', 'reservable', 'description', 'pictures'
+    'capacity', 'spot_type', 'access_hours', 'near_food', 'reservable', 'description', 'pictures', 'tags'
 }
 
 TIME_PATTERN = re.compile(r'^([01]\d|2[0-3]):([0-5]\d)$')
