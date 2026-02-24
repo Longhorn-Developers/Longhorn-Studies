@@ -87,7 +87,7 @@ The backend will be available at `http://localhost:8000`
 - ✅ CORS middleware configured for frontend communication
 - ✅ Request logging middleware
 - ✅ Comprehensive error handling
-- ✅ RESTful endpoints for Items and Users
+- ✅ RESTful endpoints for Study Spots
 - ✅ Health check endpoint
 
 ## API Endpoints
@@ -95,31 +95,32 @@ The backend will be available at `http://localhost:8000`
 ### Health Check
 - `GET /api/health` - Verify API status
 
-### Items
-- `GET /api/items` - Get all items
-- `GET /api/items/<id>` - Get specific item
-- `POST /api/items` - Create new item
-- `PUT /api/items/<id>` - Update item
-- `DELETE /api/items/<id>` - Delete item
-
-### Users
-- `GET /api/users` - Get all users
-- `POST /api/users` - Create new user
+### Study Spots
+- `GET /api/study_spots` - Get all study spots
+- `GET /api/study_spots/<id>` - Get a specific study spot
+- `POST /api/study_spots` - Create a new study spot
+- `PUT /api/study_spots/<id>` - Update a study spot
+- `DELETE /api/study_spots/<id>` - Delete a study spot
 
 ## Database Models
 
-### Item
+### StudySpot
 - id (Integer, Primary Key)
-- name (String, Required)
-- description (Text, Optional)
-- created_at (DateTime)
-- updated_at (DateTime)
-
-### User
-- id (Integer, Primary Key)
-- username (String, Unique, Required)
-- email (String, Unique, Required)
-- created_at (DateTime)
+- abbreviation (String, Required)
+- study_spot_name (String, Required)
+- building_name (String, Optional)
+- address (String, Required)
+- floor (Integer, Optional)
+- tags (JSON array of strings)
+- noise_level (String, Required)
+- capacity (Integer, Required)
+- spot_type (JSON array of strings, Required)
+- access_hours (JSON array of 7 `[open, close]` pairs in `HH:MM`, Monday-Sunday, Required)
+- near_food (Boolean, Required)
+- additional_properties (Text, Optional)
+- reservable (Boolean, Required)
+- description (Text, Required)
+- pictures (JSON array of strings, Required)
 
 ## Development
 

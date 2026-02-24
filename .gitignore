@@ -6,6 +6,7 @@ backend/venv/
 backend/*.db
 backend/*.sqlite
 backend/*.sqlite3
+backend/instance/
 
 # Frontend
 frontend/node_modules/

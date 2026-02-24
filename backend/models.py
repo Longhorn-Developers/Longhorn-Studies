@@ -1,51 +1,54 @@
 from database import db
-from datetime import datetime
 
-class Item(db.Model):
+
+def default_access_hours():
+    """Default 7-day schedule: closed all days."""
+    return [["00:00", "00:00"] for _ in range(7)]
+
+
+class StudySpot(db.Model):
     """
-    Item model representing items in the database.
+    Study spot model: locations for studying with metadata and amenities.
     """
-    __tablename__ = 'items'
-    
+    __tablename__ = 'study_spots'
+
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(200), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
-    
+    abbreviation = db.Column(db.String(50), nullable=False)
+    study_spot_name = db.Column(db.String(200), nullable=False)
+    building_name = db.Column(db.String(200), nullable=True)
+    address = db.Column(db.String(500), nullable=False)
+    floor = db.Column(db.Integer, nullable=True)
+    tags = db.Column(db.JSON, nullable=False, default=lambda: [])
+    pictures = db.Column(db.JSON, nullable=False, default=lambda: [])
+    noise_level = db.Column(db.String(50), nullable=False)
+    capacity = db.Column(db.Integer, nullable=False)
+    spot_type = db.Column(db.JSON, nullable=False, default=lambda: [])
+    access_hours = db.Column(db.JSON, nullable=False, default=default_access_hours)
+    near_food = db.Column(db.Boolean, nullable=False, default=False)
+    additional_properties = db.Column(db.Text, nullable=True)
+    reservable = db.Column(db.Boolean, nullable=False, default=False)
+    description = db.Column(db.Text, nullable=False)
+
     def to_dict(self):
-        """Convert model instance to dictionary."""
+        """Convert model instance to dictionary for JSON responses."""
         return {
             'id': self.id,
-            'name': self.name,
+            'abbreviation': self.abbreviation,
+            'study_spot_name': self.study_spot_name,
+            'building_name': self.building_name,
+            'address': self.address,
+            'floor': self.floor,
+            'tags': self.tags if self.tags is not None else [],
+            'pictures': self.pictures if self.pictures is not None else [],
+            'noise_level': self.noise_level,
+            'capacity': self.capacity,
+            'spot_type': self.spot_type if self.spot_type is not None else [],
+            'access_hours': self.access_hours,
+            'near_food': self.near_food,
+            'additional_properties': self.additional_properties,
+            'reservable': self.reservable,
             'description': self.description,
-            'created_at': self.created_at.isoformat(),
-            'updated_at': self.updated_at.isoformat()
         }
-    
-    def __repr__(self):
-        return f'<Item {self.id}: {self.name}>'
 
-
-class User(db.Model):
-    """
-    User model for authentication and authorization.
-    """
-    __tablename__ = 'users'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    
-    def to_dict(self):
-        """Convert model instance to dictionary."""
-        return {
-            'id': self.id,
-            'username': self.username,
-            'email': self.email,
-            'created_at': self.created_at.isoformat()
-        }
-    
     def __repr__(self):
-        return f'<User {self.id}: {self.username}>'
+        return f'<StudySpot {self.id}: {self.study_spot_name}>'
