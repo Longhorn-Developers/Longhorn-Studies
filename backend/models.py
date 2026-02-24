@@ -1,5 +1,4 @@
 from database import db
-from datetime import datetime
 
 
 def default_access_hours():

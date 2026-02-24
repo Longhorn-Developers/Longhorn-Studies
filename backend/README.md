@@ -100,7 +100,6 @@ backend/
 │   ├── delete_db.sh    # DELETE a study spot by ID
 │   ├── update_fields.sh # PUT partial update
 │   ├── test_crud_db.sh # End-to-end CRUD verification
-│   ├── migrate_access_hours.py # Convert legacy access_hours strings to 7-day arrays
 ├── requirements.txt   # Python dependencies
 ├── .env.example       # Environment variables template
 ├── .gitignore         # Git ignore rules
