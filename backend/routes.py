@@ -115,7 +115,7 @@ def _study_spot_from_json(data, spot=None):
     if 'building_name' in data:
         spot.building_name = data['building_name'] if data['building_name'] else None
     if 'floor' in data:
-        spot.floor = data['floor'] if data['floor'] is not None else None
+        spot.floor = int(data['floor']) if data['floor'] is not None else None
     if 'tags' in data:
         spot.tags = list(data['tags']) if data['tags'] is not None else []
     if 'additional_properties' in data:
