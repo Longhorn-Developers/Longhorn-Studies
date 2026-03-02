@@ -11,15 +11,18 @@ const blurhash =
   "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
 
 type StudySpotCardType = {
-  locationName: string;
-  buildingName: string;
+  study_spot_name: string;
+  abbreviation: string;
+  image?: string;
   location: string; // TODO: get proper type
   hours: string[];
   tags: string[];
 };
+
 export default function StudySpotCard({
-  locationName,
-  buildingName,
+  study_spot_name,
+  abbreviation,
+  image,
   hours,
   tags,
 }: StudySpotCardType) {
@@ -27,7 +30,7 @@ export default function StudySpotCard({
     <View className="flex flex-row gap-2 border p-2 rounded-lg border-card-border">
       <View className="w-[78px] aspect-square relative bg-blue-500 rounded">
         <Image
-          source="https://www.rambleratx.com/wp-content/uploads/2022/06/Texas-Union.jpeg"
+          source={image ? image : "https://www.rambleratx.com/wp-content/uploads/2022/06/Texas-Union.jpeg"}
           placeholder={{ blurhash }}
           contentFit="cover"
           transition={1000}
@@ -45,9 +48,9 @@ export default function StudySpotCard({
         <View>
           <View className="flex flex-row">
             <Text className="text-spot-name text-burnt-orange font-bold">
-              {buildingName}
+              {abbreviation}
             </Text>
-            <Text className="text-spot-name font-bold"> {locationName}</Text>
+            <Text className="text-spot-name font-bold"> {study_spot_name}</Text>
           </View>
           <View className="flex flex-row items-center gap-3">
             <View className="flex flex-row gap-1">
@@ -58,9 +61,7 @@ export default function StudySpotCard({
           </View>
         </View>
         <View className="flex flex-row gap-1">
-          <Tag tag="Lounge" />
-          <Tag tag="Low Noise" />
-          <Tag tag="Near Food & Cafe" />
+          {tags && tags.map((tag, _i) => <Tag tag={tag} key={_i} />)}
         </View>
       </View>
       <View className="flex justify-center ml-auto">

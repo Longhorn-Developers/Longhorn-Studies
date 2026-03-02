@@ -1,21 +1,102 @@
 import { Image } from "expo-image";
-import { Platform, StyleSheet, View, Text } from "react-native";
+import { Platform, StyleSheet, View, Text, ScrollView } from "react-native";
 
+import SearchBar from "@/components/ui/search/search-bar";
 import StudySpotCard from "@/components/ui/study-spot-card";
+import FilterTag from "@/components/ui/search/filter-tag";
+
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
+  const insets = useSafeAreaInsets();
+
   return (
-    <View className="p-4">
-    <Image
-        source="https://picsum.photos/seed/696/3000/2000"
-        contentFit="cover"
-        transition={1000}
-        className="w-full h-64 rounded-xl"
-        style={{ width: '100%', height: 250 }}
-      />
-      <View className="h-64" />
-      <View className="h-16" />
-      <StudySpotCard buildingName="Union" locationName="Ballroom" location="Ballroom" hours={["5:00am", "5:00pm"]} tags={["Hi"]}/>
+    <View
+      style={{
+        paddingTop: insets.top,
+        paddingBottom: insets.bottom,
+        paddingLeft: insets.left + 16,
+        paddingRight: insets.right + 16,
+      }}
+      className="flex gap-4 bg-white h-full"
+    >
+      <SearchBar />
+      <ScrollView contentContainerClassName="flex flex-row h-[30px]" horizontal>
+        <FilterTag
+          label="Area Type"
+          options={[
+            "Open Area",
+            "Lounge",
+            "Cubicles",
+            "Closed Room",
+            "Outdoor",
+          ]}
+          onApply={(selected) => console.log("Filtering by:", selected)}
+        />
+        <FilterTag
+          label="Area Type"
+          options={[
+            "Open Area",
+            "Lounge",
+            "Cubicles",
+            "Closed Room",
+            "Outdoor",
+          ]}
+          onApply={(selected) => console.log("Filtering by:", selected)}
+        />
+        <FilterTag
+          label="Area Type"
+          options={[
+            "Open Area",
+            "Lounge",
+            "Cubicles",
+            "Closed Room",
+            "Outdoor",
+          ]}
+          onApply={(selected) => console.log("Filtering by:", selected)}
+        />
+      </ScrollView>
+      <View>
+        <Text className="text-heading font-bold pb-1">Recommended for You</Text>
+        {/** TODO: CONVERT TO A FLAT LIST */}
+        <ScrollView contentContainerClassName="flex flex-col gap-3" showsVerticalScrollIndicator={false}>
+          <StudySpotCard
+            abbreviation="Union"
+            study_spot_name="Ballroom"
+            location="Ballroom"
+            hours={["5:00am", "5:00pm"]}
+            tags={["Lounge", "Low Noise", "Outlets", "Printer"]}
+          />
+          <StudySpotCard
+            abbreviation="Union"
+            study_spot_name="Ballroom"
+            location="Ballroom"
+            hours={["5:00am", "5:00pm"]}
+            tags={["Lounge", "Low Noise", "Outlets", "Printer"]}
+          />
+          <StudySpotCard
+            abbreviation="Union"
+            study_spot_name="Ballroom"
+            location="Ballroom"
+            hours={["5:00am", "5:00pm"]}
+            tags={["Lounge", "Low Noise", "Outlets", "Printer"]}
+          />
+          <StudySpotCard
+            abbreviation="Union"
+            study_spot_name="Ballroom"
+            location="Ballroom"
+            hours={["5:00am", "5:00pm"]}
+            tags={["Lounge", "Low Noise", "Outlets", "Printer"]}
+          />
+          <StudySpotCard
+            abbreviation="Union"
+            study_spot_name="Ballroom"
+            location="Ballroom"
+            hours={["5:00am", "5:00pm"]}
+            tags={["Lounge", "Low Noise", "Outlets", "Printer"]}
+          />
+        </ScrollView>
+      </View>
     </View>
   );
 }
