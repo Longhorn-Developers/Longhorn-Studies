@@ -169,15 +169,38 @@ Edit `backend/.env` (copy from `.env.example`):
 Edit `frontend/App.js`:
 - `API_BASE_URL` - Backend API URL (default: `http://localhost:8000/api`)
 
-## Next Steps
+## Development Workflow
+### Branch naming conventions + Conventional Commits
+We follow the Conventional Commits specification for commit messages. This ensures a consistent commit history and enables automated versioning and changelog generation.
 
-- Add authentication and authorization
-- Implement user sessions and JWT tokens
-- Add more complex database relationships
-- Implement data validation
-- Add unit and integration tests
-- Set up CI/CD pipeline
-- Deploy to production environment
+### Branch Naming Conventions 
+```
+<type>/<short-description>
+```
+Examples: 
+- feature/{feature-name}
+- fix/{bug-description}
+- docs/{documentation-change}
+### Commit Message
+Follow this structure for commit messages
+```
+<type>(<scope>): <subject>
+```
+Where:
+```type``` has one of the following:
+- feat: New features
+- fix: Bug fixes
+- docs: Documentation changes
+- style: Code formatting only
+- refactor: Code changes without behavior change
+- test: Adding or updating tests
+- chore: Build process or tooling updates
+
+### PR process
+- Fork or branch from main
+- Create a PR with a clear description
+- Ensure checks pass (build, lint, test)
+- Request review before merging
 
 ## License
 
