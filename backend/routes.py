@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from database import db
-from sqlalchemy import or_
+from sqlalchemy import inspect
 from models import StudySpot
 from datetime import datetime
 import logging
@@ -65,7 +65,7 @@ def get_schema():
     """Return database schema information."""
     try:
         # Get all tables
-        inspector = db.inspect(db.engine)
+        inspector = inspect(db.engine)
         tables = inspector.get_table_names()
         
         schema = {}
@@ -77,7 +77,7 @@ def get_schema():
                         'name': col['name'],
                         'type': str(col['type']),
                         'nullable': col['nullable'],
-                        'default': str(col['default']) if col['default'] else None
+                        'default': str(col['default']) if col['default'] is not None else None
                     }
                     for col in columns
                 ]
@@ -106,8 +106,8 @@ def get_distinct_values(column):
             return jsonify({'error': 'Invalid column name'}), 400
         
         if column == 'access_hours':
-            # For open now, return boolean options
-            return jsonify(['true', 'false']), 200
+            # For open now, return boolean options as JSON booleans
+            return jsonify([True, False]), 200
         elif column in {'spot_type', 'tags'}:
             # Handle JSON arrays
             spots = StudySpot.query.all()
