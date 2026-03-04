@@ -17,6 +17,8 @@ class StudySpot(db.Model):
     study_spot_name = db.Column(db.String(200), nullable=False)
     building_name = db.Column(db.String(200), nullable=True)
     address = db.Column(db.String(500), nullable=False)
+    latitude = db.Column(db.Float, nullable=True)
+    longitude = db.Column(db.Float, nullable=True)
     floor = db.Column(db.Integer, nullable=True)
     tags = db.Column(db.JSON, nullable=False, default=lambda: [])
     pictures = db.Column(db.JSON, nullable=False, default=lambda: [])
@@ -37,6 +39,8 @@ class StudySpot(db.Model):
             'study_spot_name': self.study_spot_name,
             'building_name': self.building_name,
             'address': self.address,
+            'latitude': self.latitude,
+            'longitude': self.longitude,
             'floor': self.floor,
             'tags': self.tags if self.tags is not None else [],
             'pictures': self.pictures if self.pictures is not None else [],

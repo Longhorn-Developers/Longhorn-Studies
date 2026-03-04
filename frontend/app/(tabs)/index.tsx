@@ -6,8 +6,56 @@ import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Link } from 'expo-router';
+import * as Location from 'expo-location';
+import { useEffect, useState } from 'react';
 
 export default function HomeScreen() {
+
+  const [userLat, setUserLat] = useState<number | null>(null);
+  const [userLng, setUserLng] = useState<number | null>(null);
+  const [spots, setSpots] = useState<any[]>([]);
+
+  async function getUserLocation() {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      return;
+    }
+    
+    const location = await Location.getCurrentPositionAsync({});
+    setUserLat(location.coords.latitude);
+    setUserLng(location.coords.longitude);
+  }
+
+  async function fetchSortedByDistance() {
+    if (!userLat || !userLng) return;
+    
+    try {
+      const response = await fetch('http://localhost:8000/api/study_spots/sort_by_distance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_lat: userLat,
+          user_lng: userLng
+        })
+      });
+      
+      const sortedSpots = await response.json();
+      setSpots(sortedSpots);
+    } catch (error) {
+      console.error('Error fetching sorted spots:', error);
+    }
+  }
+
+  useEffect(() => {
+    getUserLocation();
+  }, []);
+
+  useEffect(() => {
+    if (userLat && userLng) {
+      fetchSortedByDistance();
+    }
+  }, [userLat, userLng]);
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
@@ -77,6 +125,8 @@ export default function HomeScreen() {
     </ParallaxScrollView>
   );
 }
+
+
 
 const styles = StyleSheet.create({
   titleContainer: {
