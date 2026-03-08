@@ -10,7 +10,7 @@ module.exports = {
         'main-text': '#333F48',     // Used with all main texts
         'card-border': '#BAC1CC',   // All card borders
         'gray-text': '#94A3B8',     // Gray text
-
+        'ut-black':'#333F48',
         // Opaque colors
         // Note: You can also use Tailwind's built-in opacity modifier like `bg-brand-orange/50` 
         'active-filter': 'rgba(191, 87, 0, 0.5)',     // #BF5700 at 0.5 opacity
