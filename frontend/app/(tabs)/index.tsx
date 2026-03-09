@@ -33,6 +33,15 @@ export default function HomeScreen() {
             Recommended for You
           </Text>
           <StudySpotCard
+            image="https://picsum.photos/200"
+            abbreviation="EER"
+            study_spot_name="Floor"
+            location="Floor"
+            hours={["5:00am", "5:00pm"]}
+            tags={["Lounge", "Low Noise", "Outlets", "Printer"]}
+          />
+          <StudySpotCard
+            image="https://picsum.photos/200"
             abbreviation="Union"
             study_spot_name="Ballroom"
             location="Ballroom"
@@ -69,20 +78,13 @@ export default function HomeScreen() {
           />
           <StudySpotCard
             image="https://picsum.photos/200"
-            abbreviation="Union"
-            study_spot_name="Ballroom"
-            location="Ballroom"
+            abbreviation="Jester"
+            study_spot_name="Court"
+            location="Court"
             hours={["5:00am", "5:00pm"]}
             tags={["Lounge", "Low Noise", "Outlets", "Printer"]}
           />
-          <StudySpotCard
-            image="https://picsum.photos/200"
-            abbreviation="Union"
-            study_spot_name="Ballroom"
-            location="Ballroom"
-            hours={["5:00am", "5:00pm"]}
-            tags={["Lounge", "Low Noise", "Outlets", "Printer"]}
-          />
+
         </ScrollView>
       </View>
     </View>
