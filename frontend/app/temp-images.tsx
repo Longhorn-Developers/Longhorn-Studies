@@ -6,7 +6,8 @@ type StudySpot = {
   pictures?: string[];
 };
 
-const API_BASE = 'http://localhost:8000/api';
+const API_BASE =
+  process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/$/, '') ?? 'http://localhost:8000/api';
 
 export default function TempImagesScreen() {
   const [images, setImages] = useState<string[]>([]);
@@ -26,17 +27,11 @@ export default function TempImagesScreen() {
           return;
         }
 
-        const urls = data
-          .flatMap((spot) => {
-            if (typeof spot.id !== 'number') {
-              return [];
-            }
-            const pictureCount = Array.isArray(spot.pictures) ? spot.pictures.length : 0;
-            return Array.from(
-              { length: pictureCount },
-              (_, index) => `${API_BASE}/study_spots/${spot.id}/images/${index}`
-            );
-          });
+        const urls = data.flatMap((spot) =>
+          Array.isArray(spot.pictures)
+            ? spot.pictures.filter((picture): picture is string => typeof picture === 'string')
+            : []
+        );
 
         setImages(urls);
       } catch {

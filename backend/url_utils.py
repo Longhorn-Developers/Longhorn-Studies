@@ -33,7 +33,7 @@ def _unwrap_image_proxy_url(url):
     return current
 
 
-def _extract_google_drive_file_id(url):
+def extract_google_drive_file_id(url):
     """Extract a Google Drive file id from common public share URL formats."""
     parsed = urlparse(url)
     hostname = (parsed.hostname or "").lower()
@@ -53,6 +53,11 @@ def _extract_google_drive_file_id(url):
     return None
 
 
+def _extract_google_drive_file_id(url):
+    """Backward-compatible alias for internal callers."""
+    return extract_google_drive_file_id(url)
+
+
 def normalize_google_drive_url(url):
     """
     Convert Google Drive share URLs into a direct image URL.
@@ -68,7 +73,7 @@ def normalize_google_drive_url(url):
     # If a proxied URL is passed back from clients, keep DB storage canonical.
     url = _unwrap_image_proxy_url(url)
 
-    file_id = _extract_google_drive_file_id(url)
+    file_id = extract_google_drive_file_id(url)
     if not file_id:
         return url
 
