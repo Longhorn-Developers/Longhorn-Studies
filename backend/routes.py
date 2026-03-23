@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from database import db
-from sqlalchemy import inspect
+from sqlalchemy import inspect, text
 from models import StudySpot
 from datetime import datetime
 import logging
@@ -88,42 +88,46 @@ def get_schema():
         logger.error(f"Error getting schema: {str(e)}")
         return jsonify({'error': 'Failed to get schema'}), 500
 
-@api_bp.route('/study_spots/raw', methods=['GET'])
-def get_raw_study_spots():
-    """Return raw StudySpot data as-is from database."""
-    try:
-        spots = StudySpot.query.all()
-        return jsonify([s.to_dict() for s in spots]), 200
-    except Exception as e:
-        logger.error(f"Error fetching raw study spots: {str(e)}")
-        return jsonify({'error': 'Failed to fetch study spots'}), 500
 
 @api_bp.route('/study_spots/distinct/<column>', methods=['GET'])
 def get_distinct_values(column):
-    try: 
+    try:
         allowed_columns = {'spot_type', 'noise_level', 'tags', 'access_hours'}
         if column not in allowed_columns:
             return jsonify({'error': 'Invalid column name'}), 400
-        
-        if column == 'access_hours':
-            # For open now, return boolean options as JSON booleans
-            return jsonify([True, False]), 200
-        elif column in {'spot_type', 'tags'}:
-            # Handle JSON arrays
-            spots = StudySpot.query.all()
-            values = set()
-            for spot in spots:
-                col_data = getattr(spot, column)
-                if col_data: 
-                    for item in col_data:
-                        if item:
-                            values.add(str(item))
-        else: 
-            # Handle regular string columns
-            values = db.session.query(getattr(StudySpot, column)).distinct().all()
-            values = [v[0] for v in values if v[0] is not None]
 
-        return jsonify(sorted(list(values))), 200
+        if column == 'access_hours':
+            return jsonify([True, False]), 200
+
+        elif column in {'spot_type', 'tags'}:
+            dialect = db.session.bind.dialect.name
+            if dialect == 'sqlite':
+                sql = text(f"""
+                    SELECT DISTINCT json_each.value AS value
+                    FROM {StudySpot.__tablename__}, json_each({StudySpot.__tablename__}.{column})
+                    WHERE json_each.value IS NOT NULL
+                      AND json_each.value != ''
+                    ORDER BY json_each.value
+                """)
+            elif dialect == 'postgresql':
+                sql = text(f"""
+                    SELECT DISTINCT jsonb_array_elements_text({column}::jsonb) AS value
+                    FROM {StudySpot.__tablename__}
+                    WHERE {column} IS NOT NULL
+                    ORDER BY value
+                """)
+            else:
+                return jsonify({'error': f'Unsupported database dialect for {column}: {dialect}'}), 500
+
+            values = [row[0] for row in db.session.execute(sql)]
+
+        else:
+            # Regular columns: query distinct in DB
+            results = db.session.query(getattr(StudySpot, column)).distinct().all()
+            values = [r[0] for r in results if r[0] is not None]
+
+        return jsonify(sorted(values)), 200
+
     except Exception as e:
         logger.error(f"Error fetching distinct values for column {column}: {str(e)}")
         return jsonify({'error': 'Failed to fetch distinct values'}), 500
