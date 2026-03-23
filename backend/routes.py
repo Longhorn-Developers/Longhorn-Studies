@@ -241,3 +241,67 @@ def delete_study_spot(spot_id):
         db.session.rollback()
         logger.error(f"Error deleting study spot {spot_id}: {str(e)}")
         return jsonify({'error': 'Failed to delete study spot'}), 500
+
+
+@api_bp.route('/study_spots/sort_by_distance', methods=['POST'])
+def sort_by_distance():
+    """Sort study spots by distance from user location."""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        user_lat = data.get('user_lat')
+        user_lng = data.get('user_lng')
+        
+        if user_lat is None or user_lng is None:
+            return jsonify({'error': 'user_lat and user_lng are required'}), 400
+        
+        # Convert to float
+        try:
+            user_lat = float(user_lat)
+            user_lng = float(user_lng)
+        except (ValueError, TypeError):
+            return jsonify({'error': 'Invalid coordinates'}), 400
+        
+        # Get all study spots
+        spots = StudySpot.query.all()
+        
+        # Calculate distances and sort
+        spots_with_distance = []
+        for spot in spots:
+            # Skip spots without coordinates
+            if not hasattr(spot, 'latitude') or not hasattr(spot, 'longitude'):
+                continue
+            if spot.latitude is None or spot.longitude is None:
+                continue
+            
+            distance = _haversine_distance(user_lat, user_lng, spot.latitude, spot.longitude)
+            spot_dict = spot.to_dict()
+            spot_dict['distance_from_user'] = distance
+            spots_with_distance.append(spot_dict)
+        
+        # Sort by distance (closest first)
+        spots_with_distance.sort(key=lambda x: x['distance_from_user'])
+        
+        return jsonify(spots_with_distance), 200
+        
+    except Exception as e:
+        logger.error(f"Error sorting by distance: {str(e)}")
+        return jsonify({'error': 'Failed to sort by distance'}), 500
+
+
+def _haversine_distance(lat1, lon1, lat2, lon2):
+    import math
+    
+    # Convert decimal degrees to radians
+    lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
+    
+    # Haversine formula
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+    a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+    c = 2 * math.asin(math.sqrt(a))
+    
+    r = 3956
+    return c * r
