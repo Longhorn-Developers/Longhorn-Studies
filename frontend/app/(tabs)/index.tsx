@@ -41,6 +41,9 @@ export default function HomeScreen() {
         </ThemedText>
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
+        <Link href="/study-spots/1" style={{ color: "#FFFFFF", fontWeight: "700" }}>
+          /study-spots/1
+        </Link>
         <Link href="/modal">
           <Link.Trigger>
             <ThemedText type="subtitle">Step 2: Explore</ThemedText>
