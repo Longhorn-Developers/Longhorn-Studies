@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, Response
 from database import db
+from sqlalchemy import inspect, text
 from models import StudySpot
 from datetime import datetime
 from collections import OrderedDict
@@ -86,6 +87,77 @@ NO_REDIRECT_OPENER = urllib_request.build_opener(_NoRedirectHandler)
 class _RemoteImageTooLargeError(ValueError):
     """Raised when a proxied image exceeds the allowed in-memory size."""
 
+@api_bp.route('/schema', methods=['GET'])
+def get_schema():
+    """Return database schema information."""
+    try:
+        # Get all tables
+        inspector = inspect(db.engine)
+        tables = inspector.get_table_names()
+        
+        schema = {}
+        for table in tables:
+            columns = inspector.get_columns(table)
+            schema[table] = {
+                'columns': [
+                    {
+                        'name': col['name'],
+                        'type': str(col['type']),
+                        'nullable': col['nullable'],
+                        'default': str(col['default']) if col['default'] is not None else None
+                    }
+                    for col in columns
+                ]
+            }
+        
+        return jsonify(schema), 200
+    except Exception as e:
+        logger.error(f"Error getting schema: {str(e)}")
+        return jsonify({'error': 'Failed to get schema'}), 500
+
+
+@api_bp.route('/study_spots/distinct/<column>', methods=['GET'])
+def get_distinct_values(column):
+    try:
+        allowed_columns = {'spot_type', 'noise_level', 'tags', 'access_hours'}
+        if column not in allowed_columns:
+            return jsonify({'error': 'Invalid column name'}), 400
+
+        if column == 'access_hours':
+            return jsonify([True, False]), 200
+
+        elif column in {'spot_type', 'tags'}:
+            dialect = db.session.bind.dialect.name
+            if dialect == 'sqlite':
+                sql = text(f"""
+                    SELECT DISTINCT json_each.value AS value
+                    FROM {StudySpot.__tablename__}, json_each({StudySpot.__tablename__}.{column})
+                    WHERE json_each.value IS NOT NULL
+                      AND json_each.value != ''
+                    ORDER BY json_each.value
+                """)
+            elif dialect == 'postgresql':
+                sql = text(f"""
+                    SELECT DISTINCT jsonb_array_elements_text({column}::jsonb) AS value
+                    FROM {StudySpot.__tablename__}
+                    WHERE {column} IS NOT NULL
+                    ORDER BY value
+                """)
+            else:
+                return jsonify({'error': f'Unsupported database dialect for {column}: {dialect}'}), 500
+
+            values = [row[0] for row in db.session.execute(sql)]
+
+        else:
+            # Regular columns: query distinct in DB
+            results = db.session.query(getattr(StudySpot, column)).distinct().all()
+            values = [r[0] for r in results if r[0] is not None]
+
+        return jsonify(sorted(values)), 200
+
+    except Exception as e:
+        logger.error(f"Error fetching distinct values for column {column}: {str(e)}")
+        return jsonify({'error': 'Failed to fetch distinct values'}), 500
 
 def _normalize_access_hours(value):
     """
