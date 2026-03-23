@@ -147,11 +147,3 @@ The application runs in debug mode by default for development. For production:
    pip install gunicorn
    gunicorn app:app
    ```
-
-To normalize existing image links in the database:
-
-```bash
-cd backend
-source venv/bin/activate
-python scripts/normalize_picture_links.py
-```
