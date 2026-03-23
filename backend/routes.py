@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, Response
 from database import db
+from sqlalchemy import inspect, text
 from models import StudySpot
 from datetime import datetime
 from collections import OrderedDict
@@ -7,9 +8,9 @@ import logging
 import re
 import threading
 import time
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import urlparse
 from urllib import request as urllib_request, error as urllib_error
-from url_utils import normalize_picture_urls
+from url_utils import extract_google_drive_file_id, normalize_picture_urls
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -64,14 +65,99 @@ STUDY_SPOT_REQUIRED = {
 }
 
 TIME_PATTERN = re.compile(r'^([01]\d|2[0-3]):([0-5]\d)$')
-DRIVE_FILE_PATH_RE = re.compile(r'/file/d/([A-Za-z0-9_-]+)')
 SPOT_IMAGE_PATH_RE = re.compile(r'/api/study_spots/(\d+)/images/(\d+)/?$')
 LOCAL_HOSTNAMES = {'localhost', '127.0.0.1', '::1'}
 IMAGE_CACHE_MAX_ENTRIES = 256
 IMAGE_CACHE_TTL_SECONDS = 3600
+IMAGE_PROXY_MAX_BYTES = 5 * 1024 * 1024
 IMAGE_CACHE = OrderedDict()
 IMAGE_CACHE_LOCK = threading.Lock()
 
+
+class _NoRedirectHandler(urllib_request.HTTPRedirectHandler):
+    """Prevent automatic redirect following for remote image fetches."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+NO_REDIRECT_OPENER = urllib_request.build_opener(_NoRedirectHandler)
+
+
+class _RemoteImageTooLargeError(ValueError):
+    """Raised when a proxied image exceeds the allowed in-memory size."""
+
+@api_bp.route('/schema', methods=['GET'])
+def get_schema():
+    """Return database schema information."""
+    try:
+        # Get all tables
+        inspector = inspect(db.engine)
+        tables = inspector.get_table_names()
+        
+        schema = {}
+        for table in tables:
+            columns = inspector.get_columns(table)
+            schema[table] = {
+                'columns': [
+                    {
+                        'name': col['name'],
+                        'type': str(col['type']),
+                        'nullable': col['nullable'],
+                        'default': str(col['default']) if col['default'] is not None else None
+                    }
+                    for col in columns
+                ]
+            }
+        
+        return jsonify(schema), 200
+    except Exception as e:
+        logger.error(f"Error getting schema: {str(e)}")
+        return jsonify({'error': 'Failed to get schema'}), 500
+
+
+@api_bp.route('/study_spots/distinct/<column>', methods=['GET'])
+def get_distinct_values(column):
+    try:
+        allowed_columns = {'spot_type', 'noise_level', 'tags', 'access_hours'}
+        if column not in allowed_columns:
+            return jsonify({'error': 'Invalid column name'}), 400
+
+        if column == 'access_hours':
+            return jsonify([True, False]), 200
+
+        elif column in {'spot_type', 'tags'}:
+            dialect = db.session.bind.dialect.name
+            if dialect == 'sqlite':
+                sql = text(f"""
+                    SELECT DISTINCT json_each.value AS value
+                    FROM {StudySpot.__tablename__}, json_each({StudySpot.__tablename__}.{column})
+                    WHERE json_each.value IS NOT NULL
+                      AND json_each.value != ''
+                    ORDER BY json_each.value
+                """)
+            elif dialect == 'postgresql':
+                sql = text(f"""
+                    SELECT DISTINCT jsonb_array_elements_text({column}::jsonb) AS value
+                    FROM {StudySpot.__tablename__}
+                    WHERE {column} IS NOT NULL
+                    ORDER BY value
+                """)
+            else:
+                return jsonify({'error': f'Unsupported database dialect for {column}: {dialect}'}), 500
+
+            values = [row[0] for row in db.session.execute(sql)]
+
+        else:
+            # Regular columns: query distinct in DB
+            results = db.session.query(getattr(StudySpot, column)).distinct().all()
+            values = [r[0] for r in results if r[0] is not None]
+
+        return jsonify(sorted(values)), 200
+
+    except Exception as e:
+        logger.error(f"Error fetching distinct values for column {column}: {str(e)}")
+        return jsonify({'error': 'Failed to fetch distinct values'}), 500
 
 def _normalize_access_hours(value):
     """
@@ -94,26 +180,6 @@ def _normalize_access_hours(value):
     return normalized
 
 
-def _extract_google_drive_file_id(url):
-    """Extract Google Drive file id from common URL formats."""
-    parsed = urlparse(url)
-    hostname = (parsed.hostname or '').lower()
-
-    if 'drive.google.com' not in hostname and 'docs.google.com' not in hostname:
-        return None
-
-    path_match = DRIVE_FILE_PATH_RE.search(parsed.path or '')
-    if path_match:
-        return path_match.group(1)
-
-    query_params = parse_qs(parsed.query or '')
-    file_id = query_params.get('id', [None])[0]
-    if file_id:
-        return file_id
-
-    return None
-
-
 def _is_safe_remote_url(url):
     """Basic SSRF protection for proxy endpoint."""
     parsed = urlparse(url)
@@ -132,7 +198,7 @@ def _candidate_proxy_urls(url):
     Build candidate image URLs.
     For Google Drive, try several direct variants since availability differs per file.
     """
-    file_id = _extract_google_drive_file_id(url)
+    file_id = extract_google_drive_file_id(url)
     if not file_id:
         return [url]
 
@@ -157,9 +223,25 @@ def _fetch_remote_image(url):
         }
     )
 
-    with urllib_request.urlopen(req, timeout=15) as upstream:
+    with NO_REDIRECT_OPENER.open(req, timeout=15) as upstream:
+        content_length = upstream.headers.get('Content-Length')
+        if content_length:
+            try:
+                content_length_value = int(content_length)
+            except ValueError:
+                content_length_value = None
+
+            if content_length_value is not None and content_length_value > IMAGE_PROXY_MAX_BYTES:
+                raise _RemoteImageTooLargeError(
+                    f'remote image exceeds {IMAGE_PROXY_MAX_BYTES} bytes'
+                )
+
         content_type = (upstream.headers.get('Content-Type') or '').split(';', 1)[0].strip().lower()
-        body = upstream.read()
+        body = upstream.read(IMAGE_PROXY_MAX_BYTES + 1)
+        if len(body) > IMAGE_PROXY_MAX_BYTES:
+            raise _RemoteImageTooLargeError(
+                f'remote image exceeds {IMAGE_PROXY_MAX_BYTES} bytes'
+            )
         return body, content_type
 
 
@@ -226,6 +308,8 @@ def _proxy_image_from_remote_url(raw_url):
             errors.append(f'HTTP {err.code} from {candidate}')
         except urllib_error.URLError as err:
             errors.append(f'URL error from {candidate}: {err.reason}')
+        except _RemoteImageTooLargeError as err:
+            errors.append(f'image too large from {candidate}: {err}')
         except Exception as err:
             errors.append(f'Unexpected error from {candidate}: {err}')
 
