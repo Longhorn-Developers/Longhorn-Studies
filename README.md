@@ -1,65 +1,45 @@
 # Longhorn Studies
 
-A full-stack application with React Native frontend and Python Flask backend with SQLAlchemy database.
+A mobile app for finding study spots at UT Austin, built with Expo (React Native) and backed by Supabase Postgres, with Drizzle ORM managing the schema.
 
 ## Project Structure
 
 ```
-Longhorn-Studies/
-├── frontend/           # React Native application (Expo)
-│   ├── App.js         # Main app component with API integration
-│   ├── package.json   # Node.js dependencies
-│   ├── app.json       # Expo configuration
-│   └── README.md      # Frontend documentation
-│
-├── backend/           # Python Flask API with SQLAlchemy
-│   ├── app.py         # Flask application setup
-│   ├── models.py      # Database models
-│   ├── routes.py      # API endpoints
-│   ├── requirements.txt  # Python dependencies
-│   └── README.md      # Backend documentation
-│
-└── README.md          # This file
+longhorn-studies-layout/
+├── src/
+│   ├── app/              # Expo Router routes. Every file is a screen, _layout.tsx files define navigators
+│   ├── components/       # Shared UI components (components/ui/ for design-system pieces)
+│   ├── constants/        # Theme and other constants
+│   ├── hooks/            # Custom hooks
+│   ├── lib/
+│   │   └── supabase.ts   # Supabase client (auth session persisted on device)
+│   ├── db/
+│   │   ├── schema/       # Drizzle table definitions (one file per area)
+│   │   └── README.md     # Database workflow
+│   └── global.css        # Tailwind / NativeWind styles
+├── assets/               # Images, icons, fonts
+├── drizzle/              # Generated SQL migrations (created by `npm run db:generate`)
+├── app.json              # Expo configuration
+├── drizzle.config.ts     # Drizzle Kit configuration
+├── tailwind.config.js    # Tailwind theme (colors, font sizes)
+├── .env.example          # Environment variable template
+└── package.json
 ```
+
+Keep non-route code (components, hooks, utils) outside `src/app/`.
 
 ## Quick Start
 
-### Backend Setup
-
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
-
-2. Create and activate a virtual environment:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. Run the server:
-   ```bash
-   python app.py
-   ```
-
-The backend will be available at `http://localhost:8000`
-
-### Frontend Setup
-
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-
-2. Install dependencies:
+1. Install dependencies:
    ```bash
    npm install
    ```
+
+2. Set up environment variables:
+   ```bash
+   cp .env.example .env
+   ```
+   Then fill in the values (see [Configuration](#configuration)).
 
 3. Start the development server:
    ```bash
@@ -67,173 +47,125 @@ The backend will be available at `http://localhost:8000`
    ```
 
 4. Choose your platform:
-   - Press `w` for web browser
-   - Press `a` for Android emulator
    - Press `i` for iOS simulator
-   - Scan QR code with Expo Go app on your phone
+   - Press `a` for Android emulator
+   - Press `w` for web browser
+   - Scan the QR code with Expo Go on your phone
 
-## Features
+Libraries with native code that Expo Go doesn't include need a development build instead: `npx expo run:ios` / `npx expo run:android`, or `npx eas-cli@latest build --profile development`.
 
-### Frontend
-- ✅ React Native with Expo for cross-platform support (Web, iOS, Android)
-- ✅ Pre-configured with axios for API communication
-- ✅ Sample UI with CRUD operations
-- ✅ Responsive design with StyleSheet
-- ✅ Error handling and loading states
+## Database
 
-### Backend
-- ✅ Flask REST API with Blueprint architecture
-- ✅ SQLAlchemy ORM with SQLite database (easily switchable to PostgreSQL/MySQL)
-- ✅ CORS middleware configured for frontend communication
-- ✅ Request logging middleware
-- ✅ Comprehensive error handling
-- ✅ RESTful endpoints for Study Spots
-- ✅ Health check endpoint
+The schema lives in TypeScript under `src/db/schema/`. Drizzle Kit turns it into SQL migrations and applies them to Supabase.
 
-## API Endpoints
+### Querying from the app
 
-### Health Check
-- `GET /api/health` - Verify API status
+```ts
+import { supabase } from "@/lib/supabase";
 
-### Study Spots
-- `GET /api/study_spots` - Get all study spots
-- `GET /api/study_spots/<id>` - Get a specific study spot
-- `POST /api/study_spots` - Create a new study spot
-- `PUT /api/study_spots/<id>` - Update a study spot
-- `DELETE /api/study_spots/<id>` - Delete a study spot
+const { data, error } = await supabase.from("study_spots").select("*");
+```
 
-## Database Models
+Every table needs row level security policies (define them in the Drizzle schema with `pgPolicy`), or the app can't read it.
 
-### StudySpot
-- id (Integer, Primary Key)
-- abbreviation (String, Required)
-- study_spot_name (String, Required)
-- building_name (String, Optional)
-- address (String, Required)
-- floor (Integer, Optional)
-- tags (JSON array of strings)
-- noise_level (String, Required)
-- capacity (Integer, Required)
-- spot_type (JSON array of strings, Required)
-- access_hours (JSON array of 7 `[open, close]` pairs in `HH:MM`, Monday-Sunday, Required)
-- near_food (Boolean, Required)
-- additional_properties (Text, Optional)
-- reservable (Boolean, Required)
-- description (Text, Required)
-- pictures (JSON array of strings, Required)
+### Adding or changing tables
 
-## Development
-
-### Running Both Services
-
-For the best development experience, run both frontend and backend simultaneously:
-
-1. **Terminal 1** - Backend:
+1. Add or edit a file in `src/db/schema/` (e.g. `study-spots.ts`) and export its tables. Drizzle Kit reads every file in the folder. Also re-export the file from `src/db/schema/index.ts` if app code imports it.
+2. Generate a migration:
    ```bash
-   cd backend
-   python app.py
+   npm run db:generate -- --name <what_changed>
+   ```
+3. Review the SQL in `drizzle/`, then apply it:
+   ```bash
+   npm run db:migrate
    ```
 
-2. **Terminal 2** - Frontend:
-   ```bash
-   cd frontend
-   npm start
-   ```
+| Script | What it does |
+| --- | --- |
+| `npm run db:generate` | Create a SQL migration from schema changes |
+| `npm run db:migrate` | Apply pending migrations to the database |
+| `npm run db:push` | Sync the schema directly without migration files (prototyping only; don't mix with `db:migrate` on the same database) |
+| `npm run db:studio` | Open Drizzle Studio to browse data |
+| `npm run db:check` | Check migration files for consistency |
 
-The frontend will automatically connect to the backend API at `http://localhost:8000/api`.
+Columns are camelCase in TypeScript and snake_case in Postgres (`casing: "snake_case"`).
+
+> **Never connect to Postgres from the app.** `DATABASE_URL` is a full-access credential. On device, query with the Supabase client in `src/lib/supabase.ts` (publishable key) so row level security applies. Use Drizzle queries only in server code (Expo API routes or Supabase Edge Functions).
+
+See [`src/db/README.md`](src/db/README.md) for more detail.
 
 ## Technology Stack
 
-### Frontend
-- React 18.2.0
-- React Native 0.72.6
-- Expo ~49.0.15
-- Axios for HTTP requests
-
-### Backend
-- Python 3.8+
-- Flask 3.0.0
-- Flask-SQLAlchemy 3.1.1
-- Flask-CORS 4.0.0
-- SQLAlchemy 2.0.23
+- Expo SDK 58 with Expo Router (file-based navigation)
+- React Native 0.88, React 19.3
+- TypeScript 6
+- NativeWind 4 (Tailwind CSS 3) for styling
+- React Native Reanimated, Gesture Handler, Expo Image, Expo Symbols
+- Supabase (Postgres, Auth)
+- Drizzle ORM and Drizzle Kit
 
 ## Configuration
 
-### Backend Configuration
-Edit `backend/.env` (copy from `.env.example`):
-- `DATABASE_URL` - Database connection string
-- `SECRET_KEY` - Flask secret key
-- `PORT` - Server port (default: 8000)
+Copy `.env.example` to `.env`. `.env` is gitignored, so don't commit it.
 
-### Frontend Configuration
-Edit `frontend/App.js`:
-- `API_BASE_URL` - Backend API URL (default: `http://localhost:8000/api`)
+| Variable | Where it's used | Notes |
+| --- | --- | --- |
+| `DATABASE_URL` | Drizzle Kit (migrations) | Supabase dashboard → Connect → Session pooler (works over IPv4; the direct connection is IPv6-only). Server-only, so never prefix it with `EXPO_PUBLIC_` |
+| `EXPO_PUBLIC_SUPABASE_URL` | App | Your project URL |
+| `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | App | Supabase dashboard → Project Settings → API Keys → Publishable key. Protected by row level security; never use the secret key here |
+| `SUPABASE_SECRET_KEY` | Server only (seed scripts, API routes, Edge Functions) | Bypasses row level security. Never prefix with `EXPO_PUBLIC_` or import it in app code |
+
+Variables prefixed with `EXPO_PUBLIC_` are bundled into the app and visible to anyone, so only put public values there.
+
+## Development
+
+```bash
+npm start            # start the dev server
+npm run lint         # lint (npx expo lint)
+npx tsc --noEmit     # typecheck
+npx expo-doctor      # diagnose dependency/config issues
+```
+
+- Add packages with `npx expo install <package>` (not `npm install <package>`) so you get versions that work with the current SDK.
+- `ios/` and `android/` are generated (Continuous Native Generation) and gitignored. Configure native behavior in `app.json` and config plugins instead of editing them.
+- Run lint and typecheck before opening a PR.
 
 ## Development Workflow
-### Branch naming conventions + Conventional Commits
-We follow the Conventional Commits specification for commit messages. This ensures a consistent commit history and enables automated versioning and changelog generation.
 
-### Branch Naming Conventions 
+### Branch Naming Conventions
+
 ```
 <type>/<short-description>
 ```
-Examples: 
-- feature/{feature-name}
-- fix/{bug-description}
-- docs/{documentation-change}
-### Commit Message
-Follow this structure for commit messages
+
+Examples:
+- `feature/{feature-name}`
+- `fix/{bug-description}`
+- `docs/{documentation-change}`
+
+### Commit Messages
+
+We follow the [Conventional Commits](https://www.conventionalcommits.org/) specification, which keeps the commit history consistent and enables automated versioning and changelog generation.
+
 ```
 <type>(<scope>): <subject>
 ```
-Where:
-```type``` has one of the following:
-- feat: New features
-- fix: Bug fixes
-- docs: Documentation changes
-- style: Code formatting only
-- refactor: Code changes without behavior change
-- test: Adding or updating tests
-- chore: Build process or tooling updates
 
-### PR process
-- Fork or branch from main
-- Create a PR with a clear description
-- Ensure checks pass (build, lint, test)
-- Request review before merging
+Where `type` is one of:
+- `feat`: New features
+- `fix`: Bug fixes
+- `docs`: Documentation changes
+- `style`: Code formatting only
+- `refactor`: Code changes without behavior change
+- `test`: Adding or updating tests
+- `chore`: Build process or tooling updates
 
-## Development Workflow
-### Branch naming conventions + Conventional Commits
-We follow the Conventional Commits specification for commit messages. This ensures a consistent commit history and enables automated versioning and changelog generation.
+### PR Process
 
-### Branch Naming Conventions 
-```
-<type>/<short-description>
-```
-Examples: 
-- feature/{feature-name}
-- fix/{bug-description}
-- docs/{documentation-change}
-### Commit Message
-Follow this structure for commit messages
-```
-<type>(<scope>): <subject>
-```
-Where:
-```type``` has one of the following:
-- feat: New features
-- fix: Bug fixes
-- docs: Documentation changes
-- style: Code formatting only
-- refactor: Code changes without behavior change
-- test: Adding or updating tests
-- chore: Build process or tooling updates
-
-### PR process
-- Fork or branch from main
-- Create a PR with a clear description
-- Ensure checks pass (build, lint, test)
-- Request review before merging
+- Branch from `main` (or fork)
+- Open a PR with a clear description
+- Make sure checks pass (lint, typecheck, build)
+- Request a review before merging
 
 ## License
 
