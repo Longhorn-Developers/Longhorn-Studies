@@ -1,8 +1,9 @@
 import { Image } from "expo-image";
-import { CaretRightIcon, PersonSimpleWalkIcon } from "phosphor-react-native";
+import { CaretRightIcon } from "phosphor-react-native/src/icons/CaretRight";
+import { PersonSimpleWalkIcon } from "phosphor-react-native/src/icons/PersonSimpleWalk";
 import { View } from "react-native";
 
-import { OpenStatus, SaveButton, Tag, Text } from "@/components/ui";
+import { AmenityTag, BookmarkButton, OpenStatus, Text } from "@/components/ui";
 import { tokens } from "@/theme/tokens";
 
 const blurhash =
@@ -27,7 +28,7 @@ export default function StudySpotCard({ locationName, buildingName, hours, tags 
           transition={1000}
           style={{ width: "100%", height: "100%", borderRadius: 8 }}
         />
-        <SaveButton
+        <BookmarkButton
           className="absolute top-2 left-2"
           onPress={() => console.log("Bookmark tapped!")}
         />
@@ -48,12 +49,12 @@ export default function StudySpotCard({ locationName, buildingName, hours, tags 
               </Text>
             </View>
             {/* TODO: derive status from hours */}
-            <OpenStatus status="open" until={hours[1]} />
+            <OpenStatus status="open" time={hours[1]} />
           </View>
         </View>
         <View className="flex-row gap-2">
           {tags.map((tag) => (
-            <Tag key={tag} label={tag} />
+            <AmenityTag key={tag} label={tag} variant="brand" />
           ))}
         </View>
       </View>

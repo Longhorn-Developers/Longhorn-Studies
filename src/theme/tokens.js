@@ -80,6 +80,11 @@ const tokens = {
   focus: {
     ring: palette.orange[500],
   },
+  // Not in the token sheet; values sampled from the Star rating mockup.
+  rating: {
+    fill: palette.amber[500],
+    empty: palette.slate[300],
+  },
   status: {
     'open-text': palette.green[700],
     'open-icon': palette.green[500],

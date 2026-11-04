@@ -1,21 +1,30 @@
-import {
-  BookmarkSimpleIcon,
-  CaretRightIcon,
-  ClockIcon,
-  MagnifyingGlassIcon,
-  PersonSimpleWalkIcon,
-  XIcon,
-} from "phosphor-react-native";
+import type { Icon as PhosphorIcon } from "phosphor-react-native";
+import { BookmarkSimpleIcon } from "phosphor-react-native/src/icons/BookmarkSimple";
+import { CaretRightIcon } from "phosphor-react-native/src/icons/CaretRight";
+import { ClockIcon } from "phosphor-react-native/src/icons/Clock";
+import { CoffeeIcon } from "phosphor-react-native/src/icons/Coffee";
+import { MagnifyingGlassIcon } from "phosphor-react-native/src/icons/MagnifyingGlass";
+import { PersonSimpleWalkIcon } from "phosphor-react-native/src/icons/PersonSimpleWalk";
+import { PlugIcon } from "phosphor-react-native/src/icons/Plug";
+import { QuestionIcon } from "phosphor-react-native/src/icons/Question";
+import { SpeakerSimpleLowIcon } from "phosphor-react-native/src/icons/SpeakerSimpleLow";
+import { StarHalfIcon } from "phosphor-react-native/src/icons/StarHalf";
+import { StarIcon } from "phosphor-react-native/src/icons/Star";
+import { WifiHighIcon } from "phosphor-react-native/src/icons/WifiHigh";
+import { XIcon } from "phosphor-react-native/src/icons/X";
 import { type ReactNode, useState } from "react";
-import { ScrollView, View } from "react-native";
+import { ScrollView, Switch, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import StudySpotCard from "@/components/study-spot-card";
 import {
+  AmenityTag,
+  BookmarkButton,
   OpenStatus,
-  SaveButton,
+  Rating,
   SearchBar,
-  Tag,
+  Star,
+  StarRating,
   Text,
   type TextColor,
   type TextVariant,
@@ -100,6 +109,13 @@ const RADIUS: [string, string, string][] = [
   ["radius4", "32px", "rounded-4"],
 ];
 
+const AMENITIES: { label: string; icon: PhosphorIcon }[] = [
+  { label: "Low Noise", icon: SpeakerSimpleLowIcon },
+  { label: "Wi-Fi", icon: WifiHighIcon },
+  { label: "Outlets", icon: PlugIcon },
+  { label: "Near Food & Cafe", icon: CoffeeIcon },
+];
+
 const ICONS = [
   ["Clock", ClockIcon],
   ["BookmarkSimple", BookmarkSimpleIcon],
@@ -107,6 +123,9 @@ const ICONS = [
   ["PersonSimpleWalk", PersonSimpleWalkIcon],
   ["MagnifyingGlass", MagnifyingGlassIcon],
   ["X", XIcon],
+  ["Star", StarIcon],
+  ["StarHalf", StarHalfIcon],
+  ["Question", QuestionIcon],
 ] as const;
 
 function Section({ title, note, children }: { title: string; note?: string; children: ReactNode }) {
@@ -131,7 +150,10 @@ function Label({ children }: { children: ReactNode }) {
 
 export default function ComponentsScreen() {
   const [search, setSearch] = useState("");
-  const [saved, setSaved] = useState(false);
+  const [showDetail, setShowDetail] = useState(true);
+  const [picked, setPicked] = useState<string[]>(["Outlets"]);
+  const [savedSm, setSavedSm] = useState(false);
+  const [savedLg, setSavedLg] = useState(false);
 
   return (
     <SafeAreaView edges={["top"]} className="flex-1 bg-page">
@@ -158,22 +180,76 @@ export default function ComponentsScreen() {
           />
         </Section>
 
-        <Section title="Open status">
-          <OpenStatus status="open" until="5:00 PM" />
-          <OpenStatus status="closing" until="5:00 PM" />
-          <OpenStatus status="closed" until="7:00 AM" />
-        </Section>
-
-        <Section title="Tag">
-          <View className="flex-row flex-wrap gap-2">
-            <Tag label="Lounge" />
-            <Tag label="Low Noise" />
-            <Tag label="Near Food & Cafe" />
+        <Section title="Star · Star rating · Rating" note="5-star scale (Full/Half/Empty). Cards show Rating: star + decimal, count optional.">
+          <Label>Star: full · half · empty</Label>
+          <View className="flex-row gap-5">
+            <Star fill="full" />
+            <Star fill="half" />
+            <Star fill="empty" />
+          </View>
+          <Label>Star rating: sm · lg</Label>
+          <StarRating value={4.5} size="sm" />
+          <StarRating value={4.5} size="lg" />
+          <Label>Rating: without · with count</Label>
+          <View className="flex-row gap-6">
+            <Rating value={4.2} />
+            <Rating value={4.2} count={128} />
           </View>
         </Section>
 
-        <Section title="Save button" note={`Tap to toggle (filled when saved) — currently ${saved ? "saved" : "not saved"}.`}>
-          <SaveButton saved={saved} onPress={() => setSaved((s) => !s)} />
+        <Section title="Open status" note="Small on cards, Large on details. Toggle the time detail.">
+          <View className="flex-row items-center justify-between">
+            <Label>Show detail</Label>
+            <Switch value={showDetail} onValueChange={setShowDetail} />
+          </View>
+          {(["sm", "lg"] as const).map((size) => (
+            <View key={size} className="gap-3">
+              <Label>{size === "sm" ? "Small" : "Large"}</Label>
+              <OpenStatus status="open" time="6:00 PM" size={size} showDetail={showDetail} />
+              <OpenStatus status="closing" time="5:00 PM" size={size} showDetail={showDetail} />
+              <OpenStatus status="closed" time="8:00 AM" size={size} showDetail={showDetail} />
+            </View>
+          ))}
+        </Section>
+
+        <Section title="Amenity tag" note="Small on cards, Medium on details. Pass any Phosphor icon + label. Tap the bottom row to toggle.">
+          <Label>Neutral · Selected · Brand (sm)</Label>
+          <View className="flex-row flex-wrap gap-3">
+            <AmenityTag icon={QuestionIcon} label="Low Noise" />
+            <AmenityTag icon={QuestionIcon} label="Low Noise" variant="selected" />
+            <AmenityTag icon={QuestionIcon} label="Low Noise" variant="brand" />
+          </View>
+          <Label>Neutral · Selected · Brand (md)</Label>
+          <View className="flex-row flex-wrap gap-3">
+            <AmenityTag icon={QuestionIcon} label="Low Noise" size="md" />
+            <AmenityTag icon={QuestionIcon} label="Low Noise" size="md" variant="selected" />
+            <AmenityTag icon={QuestionIcon} label="Low Noise" size="md" variant="brand" />
+          </View>
+          <Label>Custom icons · tappable</Label>
+          <View className="flex-row flex-wrap gap-3">
+            {AMENITIES.map(({ label, icon }) => (
+              <AmenityTag
+                key={label}
+                icon={icon}
+                label={label}
+                size="md"
+                variant={picked.includes(label) ? "selected" : "neutral"}
+                onPress={() =>
+                  setPicked((p) => (p.includes(label) ? p.filter((x) => x !== label) : [...p, label]))
+                }
+              />
+            ))}
+            <AmenityTag label="No icon" size="md" />
+          </View>
+        </Section>
+
+        <Section title="Bookmark button" note="Small on card photos, Large in the details header. Tap to toggle.">
+          <View className="flex-row items-center gap-6">
+            <BookmarkButton size="sm" saved={savedSm} onPress={() => setSavedSm((v) => !v)} />
+            <BookmarkButton size="sm" saved />
+            <BookmarkButton size="lg" saved={savedLg} onPress={() => setSavedLg((v) => !v)} />
+            <BookmarkButton size="lg" saved />
+          </View>
         </Section>
 
         <Section title="Icons" note="phosphor-react-native · color from tokens.icon.*">

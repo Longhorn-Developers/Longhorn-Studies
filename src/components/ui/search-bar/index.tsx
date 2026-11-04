@@ -1,5 +1,6 @@
 import { cssInterop } from "nativewind";
-import { MagnifyingGlassIcon, XIcon } from "phosphor-react-native";
+import { MagnifyingGlassIcon } from "phosphor-react-native/src/icons/MagnifyingGlass";
+import { XIcon } from "phosphor-react-native/src/icons/X";
 import { useRef, useState, type Ref } from "react";
 import { Pressable, TextInput, type TextInputInstance, type TextInputProps } from "react-native";
 
