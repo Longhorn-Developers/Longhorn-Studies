@@ -1,4 +1,5 @@
 import { Image } from 'expo-image';
+import { useSyncExternalStore } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { Keyframe, Easing } from 'react-native-reanimated';
 
@@ -54,7 +55,25 @@ const glowKeyframe = new Keyframe({
   },
 });
 
+const subscribe = () => () => {};
+
+// false while server rendering and hydrating, true afterwards.
+function useIsHydrated() {
+  return useSyncExternalStore(
+    subscribe,
+    () => true,
+    () => false,
+  );
+}
+
 export function AnimatedIcon() {
+  const isHydrated = useIsHydrated();
+
+  // Reanimated's entering animations hide views on the client, which doesn't match the server HTML.
+  if (!isHydrated) {
+    return <View style={styles.iconContainer} />;
+  }
+
   return (
     <View style={styles.iconContainer}>
       <Animated.View entering={glowKeyframe.duration(60 * 1000 * 4)} style={styles.glow}>
