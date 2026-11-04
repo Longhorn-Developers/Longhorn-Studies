@@ -27,6 +27,15 @@ export default function AppTabs() {
           renderingMode="template"
         />
       </NativeTabs.Trigger>
+
+      {/* Dev showcase — remove before release. */}
+      <NativeTabs.Trigger name="components">
+        <NativeTabs.Trigger.Label>Components</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          src={require('@/assets/images/tabIcons/explore.png')}
+          renderingMode="template"
+        />
+      </NativeTabs.Trigger>
     </NativeTabs>
   );
 }
