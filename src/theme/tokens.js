@@ -67,6 +67,8 @@ const tokens = {
     primary: palette.orange[500],
     'primary-pressed': palette.orange[600],
     disabled: palette.slate[100],
+    // Not in the token sheet; sampled from the Button mockup.
+    'secondary-pressed': palette.orange[100], // Secondary/Tertiary pressed fill
   },
   filter: {
     'active-bg': palette.orange[100],
@@ -79,6 +81,16 @@ const tokens = {
   },
   focus: {
     ring: palette.orange[500],
+  },
+  // Onboarding step bar: filled = action/primary, empty = border/default.
+  progress: {
+    fill: palette.orange[500],
+    track: palette.slate[300],
+  },
+  // Not in the token sheet; values sampled from the onboarding carousel mockup.
+  indicator: {
+    active: palette.orange[500],
+    inactive: palette.slate[300],
   },
   // Not in the token sheet; values sampled from the Star rating mockup.
   rating: {

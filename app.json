@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "longhorn-studies-layout",
-    "slug": "longhorn-studies-layout",
+    "name": "longhorn-studies",
+    "slug": "longhorn-studies",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "longhornstudieslayout",
+    "scheme": "longhornstudies",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon"
@@ -34,7 +34,21 @@
         }
       ],
       "expo-image",
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Choose a profile photo so classmates can find you.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Used to sort study spots by distance and show walking time."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

@@ -5,7 +5,7 @@ A mobile app for finding study spots at UT Austin, built with Expo (React Native
 ## Project Structure
 
 ```
-longhorn-studies-layout/
+longhorn-studies/
 ├── src/
 │   ├── app/              # Expo Router routes. Every file is a screen, _layout.tsx files define navigators
 │   ├── components/       # Shared UI components (components/ui/ for design-system pieces)

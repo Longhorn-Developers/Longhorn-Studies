@@ -6,17 +6,18 @@ import {
   Figtree_700Bold,
   useFonts,
 } from '@expo-google-fonts/figtree';
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useColorScheme } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+import { useOnboardingComplete } from '@/lib/onboarding';
 
 SplashScreen.preventAutoHideAsync();
 
-export default function TabLayout() {
+export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const onboarded = useOnboardingComplete();
   // Family names must match `fonts` in tailwind.config.js.
   const [fontsLoaded, fontError] = useFonts({
     Figtree_400Regular,
@@ -32,7 +33,15 @@ export default function TabLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <AnimatedSplashOverlay />
-      <AppTabs />
+      {/* Only one group exists at a time; flipping `onboarded` swaps them. */}
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Protected guard={!onboarded}>
+          <Stack.Screen name="onboarding" />
+        </Stack.Protected>
+        <Stack.Protected guard={onboarded}>
+          <Stack.Screen name="(tabs)" />
+        </Stack.Protected>
+      </Stack>
     </ThemeProvider>
   );
 }

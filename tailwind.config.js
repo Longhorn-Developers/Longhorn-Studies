@@ -101,8 +101,11 @@ module.exports = {
         'action-primary': tokens.action.primary,
         'action-primary-pressed': tokens.action['primary-pressed'],
         'action-disabled': tokens.action.disabled,
+        'action-secondary-pressed': tokens.action['secondary-pressed'],
         'filter-active': tokens.filter['active-bg'],
         saved: tokens.saved.bg,
+        'progress-fill': tokens.progress.fill,
+        'progress-track': tokens.progress.track,
         'status-open': tokens.status['open-bg'],
         'status-closing': tokens.status['closing-bg'],
         'status-closed': tokens.status['closed-bg'],
@@ -110,8 +113,11 @@ module.exports = {
       // border-default, border-strong, border-filter-active …
       borderColor: {
         DEFAULT: tokens.border.default,
+        // Ring that separates a badge from what's behind it.
+        surface: tokens.bg.surface,
         ...tokens.border,
         'filter-active': tokens.filter['active-border'],
+        'action-primary-pressed': tokens.action['primary-pressed'], // Secondary pressed outline
         focus: tokens.focus.ring,
       },
       ringColor: {

@@ -1,8 +1,10 @@
 import type { Icon as PhosphorIcon } from "phosphor-react-native";
 import { BookmarkSimpleIcon } from "phosphor-react-native/src/icons/BookmarkSimple";
 import { CaretRightIcon } from "phosphor-react-native/src/icons/CaretRight";
+import { CheckIcon } from "phosphor-react-native/src/icons/Check";
 import { ClockIcon } from "phosphor-react-native/src/icons/Clock";
 import { CoffeeIcon } from "phosphor-react-native/src/icons/Coffee";
+import { HouseIcon } from "phosphor-react-native/src/icons/House";
 import { MagnifyingGlassIcon } from "phosphor-react-native/src/icons/MagnifyingGlass";
 import { PersonSimpleWalkIcon } from "phosphor-react-native/src/icons/PersonSimpleWalk";
 import { PlugIcon } from "phosphor-react-native/src/icons/Plug";
@@ -10,25 +12,37 @@ import { QuestionIcon } from "phosphor-react-native/src/icons/Question";
 import { SpeakerSimpleLowIcon } from "phosphor-react-native/src/icons/SpeakerSimpleLow";
 import { StarHalfIcon } from "phosphor-react-native/src/icons/StarHalf";
 import { StarIcon } from "phosphor-react-native/src/icons/Star";
+import { TreeIcon } from "phosphor-react-native/src/icons/Tree";
 import { WifiHighIcon } from "phosphor-react-native/src/icons/WifiHigh";
 import { XIcon } from "phosphor-react-native/src/icons/X";
+import { Image } from "expo-image";
 import { type ReactNode, useState } from "react";
 import { ScrollView, Switch, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import StudySpotCard from "@/components/study-spot-card";
+import { TabBarSpacer } from "@/components/tab-bar-spacer";
 import {
   AmenityTag,
   BookmarkButton,
+  Button,
+  Carousel,
   OpenStatus,
+  PhotoPicker,
+  pickPhoto,
+  ProgressBar,
   Rating,
   SearchBar,
+  SelectionChip,
   Star,
   StarRating,
   Text,
   type TextColor,
+  TextField,
+  TextLink,
   type TextVariant,
 } from "@/components/ui";
+import { resetOnboarding } from "@/lib/onboarding";
 import { tokens } from "@/theme/tokens";
 
 // Dev showcase of every design token and UI component.
@@ -109,12 +123,26 @@ const RADIUS: [string, string, string][] = [
   ["radius4", "32px", "rounded-4"],
 ];
 
+// Placeholder photos until the onboarding art is ready.
+const SLIDES = [
+  { image: "https://picsum.photos/seed/lounge/800/600", title: "Find your next study spot", body: "Browse spots across campus with photos, hours and what floor to head to." },
+  { image: "https://picsum.photos/seed/library/800/600", title: "Filter by what you need", body: "Quiet, outlets, whiteboards: show only the spots that fit." },
+  { image: "https://picsum.photos/seed/campus/800/600", title: "Save your favorites", body: "Bookmark the spots you like so they're one tap away." },
+];
+
 const AMENITIES: { label: string; icon: PhosphorIcon }[] = [
   { label: "Low Noise", icon: SpeakerSimpleLowIcon },
   { label: "Wi-Fi", icon: WifiHighIcon },
   { label: "Outlets", icon: PlugIcon },
   { label: "Near Food & Cafe", icon: CoffeeIcon },
 ];
+
+const AREAS: { label: string; icon: PhosphorIcon }[] = [
+  { label: "Indoor", icon: HouseIcon },
+  { label: "Outdoor", icon: TreeIcon },
+];
+
+const YEARS = ["Freshman", "Sophomore", "Junior", "Senior", "Grad"];
 
 const ICONS = [
   ["Clock", ClockIcon],
@@ -126,6 +154,7 @@ const ICONS = [
   ["Star", StarIcon],
   ["StarHalf", StarHalfIcon],
   ["Question", QuestionIcon],
+  ["Check", CheckIcon],
 ] as const;
 
 function Section({ title, note, children }: { title: string; note?: string; children: ReactNode }) {
@@ -154,6 +183,11 @@ export default function ComponentsScreen() {
   const [picked, setPicked] = useState<string[]>(["Outlets"]);
   const [savedSm, setSavedSm] = useState(false);
   const [savedLg, setSavedLg] = useState(false);
+  const [username, setUsername] = useState("meggiedo");
+  const [linkTaps, setLinkTaps] = useState(0);
+  const [area, setArea] = useState("Indoor");
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [years, setYears] = useState<string[]>(["Junior"]);
 
   return (
     <SafeAreaView edges={["top"]} className="flex-1 bg-page">
@@ -163,7 +197,46 @@ export default function ComponentsScreen() {
           <Text color="secondary">Every token and UI component in the app.</Text>
         </View>
 
+        {__DEV__ && (
+          <Section title="Developer" note="Dev builds only. Clears the saved flag and sends you back to onboarding.">
+            <Button label="Replay onboarding" variant="secondary" onPress={resetOnboarding} />
+          </Section>
+        )}
+
         {/* ── Components ─────────────────────────── */}
+        <Section title="Progress bar" note="Segments 1 through the current step are filled.">
+          {[1, 2, 3].map((n) => (
+            <ProgressBar key={n} total={3} current={n} />
+          ))}
+        </Section>
+
+        <Section title="Photo picker" note="Tap to pick from your library. Long-press to clear.">
+          <PhotoPicker
+            uri={photo}
+            onPress={async () => {
+              const uri = await pickPhoto();
+              if (uri) setPhoto(uri);
+            }}
+            onLongPress={() => setPhoto(null)}
+          />
+        </Section>
+
+        <Section title="Carousel" note="Swipe the slides; the dots follow your finger.">
+          {/* -mx-5 cancels the page padding so slides span the screen like onboarding. */}
+          <Carousel
+            className="-mx-5"
+            data={SLIDES}
+            keyExtractor={(s) => s.title}
+            renderItem={(s) => (
+              <View className="items-center gap-4">
+                <Image source={s.image} style={{ width: "100%", aspectRatio: 4 / 3, borderRadius: 16 }} />
+                <Text variant="heading-md" className="text-center">{s.title}</Text>
+                <Text variant="body-lg" color="secondary" className="text-center">{s.body}</Text>
+              </View>
+            )}
+          />
+        </Section>
+
         <Section title="Search bar" note="Tap the first one to see Focused; type to see the clear button.">
           <SearchBar value={search} onChangeText={setSearch} />
           <Label>Filled (with clear)</Label>
@@ -227,7 +300,7 @@ export default function ComponentsScreen() {
           </View>
           <Label>Custom icons · tappable</Label>
           <View className="flex-row flex-wrap gap-3">
-            {AMENITIES.map(({ label, icon }) => (
+            {[...AMENITIES, { label: "No icon", icon: undefined }].map(({ label, icon }) => (
               <AmenityTag
                 key={label}
                 icon={icon}
@@ -239,7 +312,6 @@ export default function ComponentsScreen() {
                 }
               />
             ))}
-            <AmenityTag label="No icon" size="md" />
           </View>
         </Section>
 
@@ -249,6 +321,71 @@ export default function ComponentsScreen() {
             <BookmarkButton size="sm" saved />
             <BookmarkButton size="lg" saved={savedLg} onPress={() => setSavedLg((v) => !v)} />
             <BookmarkButton size="lg" saved />
+          </View>
+        </Section>
+
+        <Section title="Button" note="Primary, Secondary, Tertiary · Default / Pressed / Disabled. Press and hold to see Pressed.">
+          {(["primary", "secondary", "tertiary"] as const).map((variant) => (
+            <View key={variant} className="gap-2">
+              <Label>{variant}</Label>
+              <View className="flex-row flex-wrap gap-4">
+                <Button label="Button" variant={variant} onPress={() => {}} />
+                <Button label="Button" variant={variant} disabled />
+              </View>
+            </View>
+          ))}
+        </Section>
+
+        <Section title="Text field" note="Labeled input for sign-up and profile. Optional fixed prefix (@). Valid shows a check (type 3+ characters).">
+          <TextField label="Username" prefix="@" placeholder="username-example" autoCapitalize="none" />
+          <TextField
+            label="Username"
+            prefix="@"
+            placeholder="username-example"
+            autoCapitalize="none"
+            value={username}
+            onChangeText={setUsername}
+            valid={username.length >= 3}
+          />
+        </Section>
+
+        <Section title="Text link" note="Brand for Log in / Upload photo, Neutral for Skip.">
+          <View className="flex-row gap-6">
+            <TextLink label="Log in" onPress={() => setLinkTaps((n) => n + 1)} />
+            <TextLink label="Skip" variant="neutral" onPress={() => setLinkTaps((n) => n + 1)} />
+          </View>
+          <Text color="secondary">
+            Already have an account? <TextLink label="Log in" onPress={() => setLinkTaps((n) => n + 1)} />
+          </Text>
+          <Label>Tapped {linkTaps} times</Label>
+        </Section>
+
+        <Section title="Selection chip" note="Pick-one (top) or pick-many (bottom). Selected adds a check.">
+          <Label>Pick one · md with icon</Label>
+          <View className="flex-row flex-wrap gap-3">
+            {AREAS.map(({ label, icon }) => (
+              <SelectionChip
+                key={label}
+                label={label}
+                icon={icon}
+                selected={area === label}
+                onPress={() => setArea(label)}
+              />
+            ))}
+          </View>
+          <Label>Pick many · sm</Label>
+          <View className="flex-row flex-wrap gap-3">
+            {YEARS.map((year) => (
+              <SelectionChip
+                key={year}
+                label={year}
+                size="sm"
+                selected={years.includes(year)}
+                onPress={() =>
+                  setYears((ys) => (ys.includes(year) ? ys.filter((y) => y !== year) : [...ys, year]))
+                }
+              />
+            ))}
           </View>
         </Section>
 
@@ -347,6 +484,7 @@ export default function ComponentsScreen() {
             ))}
           </View>
         </Section>
+        <TabBarSpacer />
       </ScrollView>
     </SafeAreaView>
   );

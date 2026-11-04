@@ -1,4 +1,3 @@
-import { cssInterop } from "nativewind";
 import { MagnifyingGlassIcon } from "phosphor-react-native/src/icons/MagnifyingGlass";
 import { XIcon } from "phosphor-react-native/src/icons/X";
 import { useRef, useState, type Ref } from "react";
@@ -7,15 +6,8 @@ import { Pressable, TextInput, type TextInputInstance, type TextInputProps } fro
 import { tokens } from "@/theme/tokens";
 
 import { cn } from "../lib/cn";
-
-// Lets the placeholder color come from a token class instead of a hex.
-cssInterop(TextInput, {
-  className: { target: "style" },
-  placeholderClassName: {
-    target: false,
-    nativeStyleToProp: { color: "placeholderTextColor" },
-  },
-});
+import { mergeRefs } from "../lib/merge-refs";
+import { INPUT_TEXT } from "../lib/text-input";
 
 export type SearchBarProps = Omit<TextInputProps, "className" | "placeholderTextColor"> & {
   /** Called after the clear (×) button empties the field. */
@@ -48,12 +40,6 @@ export function SearchBar({
   const [innerValue, setInnerValue] = useState(defaultValue ?? "");
   const text = value ?? innerValue;
 
-  const setRefs = (node: TextInputInstance | null) => {
-    inputRef.current = node;
-    if (typeof ref === "function") ref(node);
-    else if (ref) ref.current = node;
-  };
-
   const handleChange = (next: string) => {
     if (value === undefined) setInnerValue(next);
     onChangeText?.(next);
@@ -79,7 +65,7 @@ export function SearchBar({
     >
       <MagnifyingGlassIcon size={20} color={tokens.icon.primary} />
       <TextInput
-        ref={setRefs}
+        ref={mergeRefs(inputRef, ref)}
         value={text}
         onChangeText={handleChange}
         onFocus={(e) => {
@@ -94,9 +80,8 @@ export function SearchBar({
         accessibilityLabel={placeholder}
         returnKeyType="search"
         autoCorrect={false}
-        // body.large size + Regular face; no lineHeight (it misaligns single-line inputs on iOS).
-        className="flex-1 p-0 text-[16px] font-figtree text-primary"
-        placeholderClassName="text-disabled"
+        className={INPUT_TEXT}
+        placeholderClassName="text-secondary"
         {...props}
       />
       {text.length > 0 && (
