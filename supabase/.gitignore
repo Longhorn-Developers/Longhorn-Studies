@@ -1,0 +1,8 @@
+# supabase
+.branches
+.temp
+
+# env files
+.env.keys
+.env.local
+.env.*.local
