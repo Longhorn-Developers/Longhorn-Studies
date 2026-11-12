@@ -43,6 +43,7 @@
     "eslint-config-expo": "~58.0.4",
     "postgres": "^3.4.9",
     "prettier-plugin-tailwindcss": "^0.8.1",
+    "supabase": "^3.1.0",
     "typescript": "~6.0.3"
   },
   "scripts": {
@@ -53,8 +54,6 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:check": "drizzle-kit check"
   },
