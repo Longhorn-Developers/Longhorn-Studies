@@ -18,7 +18,7 @@ longhorn-studies-layout/
 │   │   └── README.md     # Database workflow
 │   └── global.css        # Tailwind / NativeWind styles
 ├── assets/               # Images, icons, fonts
-├── drizzle/              # Generated SQL migrations (created by `npm run db:generate`)
+├── supabase/             # Supabase CLI project: config.toml (storage buckets) and migrations/ (database structure)
 ├── app.json              # Expo configuration
 ├── drizzle.config.ts     # Drizzle Kit configuration
 ├── tailwind.config.js    # Tailwind theme (colors, font sizes)
@@ -56,41 +56,51 @@ Libraries with native code that Expo Go doesn't include need a development build
 
 ## Database
 
-The schema lives in TypeScript under `src/db/schema/`. Drizzle Kit turns it into SQL migrations and applies them to Supabase.
+App accesses Supabase (Postgres, Auth, Storage) through `supabase-js`. The database's structure lives in `supabase/migrations/` as SQL files, applied in timestamp order. Supabase's GitHub integration applies new migrations to production when a PR is merged into `main`.
 
 ### Querying from the app
 
 ```ts
 import { supabase } from "@/lib/supabase";
 
-const { data, error } = await supabase.from("study_spots").select("*");
+const { data, error } = await supabase.from("spots").select("*");
 ```
 
-Every table needs row level security policies (define them in the Drizzle schema with `pgPolicy`), or the app can't read it.
+Every table has row level security, and permissions are granted per table and column, so the app can only do what the policies and permissions allow.
 
-### Adding or changing tables
+### One-time local setup
 
-1. Add or edit a file in `src/db/schema/` (e.g. `study-spots.ts`) and export its tables. Drizzle Kit reads every file in the folder. Also re-export the file from `src/db/schema/index.ts` if app code imports it.
-2. Generate a migration:
-   ```bash
-   npm run db:generate -- --name <what_changed>
-   ```
-3. Review the SQL in `drizzle/`, then apply it:
-   ```bash
-   npm run db:migrate
-   ```
+```bash
+npx supabase login                              # opens the browser
+npx supabase link --project-ref <project-ref>   # the ID in the dashboard URL
+```
 
-| Script | What it does |
-| --- | --- |
-| `npm run db:generate` | Create a SQL migration from schema changes |
-| `npm run db:migrate` | Apply pending migrations to the database |
-| `npm run db:push` | Sync the schema directly without migration files (prototyping only; don't mix with `db:migrate` on the same database) |
-| `npm run db:studio` | Open Drizzle Studio to browse data |
-| `npm run db:check` | Check migration files for consistency |
+Link saved in `supabase/.temp/` for future development, which is gitignored, so each developer links their own copy. The Supabase CLI is a dev dependency, so `npm install` already installed it.
 
-Columns are camelCase in TypeScript and snake_case in Postgres (`casing: "snake_case"`).
+### Changing the database
 
-> **Never connect to Postgres from the app.** `DATABASE_URL` is a full-access credential. On device, query with the Supabase client in `src/lib/supabase.ts` (publishable key) so row level security applies. Use Drizzle queries only in server code (Expo API routes or Supabase Edge Functions).
+1. On a feature branch, make the change one of two ways:
+   - **In the dashboard**, then capture it: `npx supabase db pull <what_changed> --remote` (with Docker installed and running). MUST answer **Y** when it asks to record the migration as applied.
+   - **By hand:** `npx supabase migration new <what_changed>`, then write the SQL in the new file.
+2. Write permissions (`grant` / `revoke`) by hand in a migration. `db pull` doesn't capture per-column permissions.
+3. Review the SQL and open a PR. Merging into `main` applies it to production.
+4. Check what production has applied: `npx supabase migration list --remote`.
+
+Rules:
+- Capture every dashboard change as a migration in the same PR. A change made only in the dashboard goes live without review and is missing from the repo.
+- NEVER edit a migration that has been merged; add a new one.
+- Data every database needs (the majors list) goes in a migration. Test data goes in `supabase/seed.sql`, which never runs on production.
+- Hide rows with `status = 'inactive'` instead of deleting them.
+
+### Storage buckets
+
+`spot-photos` and `user_avatars` are declared in `supabase/config.toml`, which creates them in local and test databases.
+
+### Drizzle
+
+Drizzle Kit (`drizzle.config.ts`, `src/db/schema/` and the `db:generate`, `db:studio` and `db:check` scripts) will be repointed to the on-device SQLite database in a follow-up PR. Don't use it to change Supabase.
+
+> **Never connect to Postgres from the app.** `DATABASE_URL` is a full-access credential. On device, query with the Supabase client in `src/lib/supabase.ts` (publishable key) so row level security applies.
 
 See [`src/db/README.md`](src/db/README.md) for more detail.
 
@@ -101,7 +111,7 @@ See [`src/db/README.md`](src/db/README.md) for more detail.
 - TypeScript 6
 - NativeWind 4 (Tailwind CSS 3) for styling
 - React Native Reanimated, Gesture Handler, Expo Image, Expo Symbols
-- Supabase (Postgres, Auth)
+- Supabase (Postgres, Auth, Storage), with the Supabase CLI for migrations
 - Drizzle ORM and Drizzle Kit
 
 ## Configuration
@@ -110,7 +120,7 @@ Copy `.env.example` to `.env`. `.env` is gitignored, so don't commit it.
 
 | Variable | Where it's used | Notes |
 | --- | --- | --- |
-| `DATABASE_URL` | Drizzle Kit (migrations) | Supabase dashboard → Connect → Session pooler (works over IPv4; the direct connection is IPv6-only). Server-only, so never prefix it with `EXPO_PUBLIC_` |
+| `DATABASE_URL` | Drizzle Kit scripts, until they move to SQLite | Not needed for migrations: the Supabase CLI uses `npx supabase login`. Supabase dashboard → Connect → Session pooler. Server-only, so never prefix it with `EXPO_PUBLIC_` |
 | `EXPO_PUBLIC_SUPABASE_URL` | App | Your project URL |
 | `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | App | Supabase dashboard → Project Settings → API Keys → Publishable key. Protected by row level security; never use the secret key here |
 | `SUPABASE_SECRET_KEY` | Server only (seed scripts, API routes, Edge Functions) | Bypasses row level security. Never prefix with `EXPO_PUBLIC_` or import it in app code |
