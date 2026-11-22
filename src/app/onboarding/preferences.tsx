@@ -51,15 +51,15 @@ export default function PreferencesStep() {
 
   const sections: { title: string; chips: ReactNode }[] = [
     {
-      // Pick one; tapping the selected chip again clears it.
+      // Pick any; all three sections work the same way.
       title: "Noise level",
       chips: NOISE_LEVELS.map((v) => (
         <SelectionChip
           key={v}
           label={v}
           icon={ICONS[v]}
-          selected={answers.noiseLevel === v}
-          onPress={() => update({ noiseLevel: answers.noiseLevel === v ? null : v })}
+          selected={answers.noiseLevels.includes(v)}
+          onPress={() => update({ noiseLevels: toggle(answers.noiseLevels, v) })}
         />
       )),
     },
@@ -70,13 +70,12 @@ export default function PreferencesStep() {
           key={v}
           label={v}
           icon={ICONS[v]}
-          selected={answers.areaType === v}
-          onPress={() => update({ areaType: answers.areaType === v ? null : v })}
+          selected={answers.areaTypes.includes(v)}
+          onPress={() => update({ areaTypes: toggle(answers.areaTypes, v) })}
         />
       )),
     },
     {
-      // Pick many.
       title: "Amenities",
       chips: AMENITIES.map((v) => (
         <SelectionChip

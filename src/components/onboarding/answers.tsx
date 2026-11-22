@@ -28,8 +28,8 @@ export type OnboardingAnswers = {
   username: string;
   year: Year | null;
   majors: string;
-  noiseLevel: NoiseLevel | null;
-  areaType: AreaType | null;
+  noiseLevels: NoiseLevel[];
+  areaTypes: AreaType[];
   amenities: Amenity[];
 };
 
@@ -40,8 +40,8 @@ const EMPTY: OnboardingAnswers = {
   username: "",
   year: null,
   majors: "",
-  noiseLevel: null,
-  areaType: null,
+  noiseLevels: [],
+  areaTypes: [],
   amenities: [],
 };
 

@@ -1,31 +1,33 @@
+import { Image, type ImageSource } from "expo-image";
 import { router } from "expo-router";
-import type { ReactNode } from "react";
 import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { SpotCardsArt } from "@/components/onboarding/spot-cards-art";
 import { Button, Carousel, Text, TextLink } from "@/components/ui";
 
-type Slide = { art: ReactNode; title: string; body: string };
+type Slide = { art: ImageSource; title: string; body: string };
 
-// Only slide 1 has a mockup; 2 and 3 reuse its art with placeholder copy.
 const SLIDES: Slide[] = [
   {
-    art: <SpotCardsArt />,
+    art: require("@/assets/images/onboarding/new-spot-hero.png"),
     title: "Find your next study spot",
     body: "Browse spots across campus with photos, hours and what floor to head to.",
   },
   {
-    art: <SpotCardsArt />,
-    title: "Filter by what you need",
-    body: "Quiet, outlets, whiteboards: show only the spots that fit.",
+    art: require("@/assets/images/onboarding/preferences-hero.png"),
+    title: "Study your way",
+    body: "Tell us what helps you focus and we put the best spots first.",
   },
   {
-    art: <SpotCardsArt />,
-    title: "Save your favorites",
-    body: "Bookmark the spots you like so they're one tap away.",
+    art: require("@/assets/images/onboarding/map-hero.png"),
+    title: "Spot it on the map",
+    body: "Browse every study spot on campus with photos, so you know what you're walking into.",
   },
 ];
+
+// Every slide's art sits in the same box so the text doesn't shift between slides.
+// The map and preferences exports are 1412×1488; others are fit inside it.
+const ART_RATIO = 1412 / 1488;
 
 export default function WelcomeScreen() {
   // Sign-up and log-in aren't wired up yet; both go to the next step.
@@ -39,7 +41,12 @@ export default function WelcomeScreen() {
           keyExtractor={(s) => s.title}
           renderItem={(s) => (
             <View className="items-center gap-8">
-              {s.art}
+              <Image
+                source={s.art}
+                style={{ width: "100%", aspectRatio: ART_RATIO }}
+                contentFit="contain"
+                accessible={false}
+              />
               <View className="gap-3">
                 <Text variant="heading-lg" className="text-center">
                   {s.title}
