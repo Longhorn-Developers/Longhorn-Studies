@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { StyleSheet, Text, View } from "react-native";
-import { BookmarkIcon, SparkleIcon } from "./ui/icons";
+import { BookmarkIcon, SparkleIcon } from "../ui/icons";
 
 export interface FeaturedCardProps {
   imgSrc: string;

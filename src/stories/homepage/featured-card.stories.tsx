@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-native-web-vite';
 import { View } from 'react-native';
-import FeaturedCard from '../components/featured-card';
+import FeaturedCard from '../../components/homepage/featured-card';
 
 const meta = {
-  title: 'Components/FeaturedCard',
+  title: 'HomePage/FeaturedCard',
   component: FeaturedCard,
   decorators: [
     (Story) => (
